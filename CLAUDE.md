@@ -1,0 +1,54 @@
+# habeebs-skill — Agent Instructions
+
+This plugin gives Claude a research-grounded engineering methodology. When the user asks to build something non-trivial, the skills in this plugin trigger in a chain. Don't bypass them.
+
+## The chain
+
+```
+prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop
+```
+
+Each skill produces output that the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
+
+## Triggering principles
+
+- **Trigger `prior-art-research` aggressively.** The user almost never says "research." They say "I want to build X." Read between the lines.
+- **Don't skip phases for speed.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding.
+- **Internal precedent first.** For Modie's repos (BeanBot, salahi.app, BOL automation), check local repos before going external. The user's own prior art is Tier 0.
+- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in Deep mode. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes.
+
+## What this plugin is NOT
+
+- Not a replacement for Superpowers or oh-my-claudecode — it composes with them
+- Not an automatic code writer — implementation still happens through TDD
+- Not a survey tool — the research phase makes opinionated recommendations
+- Not for trivial CRUD — let trivial things stay trivial
+
+## Anti-patterns
+
+If you find yourself doing any of these, stop and re-read the relevant skill:
+
+- Surveying multiple options without recommending one
+- Skipping the context-capture questions to "save time"
+- Researching after deciding (research is upstream of decisions, not downstream)
+- Recommending FAANG-scale solutions to non-FAANG-scale problems
+- Letting the chain stall in research without producing a spec
+
+## Quote and copyright discipline
+
+When researching:
+- One quote per source maximum, under 15 words, in quotes
+- Paraphrase everything else
+- Never reconstruct an article's structure with detailed paraphrase
+- Cite every claim that follows from a search result
+
+## When the user pushes back
+
+The user (Modie) prefers:
+- Bullet points and structured output
+- Precise metrics over vague claims
+- Direct tone — no hedging, no excessive caveats
+- Citations with links
+- Concrete recommendations, not "it depends"
+
+If you find yourself hedging, stop and commit to a recommendation. The chain has `socratic-grill` to challenge it later — you don't need to pre-empt criticism in the research phase.

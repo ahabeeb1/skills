@@ -1,0 +1,101 @@
+{
+  "plugin_name": "habeebs-skill",
+  "skill_under_test": "prior-art-research",
+  "version": "0.1.0",
+  "notes": "Test prompts that exercise the skill across complexity, ambiguity, and domain breadth. Each prompt should force the skill to do real research, not pattern-match. Assertions are split into objective (programmatically checkable) and qualitative (human review).",
+  "evals": [
+    {
+      "id": 1,
+      "name": "real-time-collaborative-editor",
+      "prompt": "I want to build a real-time collaborative document editor for my SaaS. Users should be able to edit the same doc simultaneously, see each other's cursors, and have it work offline. We're a small team and want to ship in 8 weeks. Stack is Node + Postgres on AWS.",
+      "expected_behavior": "Should ask context questions (Phase 1), decompose into conflict resolution / presence / persistence / transport (Phase 2), choose Deep mode (multiple sub-problems, correctness implied), search T1 (Figma, Linear, Liveblocks, Convex), recommend Yjs or Automerge with concrete picks, hand off to spec.",
+      "assertions": [
+        {"type": "objective", "name": "asks_context_questions", "check": "Output contains 4+ of: scale, stack, constraints, existing, priorities"},
+        {"type": "objective", "name": "decomposes_into_subproblems", "check": "Phase 2 lists at least 3 sub-problems"},
+        {"type": "objective", "name": "cites_real_sources", "check": "References at least 3 specific company engineering blogs (Figma/Linear/Liveblocks/Convex/Automerge/Yjs)"},
+        {"type": "objective", "name": "makes_recommendation", "check": "Has a clear 'Recommendation' section with a specific pick, not a survey"},
+        {"type": "objective", "name": "names_tradeoffs", "check": "Explicitly states what user is giving up"},
+        {"type": "objective", "name": "handoff_lines_present", "check": "Output ends with HANDOFF: lines"},
+        {"type": "qualitative", "name": "recommendation_matches_scale", "check": "Does NOT recommend FAANG-scale solution for small-team 8-week timeline"},
+        {"type": "qualitative", "name": "actionable_decisions", "check": "Decisions section has 3-6 concrete decisions"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "multi-tenant-saas-billing",
+      "prompt": "Build out usage-based billing for my B2B SaaS. Customers pay per API call with metered tiers. Need accurate metering, near-real-time dashboards, and reconciliation with Stripe. Currently 50 customers, projecting 5000 in 18 months.",
+      "expected_behavior": "Should decompose into metering / aggregation / Stripe integration / tenant isolation. Should heavily reference Stripe Engineering, Modern Treasury, Increase. Should recommend event-sourced ledger + periodic aggregation + Stripe Metering integration.",
+      "assertions": [
+        {"type": "objective", "name": "stripe_engineering_referenced", "check": "References Stripe Engineering content"},
+        {"type": "objective", "name": "ledger_pattern_discussed", "check": "Mentions event sourcing or ledger pattern"},
+        {"type": "objective", "name": "tenant_isolation_addressed", "check": "Sub-problem or decision around tenant isolation"},
+        {"type": "qualitative", "name": "scale_appropriate", "check": "Recommendation appropriate for 50→5000 customers, not 5M"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "vector-rag-pipeline",
+      "prompt": "Build a RAG system over our internal company docs (Confluence + Google Drive + Slack export). About 100k documents. Need accurate retrieval, source citations, freshness within a day. Team has Python/AWS experience.",
+      "expected_behavior": "Should reference BeanBot internal precedent (Tier 0), Anthropic engineering posts, Notion RAG writeup, hybrid search patterns. Recommend pgvector or Pinecone, hybrid retrieval (BM25 + vector), reciprocal rank fusion, document-level metadata.",
+      "assertions": [
+        {"type": "objective", "name": "checks_internal_precedent", "check": "Mentions BeanBot or internal repos as Tier 0 source"},
+        {"type": "objective", "name": "hybrid_retrieval_discussed", "check": "Mentions hybrid search, BM25+vector, or RRF"},
+        {"type": "objective", "name": "freshness_addressed", "check": "Addresses the daily-freshness requirement explicitly"},
+        {"type": "qualitative", "name": "leverages_user_experience", "check": "Builds on user's existing Python/AWS experience"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "background-jobs-django",
+      "prompt": "I need background job processing for my Django app on Heroku. Want to avoid Redis if possible. ~50 jobs per day, mostly emails and report generation.",
+      "expected_behavior": "QUICK mode should activate (low scale, simplicity priority, single sub-problem). Should recommend procrastinate or django-q2 over Celery. Should NOT do Deep mode.",
+      "assertions": [
+        {"type": "objective", "name": "quick_mode_selected", "check": "Output indicates Quick mode chosen"},
+        {"type": "objective", "name": "no_overkill_recommendation", "check": "Does NOT recommend Celery+RabbitMQ or Kafka-based solution"},
+        {"type": "objective", "name": "specific_library_named", "check": "Names a specific Python library (procrastinate, django-q2, dramatiq, or RQ)"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "vague-greenfield-startup",
+      "prompt": "I'm starting a new B2B SaaS. Want to build a 'workspace' product like Linear/Notion. Help.",
+      "expected_behavior": "Skill should refuse to research until Phase 1 produces a concrete answer. Should ask what specifically is being built (Linear-like = sync engine + issue model; Notion-like = block storage + collaborative editing — totally different problems).",
+      "assertions": [
+        {"type": "objective", "name": "asks_clarification", "check": "Skill asks the user to narrow scope before researching"},
+        {"type": "qualitative", "name": "good_clarifying_questions", "check": "Questions distinguish Linear-vs-Notion architecturally"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "agentic-system-financial",
+      "prompt": "We want to build an agentic system at Fannie Mae that answers internal loan portfolio questions in natural language. Currently using direct SQL through a chatbot interface. Need to evolve to multi-step reasoning, tool use, multi-source retrieval (Redshift + S3 + internal docs).",
+      "expected_behavior": "Should pull BeanBot heavily as Tier 0. Should reference Anthropic agentic patterns, Uber QueryGPT, LinkedIn SQL Bot. Recommend LangGraph or similar orchestration, tool-use for SQL execution, intent routing, prompt caching for schema context.",
+      "assertions": [
+        {"type": "objective", "name": "internal_precedent_first", "check": "BeanBot mentioned as Tier 0"},
+        {"type": "objective", "name": "industry_references", "check": "References at least 2 of: Uber QueryGPT, LinkedIn SQL Bot, Anthropic agentic patterns"},
+        {"type": "objective", "name": "orchestration_addressed", "check": "Mentions LangGraph, agent orchestration, or state machine"},
+        {"type": "qualitative", "name": "respects_existing_arch", "check": "Recommendation evolves BeanBot rather than replacing it wholesale"}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "trivial-CRUD-should-NOT-trigger",
+      "prompt": "I need a REST endpoint that returns the current user's profile.",
+      "expected_behavior": "Skill should NOT trigger or, if invoked directly, should note that this doesn't warrant prior-art research and decline.",
+      "assertions": [
+        {"type": "qualitative", "name": "declines_or_acknowledges_overkill", "check": "Either skips or notes that this is trivial and doesn't need full research"}
+      ]
+    },
+    {
+      "id": 8,
+      "name": "edge-case-feature-flags",
+      "prompt": "Implement feature flags for our growing SaaS. We're 200 engineers across 30 teams, need targeting rules, percentage rollouts, kill switches, and ideally A/B test integration.",
+      "expected_behavior": "Should reference LaunchDarkly, Statsig, Eppo, OpenFeature, and likely Optimizely. Should discuss build vs buy explicitly given team size. Should evaluate at least one in-house pattern (Netflix, Spotify, Shopify writeups).",
+      "assertions": [
+        {"type": "objective", "name": "discusses_build_vs_buy", "check": "Explicitly considers build-vs-buy tradeoff"},
+        {"type": "objective", "name": "names_concrete_vendors", "check": "Names at least 3 specific vendors or in-house systems"},
+        {"type": "qualitative", "name": "team_size_factors_in", "check": "200-engineer team size affects the recommendation"}
+      ]
+    }
+  ]
+}

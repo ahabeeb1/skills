@@ -1,0 +1,72 @@
+{
+  "plugin_name": "habeebs-skill",
+  "skill_under_test": "phase-3-primitives",
+  "version": "0.3.0",
+  "notes": "Phase 3 tests the action-producing skills. Each test verifies the artifacts the skill produces.",
+  "evals": [
+    {
+      "id": 1,
+      "skill": "tdd-loop",
+      "name": "tdd-slice1-tiptap-editor",
+      "input": "Run tdd-loop on Slice 1 of the collab-editor spec (single-user Tiptap editor renders and saves).",
+      "assertions": [
+        {"name": "wrote_test_before_code", "check": "Output documents RED phase before GREEN phase explicitly"},
+        {"name": "test_file_exists", "check": "A test file is produced (e.g., slice-01-editor.spec.ts)"},
+        {"name": "test_was_observed_failing", "check": "Output shows the test failure output explicitly before implementation"},
+        {"name": "implementation_files_produced", "check": "At least one implementation file produced (Editor.tsx, page.tsx, etc.)"},
+        {"name": "minimality_discipline", "check": "Output explicitly lists what was NOT added in this slice (deferred to later slices)"},
+        {"name": "deep_modules_invoked", "check": "REFACTOR phase shows deep-modules check ran (even if no changes)"},
+        {"name": "commit_message_present", "check": "Output includes commit message with what's verified + what's NOT in this slice"},
+        {"name": "check_in_phase_present", "check": "Output has Phase 5 check-in (end-to-end value, open questions, next slice)"}
+      ]
+    },
+    {
+      "id": 2,
+      "skill": "deep-modules",
+      "name": "deepen-auth-subsystem",
+      "input": "Run deep-modules on a hypothetical auth subsystem with pass-throughs and a hypothetical seam.",
+      "assertions": [
+        {"name": "read_domain_context", "check": "Output references CONTEXT.md or domain glossary"},
+        {"name": "checked_adrs", "check": "Output references at least one existing ADR"},
+        {"name": "applied_deletion_test", "check": "Each candidate has 'Deletion-test result' field"},
+        {"name": "uses_ousterhout_vocabulary", "check": "References at least 2 of: deep, shallow, pass-through, hypothetical seam, information leakage"},
+        {"name": "surfaced_2plus_candidates", "check": "At least 2 candidates surfaced"},
+        {"name": "flagged_adr_conflicts", "check": "Any ADR conflicts marked explicitly"},
+        {"name": "asks_user_to_pick", "check": "Output ends with 'which to explore' or similar — does NOT propose implementation"},
+        {"name": "uses_domain_vocabulary", "check": "Uses CONTEXT.md vocabulary (e.g., User/Session/Credential, not Account/Auth)"}
+      ]
+    },
+    {
+      "id": 3,
+      "skill": "parallel-dev",
+      "name": "dispatch-afk-group",
+      "input": "Run parallel-dev on the AFK Group A (Slices 5 + 7) from the collab-editor spec.",
+      "assertions": [
+        {"name": "independence_verification_table", "check": "Output has explicit independence verification table with 5 checks"},
+        {"name": "subagent_specs_complete", "check": "Each subagent has Task, Input, Output, Constraints, Verification"},
+        {"name": "captures_timing", "check": "Results table includes duration and tokens per subagent"},
+        {"name": "computes_parallelism_gain", "check": "Output computes speedup vs sequential"},
+        {"name": "handles_close_calls", "check": "If independence check found anything, the mitigation is documented"},
+        {"name": "verification_of_aggregate", "check": "Output verifies tests pass after merge"},
+        {"name": "captures_lessons", "check": "Output includes Lessons section for future calibration"}
+      ]
+    },
+    {
+      "id": 4,
+      "skill": "vertical-slice",
+      "name": "slice-usage-based-billing",
+      "input": "Decompose 'usage-based SaaS billing with Stripe' into vertical slices.",
+      "assertions": [
+        {"name": "produces_4_to_10_slices", "check": "4-10 slices produced"},
+        {"name": "first_slice_is_narrowest_end_to_end", "check": "Slice 1 is end-to-end (single event through full stack), not 'set up database'"},
+        {"name": "all_slices_labeled", "check": "Every slice has HITL or AFK label"},
+        {"name": "default_afk_bias", "check": "Most slices (>60%) are AFK, not HITL"},
+        {"name": "hitl_has_reason", "check": "Any HITL slices have explicit reasoning in parentheses"},
+        {"name": "dependency_dag_present", "check": "Output has dependency DAG diagram"},
+        {"name": "parallelization_identified", "check": "Output identifies which slices can run in parallel"},
+        {"name": "quality_checklist_filled", "check": "Slice quality checklist or equivalent verification present"},
+        {"name": "no_horizontal_slices", "check": "No slice titled 'database layer', 'API only', 'frontend only', etc."}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# OMC / Claude Code runtime state
+.omc/
+.claude/
+.scratch/
+
+# Build artifacts / distribution archives
+*.zip
+*.tar
+*.tar.gz
+dist/
+build/
+
+# Legacy staging area (pre-reorg duplicates and packaged releases)
+files/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Node (in case tooling is added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

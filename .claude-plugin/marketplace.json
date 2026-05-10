@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
+  "name": "habeebs-skill",
+  "owner": {
+    "name": "Modie (Habeeb)"
+  },
+  "description": "Research-grounded engineering methodology — a composable skill chain that grounds implementation in real production patterns rather than generic best-practices.",
+  "plugins": [
+    {
+      "name": "habeebs-skill",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop, with parallel-dev, deep-modules, vertical-slice, and setup-habeebs-skill as supporting primitives.",
+      "category": "development",
+      "keywords": [
+        "research",
+        "architecture",
+        "methodology",
+        "tdd",
+        "spec",
+        "socratic",
+        "deep-modules",
+        "vertical-slice",
+        "adr",
+        "ousterhout"
+      ]
+    }
+  ]
+}

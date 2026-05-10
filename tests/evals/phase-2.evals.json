@@ -1,0 +1,64 @@
+{
+  "plugin_name": "habeebs-skill",
+  "skill_under_test": "phase-2-chain",
+  "version": "0.2.0",
+  "notes": "Chain test: feed eval-1 research output through draft-spec → socratic-grill → decision-record. Tests integration AND each skill individually.",
+  "evals": [
+    {
+      "id": 1,
+      "skill": "draft-spec",
+      "name": "spec-from-collab-editor-research",
+      "input": "Run draft-spec using the research output at tests/runs/iteration-1/eval-1/output.md (collaborative document editor — Yjs+Hocuspocus+Tiptap recommendation).",
+      "expected_behavior": "Phase 1 locates the research. Phase 2 extracts architecture, picks, tradeoffs, decisions, open questions. Phase 3 produces 5-8 vertical slices (not horizontal). Each slice has HITL/AFK label, acceptance criteria, test strategy, dependency. Output follows spec-template.md. Ends with 3 HANDOFF lines. Architecture sketch traces back to Yjs+Hocuspocus+Tiptap.",
+      "assertions": [
+        {"name": "has_tldr", "check": "Output contains a TL;DR section near top"},
+        {"name": "traces_to_research", "check": "Architecture mentions Yjs, Hocuspocus, AND Tiptap (the recommendation from research)"},
+        {"name": "has_5_to_10_slices", "check": "Vertical slices section has 5-10 numbered slices"},
+        {"name": "slices_are_vertical_not_horizontal", "check": "No slice titled like 'database layer', 'API layer', 'frontend' alone — each is feature-shaped"},
+        {"name": "slices_labeled_hitl_or_afk", "check": "Every slice has HITL or AFK label"},
+        {"name": "slices_have_acceptance_criteria", "check": "Each slice has Acceptance criteria with at least 2 checkboxes"},
+        {"name": "slices_have_test_strategy", "check": "Each slice specifies Unit/Integration/E2E/Manual test type"},
+        {"name": "slices_have_dependencies", "check": "Slices use 'Blocked by:' field"},
+        {"name": "open_questions_carried_forward", "check": "Open questions from research appear in spec's open-questions section"},
+        {"name": "three_handoff_lines", "check": "Ends with 3 HANDOFF: lines (grill/record/implementation)"}
+      ]
+    },
+    {
+      "id": 2,
+      "skill": "socratic-grill",
+      "name": "grill-collab-editor-spec",
+      "input": "Run socratic-grill against the spec from eval 1. Inventory open questions, grill each across the 7 axes, simulate resolution.",
+      "expected_behavior": "Phase 1 inventories the 4 open questions from research + any new ones from spec. Phase 2 grills each across 2-4 relevant axes (not all 7). Each item exits DECIDED, DEFERRED-WITH-TRIGGER, or OUT-OF-SCOPE. No 'we'll see' resolutions. Output uses grill-output-template. 2 HANDOFF lines.",
+      "assertions": [
+        {"name": "has_tldr", "check": "Output contains TL;DR section"},
+        {"name": "inventories_open_questions", "check": "Output has a 'Grilling agenda' section with 3+ items"},
+        {"name": "uses_ambiguity_axes", "check": "References at least 3 of: performance, failure modes, scale, concurrency, migration, reversibility, observability"},
+        {"name": "items_have_resolutions", "check": "Each item has explicit DECIDED / DEFERRED / OUT-OF-SCOPE marker"},
+        {"name": "no_we_will_see", "check": "Output does NOT contain phrases like 'we will see', 'figure it out later', 'TBD' as final resolutions"},
+        {"name": "deferred_have_triggers", "check": "Any DEFERRED items have a 'Revisit trigger' specified"},
+        {"name": "spec_updates_listed", "check": "Output has 'Spec updates required' section"},
+        {"name": "adr_candidates_listed", "check": "Output has 'ADR candidates' section"},
+        {"name": "two_handoff_lines", "check": "Ends with HANDOFF: lines for spec update and record"}
+      ]
+    },
+    {
+      "id": 3,
+      "skill": "decision-record",
+      "name": "adr-from-collab-editor-decisions",
+      "input": "Run decision-record using the research, spec, and grill outputs as inputs. Produce ADR.",
+      "expected_behavior": "Locates ADR home (or asks). Numbers ADR. Title is present-tense action-oriented. Has all 7 ADR sections. Decision uses ACTIVE voice. Alternatives section has 2-4 alternatives from research. Revisit triggers from spec/grill.",
+      "assertions": [
+        {"name": "has_status_field", "check": "Output has Status: field (Proposed/Accepted/etc.)"},
+        {"name": "title_is_present_tense_action", "check": "Title starts with verb in present tense (Use, Adopt, Migrate, Implement, etc.)"},
+        {"name": "has_context_section", "check": "Has Context section"},
+        {"name": "has_decision_section", "check": "Has Decision section"},
+        {"name": "decision_active_voice", "check": "Decision section uses 'We will' or 'We choose' (active voice)"},
+        {"name": "has_consequences", "check": "Has Consequences section with positive and negative"},
+        {"name": "has_alternatives_2_to_4", "check": "Alternatives Considered has 2-4 alternatives, each named"},
+        {"name": "has_revisit_triggers", "check": "Has Revisit triggers section"},
+        {"name": "references_upstream", "check": "References section links to research/spec/grill"},
+        {"name": "two_handoff_lines", "check": "Ends with HANDOFF: lines (implementation ready, future research)"}
+      ]
+    }
+  ]
+}

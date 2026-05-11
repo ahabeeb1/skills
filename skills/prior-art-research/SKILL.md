@@ -65,6 +65,18 @@ Don't drown the user in five questions at once — stage them. If the cache alre
 4. **Greenfield, retrofit, or replacement?**
 5. **Top 2 priorities** from: shipping speed, operational simplicity, scale headroom, cost, correctness
 
+**Optional steering (the user may volunteer this; never demand it):**
+
+If the user already has hunches about *which design space* to look at — keywords, technique names, architectures they want considered first, or things they explicitly want to avoid — capture that in the same message they answer 3-5. Three slots, all optional, all free-text:
+
+- **Anchor:** terms or techniques to bias queries toward (e.g., "token bucket, sliding-window", "CRDT", "Stripe Idempotency-Key pattern")
+- **Look at:** specific projects/teams/architectures to fetch first (e.g., "see how Linear's sync engine handles this", "the BeanBot retrieval layer")
+- **Avoid:** out-of-scope terms or anti-patterns (e.g., "no Redis", "skip Kafka", "not interested in serverless")
+
+Steering is **optional anchoring, not prescription**. If the user provides anchors that conflict with strong evidence found in Phase 4-5, the agent must override the anchor and explain why in Phase 6 (see `references/steering-hints.md`). Decomposition still runs autonomously in Phase 2; anchors weight Phase 4 query construction and source ranking, they do not replace the Phase 2 sub-problem split.
+
+Worked examples and the override rule live in `references/steering-hints.md`.
+
 If the user's initial prompt already answers some of these, skip those and only ask what's missing. If the user gives partial or "I don't know" answers, accept them and proceed — flag those unknowns explicitly in the final Context section with `[assumed]` or `[unknown]` tags. The recommendation is only as good as the inputs; mark them honestly.
 
 **Internal precedent check (mandatory if a local repo is open):**
@@ -93,6 +105,12 @@ Break the feature into 2-4 searchable sub-problems. Each sub-problem should be a
 - Reconciliation with payment provider
 
 Present the decomposition to the user before searching. They'll often add or remove sub-problems based on what they actually care about.
+
+**If steering hints were captured in Phase 1, echo them back here** in a single line above the decomposition so the user sees what was registered before search burns budget:
+
+> `Steering received — Anchor: <terms>; Look at: <sources>; Avoid: <terms>. (Echo for confirmation; will weight Phase 4 queries.)`
+
+If any slot was empty, omit it from the echo. If no steering was provided, skip the line entirely — silence is the default.
 
 ### Phase 3 — Choose mode
 
@@ -154,6 +172,8 @@ Produce the output using the template in `references/output-template.md`. The st
 5. **Specific decisions to make next** — the 3-6 concrete decisions the user now has to make to move from architecture to implementation. These feed directly into `socratic-grill` and `draft-spec`.
 6. **Open questions** — anything the research didn't resolve.
 7. **Sources** — linked, with one-line annotations of what each one was useful for.
+
+**Steering reconciliation (only if steering was captured in Phase 1):** add a sub-section between Recommendation and Decisions-to-make-next titled `Steering reconciliation`. For each anchor, state one of: **Honored** (anchor matched the evidence), **Honored with caveat** (mostly fits but here's the limit), or **Overridden** (evidence pointed elsewhere; here's the contradicting source and what we recommended instead). Anchors silently ignored are a bug — every anchor must show up here, or removed from the steering line. This section is what keeps anchors from becoming silent anchoring bias.
 
 **Template applies when research actually runs.** If you declined the request (anti-trigger fired) or halted at Phase 1 (insufficient context), produce a much shorter output: a one-line status, what you need from the user, and a path forward. Don't pad with empty template sections.
 
@@ -229,3 +249,4 @@ For Modie specifically: BeanBot, salahi.app, and the AEGIS/BOL automation projec
 - `references/source-tiers.md` — curated engineering blogs by domain
 - `references/output-template.md` — strict output format
 - `references/extraction-checklist.md` — what to pull from each source
+- `references/steering-hints.md` — optional steering anchors (Anchor / Look at / Avoid) and the override rule

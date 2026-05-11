@@ -87,3 +87,12 @@ Anything Phase 0 couldn't determine. The user is expected to fill these in (or a
 
 - [e.g., Exact user count — order of magnitude only]
 - [e.g., Whether multi-tenancy is on the near-term roadmap]
+
+## Active steering
+
+(Optional. Captured by `prior-art-research` Phase 1 if the user supplied anchors. Inherited by `draft-spec`, `socratic-grill`, and `decision-record` so the whole chain respects the same hints. Updated in place when the user revises. Cleared after the related research run completes if no longer relevant.)
+
+- **Anchor:** [terms/techniques to bias toward, or `[none]`]
+- **Look at:** [specific projects/teams/sources to fetch first, or `[none]`]
+- **Avoid:** [out-of-scope terms or anti-patterns, or `[none]`]
+- **Last reconciliation outcome:** [link or short summary from the most recent Phase 6 reconciliation — e.g., "Celery anchor overridden 2026-05-10; recommendation uses procrastinate"]

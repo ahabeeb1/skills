@@ -29,10 +29,36 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 ## The core loop
 
 ```
-RED → GREEN → REFACTOR → COMMIT → next slice
+[Phase 0: decide worktree] → RED → GREEN → REFACTOR → 2-stage REVIEW → COMMIT → next slice
 ```
 
 Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
+
+### Phase 0 — Decide whether to run in a worktree
+
+Worktrees are valuable when they isolate concurrent or multi-commit work — they're overhead when they don't. Apply this checklist BEFORE writing the failing test:
+
+**Invoke `using-worktrees` (auto) when ANY of:**
+
+- This slice is one of a `parallel-dev` AFK batch (worktree is mandatory; parallel-dev already enforces this)
+- The slice is expected to take **2+ commits** (typical for any feature work that touches more than one file)
+- The user is currently on `main` / `master` / the default branch (don't pile feature commits onto the trunk)
+- The source checkout has uncommitted changes for unrelated work (worktree prevents accidental cross-contamination)
+- The spec marks the slice as touching infrastructure or migrations (the worktree's clean-baseline check is high-value insurance)
+
+**Skip the worktree (proceed in current tree) when ANY of:**
+
+- The slice is a **single-commit trivial change** (one file, one assertion, mechanical)
+- This is a spike or throwaway exploration (the design IS the deliverable; commits don't matter)
+- A worktree was already created upstream (parallel-dev, using-worktrees standalone) — you're already in it; don't nest
+- The user has explicitly opted out ("don't make a worktree", "just work here")
+- The runtime can't create worktrees (some sandboxed environments) — fall back, log it
+
+**When in doubt, prefer worktree.** The cost of creating one is ~10 seconds; the cost of polluting the trunk or losing partial work to a race is much higher.
+
+State the decision in one line before Phase 1: e.g., `Phase 0: creating worktree at ../skills-slice-1 (slice is multi-commit; currently on main).` or `Phase 0: proceeding in current tree (single-commit trivial slice).`
+
+If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in the returned `cwd`.
 
 ### Phase 1 — RED: write the failing test
 

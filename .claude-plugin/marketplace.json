@@ -9,7 +9,7 @@
     {
       "name": "habeebs-skill",
       "source": "./",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop, with parallel-dev, deep-modules, vertical-slice, and setup-habeebs-skill as supporting primitives.",
       "category": "development",
       "keywords": [

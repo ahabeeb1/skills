@@ -1,6 +1,7 @@
 ---
 name: parallel-dev
 description: Dispatches parallel subagents for independent work. Used internally by prior-art-research Deep mode (one subagent per sub-problem) and by vertical-slice (one subagent per AFK slice). Also user-invokable for parallel refactor passes, parallel codebase exploration, or any batch of work where the pieces don't share state or order dependencies. Make sure to use this skill whenever the work can be decomposed into independent units that benefit from concurrent execution — but only after verifying independence (no shared mutable state, no ordering requirements, no file conflicts). Inspired by Superpowers' subagent-driven-development and OMC's ralph/team/ultrawork. Do NOT use for sequential work, for tasks where order matters, for work touching the same files, or when the cost of coordination exceeds the parallelism gain.
+next-skills: [using-worktrees, tdd-loop]
 ---
 
 # Parallel Dev
@@ -98,6 +99,10 @@ The subagent returns its commit SHA(s) to the dispatcher. The dispatch record (P
 **Research subagents** (those producing structured records to be aggregated into the parent's synthesis, not files in the repo) are exempt — the parent commits the final synthesized output once aggregation completes.
 
 ### Phase 4 — Dispatch
+
+For **artifact-producing subagents** (those that will commit to the repo), invoke the `using-worktrees` skill ONCE per subagent BEFORE dispatch. Each subagent gets its own worktree path + branch and is invoked with `cwd=<worktree-path>`. Concurrent subagents must never share a working tree — that is the most common silent failure of parallel dispatch.
+
+For **research subagents** (those returning structured records without writing files), worktrees are not needed; dispatch them in the source checkout.
 
 Launch all subagents in the same turn. (In Claude Code, this is one tool-call message with N spawn requests. In OMC, this is `omc team N:claude "..."` or equivalent. In Cowork, this is the parallel subagent API.)
 

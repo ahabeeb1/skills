@@ -1,6 +1,7 @@
 ---
 name: decision-record
 description: Captures a chosen architecture as an Architectural Decision Record (ADR) in the repo. Writes context, decision, alternatives considered (from research), consequences, and revisit triggers. The resulting ADR becomes Tier 0 prior art for future invocations of prior-art-research. Make sure to use this skill whenever a non-trivial architectural decision has been made — after socratic-grill resolves the open questions, before implementation starts, or whenever the user says "let's lock this in" or "let's document this." Do NOT use to document trivial choices (file naming, formatter config) or to write code documentation (that's docstrings).
+next-skills: [tdd-loop]
 ---
 
 # Decision Record

@@ -1,6 +1,7 @@
 ---
 name: tdd-loop
-description: Red-green-refactor TDD loop, one vertical slice at a time. Writes the failing test FIRST, watches it fail with the expected error, writes the minimal code to make it pass, watches it pass, refactors (invoking deep-modules at the refactor step), and commits. Make sure to use this skill whenever implementation starts — after a spec is locked, after socratic-grill closes open questions, or whenever the user is about to write production code. Especially trigger when the user says "let's start building", "implement slice N", or has a vertical slice queued. Do NOT use for spike/throwaway exploration code, prototyping flows where the design is the deliverable, or for documentation-only changes.
+description: Red-green-refactor TDD loop, one vertical slice at a time. Writes the failing test FIRST, watches it fail with the expected error, writes the minimal code to make it pass, watches it pass, refactors (invoking deep-modules at the refactor step), runs two-stage review (spec compliance + code quality), and commits. Make sure to use this skill whenever implementation starts — after a spec is locked, after socratic-grill closes open questions, or whenever the user is about to write production code. Especially trigger when the user says "let's start building", "implement slice N", or has a vertical slice queued. Do NOT use for spike/throwaway exploration code, prototyping flows where the design is the deliverable, or for documentation-only changes.
+next-skills: [deep-modules, parallel-dev, systematic-debugging, decision-record]
 ---
 
 # TDD Loop
@@ -100,15 +101,31 @@ What's NOT in this slice (and that's OK):
 - <thing intentionally deferred>
 ```
 
-### Phase 5 — Check in and advance
+### Phase 5 — Two-stage review
 
-Before starting the next slice, ask:
+Before declaring the slice complete, run TWO independent passes. Skipping either is the most common quality regression after RED/GREEN.
+
+**Pass 5a — Spec-compliance review:** open the slice's spec entry side-by-side with the diff. For each acceptance criterion, name the exact line(s) of code or test that satisfies it. If you can't, the slice doesn't meet the spec — return to GREEN (or revise the spec if the criterion is now wrong). The output is one bullet per criterion mapped to a code reference.
+
+**Pass 5b — Code-quality review:** run the `deep-modules` skill against the new code (already part of REFACTOR; do it again here as a final check before commit). Verify there's no:
+
+- Shallow pass-through layer added without need
+- Duplicated logic with a sibling slice's code
+- Naming that fights the domain glossary
+- Helper that's used in exactly one place and should be inlined
+
+If 5a or 5b surfaces something material, fix in this slice's commit chain. Don't push the cleanup to "later."
+
+### Phase 6 — Check in and advance
+
+After passing both review stages, before starting the next slice, ask:
 
 1. Did the slice deliver end-to-end visible value? (If no, the slice was horizontal — flag it)
 2. Did any open questions surface during implementation? (If yes, capture them — re-run `socratic-grill` if material)
 3. Did the implementation reveal an architectural seam the spec missed? (If yes, possible `deep-modules` candidate; possible ADR update)
+4. Did an unexpected failure mode surface during RED that you didn't predict? (If yes, hand off to `systematic-debugging` rather than absorbing it.)
 
-Then move to the next slice in dependency order. If multiple AFK slices are ready, `parallel-dev` can dispatch them concurrently.
+Then move to the next slice in dependency order. If multiple AFK slices are ready, `parallel-dev` can dispatch them concurrently (each into its own worktree via `using-worktrees`).
 
 ## Anti-patterns this skill guards against
 

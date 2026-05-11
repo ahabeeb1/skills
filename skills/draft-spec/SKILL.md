@@ -1,6 +1,7 @@
 ---
 name: draft-spec
 description: Turns a prior-art-research recommendation into a concrete implementation spec. Decomposes the chosen approach into vertical slices (tracer bullets) labeled HITL (human-in-the-loop) or AFK (autonomous), with acceptance criteria, test strategy, and dependency ordering per slice. Make sure to use this skill whenever you have a research recommendation and need to convert it into something an engineer (or coding agent) can actually start building from. Triggers automatically when prior-art-research produces a "HANDOFF: spec ready" line, or explicitly via /spec. Do NOT use to research alternatives (that's prior-art-research) or to debug an existing spec (that's socratic-grill).
+next-skills: [socratic-grill, decision-record, tdd-loop]
 ---
 
 # Draft Spec

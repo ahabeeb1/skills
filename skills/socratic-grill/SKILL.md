@@ -1,6 +1,7 @@
 ---
 name: socratic-grill
 description: Socratic ambiguity-reduction skill. Walks through every open question and ambiguous decision in a spec or design, grilling the user across structured dimensions (performance, failure modes, scale, concurrency, migration, reversibility, observability) until each decision exits with a concrete answer or an explicitly-accepted unknown. Make sure to use this skill whenever a spec has open questions, when a decision feels hand-wavy, when the user says "we'll figure it out later," or after draft-spec produces a "HANDOFF: grill ready" line. Also use proactively when you notice implicit assumptions in any plan. Do NOT use to brainstorm or generate options (that's prior-art-research) — this is the convergent ambiguity-killer.
+next-skills: [decision-record, draft-spec]
 ---
 
 # Socratic Grill

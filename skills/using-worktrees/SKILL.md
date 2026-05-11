@@ -1,0 +1,163 @@
+---
+name: using-worktrees
+description: Isolate each feature, AFK slice, or experimental refactor in its own git worktree on its own branch, with a verified-clean test baseline before work starts and a clean teardown when work ends. Used by parallel-dev to dispatch AFK slices into separate worktrees (so concurrent subagents never fight over the same working tree), and used directly when starting any non-trivial multi-commit task. Inspired by Superpowers' using-git-worktrees + finishing-a-development-branch. Make sure to use this skill whenever the user says "let's work on a new feature", "start a branch", "let's experiment", before parallel-dev dispatches AFK slices, or whenever tdd-loop is about to begin a multi-commit slice. Do NOT use for trivial one-commit changes, for read-only investigation, when the user has explicitly opted out of worktrees, or when the host runtime cannot create worktrees (e.g., some sandboxed environments).
+next-skills: [tdd-loop, parallel-dev]
+---
+
+# Using Worktrees
+
+Every non-trivial piece of work gets its own git worktree on its own branch. The point isn't bookkeeping — it's that concurrent subagents in `parallel-dev` would otherwise race on the working tree, and a TDD session in progress shouldn't be polluted by a mid-stream merge from `main`.
+
+This skill is the isolation primitive. It is consumed by `parallel-dev` and `tdd-loop`; it can also be invoked directly when a human (or agent) is starting a multi-commit feature.
+
+## When to use this skill
+
+**Trigger on:**
+
+- `parallel-dev` is about to dispatch 2+ AFK slices (each goes into its own worktree)
+- `tdd-loop` is about to start a slice that will take 2+ commits
+- The user says "start a new branch / feature / experiment"
+- The user wants to compare two approaches side-by-side (one worktree per approach)
+
+**Do NOT trigger on:**
+
+- Trivial single-commit changes (overhead exceeds the benefit)
+- Read-only investigation / debugging without code changes
+- Environments that don't support `git worktree` (some sandboxes)
+- When the user has explicitly opted out (e.g., they prefer the single-tree workflow)
+
+## Core workflow
+
+### Phase 1 — Verify the source baseline is clean
+
+Before creating a worktree, check the source branch is in a sane state:
+
+```bash
+git status --porcelain        # must be empty
+git rev-parse HEAD            # capture current SHA for reference
+<run project's test command>  # must pass
+```
+
+If `git status` shows uncommitted changes, halt: ask the user to commit, stash, or explicitly discard. **Never create a worktree on top of an unclean state** — bugs that surface in the new worktree are then ambiguous between "my new work" and "carried-over dirt."
+
+If tests don't pass on the source, halt: ask the user whether to proceed (sometimes intentional — fixing the failing test IS the work) or fix first.
+
+### Phase 2 — Create the worktree on a new branch
+
+```bash
+git worktree add <path> -b <branch-name>
+```
+
+Conventions:
+
+- **Path:** `../<repo-name>-<short-slug>` (e.g., `../skills-rate-limit-slice-1`) — sibling to the main checkout, not nested inside it
+- **Branch:** `<who>/<short-slug>` for solo work, or `slice-<N>-<short-slug>` for `parallel-dev` AFK slices
+- **Base:** the current HEAD by default; explicit `<base-ref>` if branching off something other than the current branch
+
+Avoid path patterns inside `.git/` (worktrees stored there are fragile). Avoid nesting worktrees inside the source checkout (confuses tooling).
+
+### Phase 3 — Run project setup in the worktree
+
+Each worktree is a fresh checkout. Run whatever the project needs:
+
+```bash
+cd <path>
+<package-manager install command>   # npm ci / pnpm i / pip install -r / bundle install / go mod download
+<copy .env.example to .env>          # if applicable; never copy real .env
+<run migrations / generate code>     # if the project requires it before tests
+```
+
+If setup fails, surface the error and halt — don't try to continue in a half-initialized worktree.
+
+### Phase 4 — Verify clean test baseline in the worktree
+
+Run the test suite in the worktree before any work starts:
+
+```bash
+<run project's test command>
+```
+
+If tests fail in the freshly-created worktree but passed in the source (Phase 1), something is wrong with the setup — usually a missing env var, an uncommitted migration, or a global resource (DB, port) that the source had primed. Halt and resolve.
+
+If tests pass: the worktree is the trusted baseline. **Any failure from this point forward is attributable to the new work, not to the environment.**
+
+### Phase 5 — Hand control to the consuming skill
+
+Return the worktree path and branch name to whatever invoked this skill:
+
+```
+WORKTREE READY
+  path:    ../skills-rate-limit-slice-1
+  branch:  slice-1-rate-limit-pg-function
+  base:    a3355f1
+  clean:   tests passing as of <ISO timestamp>
+```
+
+`parallel-dev` consumes this to dispatch its subagent with `cwd=<path>`. `tdd-loop` consumes this to know where to run RED/GREEN/REFACTOR.
+
+### Phase 6 — Finishing a development branch (when work is complete)
+
+When the consuming skill reports its slice complete, this skill takes over teardown:
+
+1. **Verify all commits land on the branch**
+   ```bash
+   cd <path>
+   git status --porcelain     # must be empty (everything committed)
+   git log <branch> ^<base>   # list of new commits — must be non-empty
+   <run project's test command>  # must pass
+   ```
+
+2. **Rebase onto current `<base>` (usually `main`)**
+   ```bash
+   git fetch origin
+   git rebase origin/<base>
+   ```
+   Resolve conflicts here, not after the merge. Re-run tests post-rebase.
+
+3. **Push the branch**
+   ```bash
+   git push -u origin <branch>
+   ```
+
+4. **Open a PR** (if `gh` is available and the user agreed)
+   ```bash
+   gh pr create --base <base> --head <branch> --fill
+   ```
+   The PR description is auto-populated from the structured commit messages produced by `tdd-loop` and `parallel-dev`.
+
+5. **Remove the worktree** (only after PR is open OR explicit user OK)
+   ```bash
+   cd <source-checkout>
+   git worktree remove <path>
+   git branch -D <branch>   # ONLY if PR is merged, never on local-only branches
+   ```
+   Default is to leave the worktree until the PR merges. The `git worktree remove` step needs explicit user confirmation if the branch hasn't been pushed.
+
+## Anti-patterns this skill guards against
+
+- **Working in the main checkout while subagents run in parallel.** Race condition guaranteed.
+- **Creating a worktree on a dirty source.** Pollutes the new worktree with carried-over edits.
+- **Skipping Phase 4 (baseline test run).** Any later failure becomes ambiguous.
+- **Removing a worktree before the branch is pushed.** Loses commits.
+- **`git branch -D` on an unmerged branch.** Loses commits silently.
+- **Nesting worktrees inside the source checkout.** Confuses path-relative tooling.
+- **Skipping the rebase before push.** Merge conflicts surface in PR review instead of in your local worktree.
+
+## Integration with the chain
+
+- **Consumed by `parallel-dev`** — each AFK slice subagent gets its own worktree (concurrent subagents never share a working tree)
+- **Consumed by `tdd-loop`** — non-trivial multi-commit slices run in a worktree so the source checkout stays available for other work
+- **Standalone** — humans can invoke `/worktree start <slug>` to begin a feature manually
+
+## Compatibility notes
+
+- Codex CLI honors `cwd` per command; worktrees work natively.
+- Some sandboxed Claude Code modes restrict directory creation outside the project root. In those, fall back to single-branch sequential work and emit a one-line note.
+- GitHub Actions runners and CI environments don't need this skill — they get a fresh checkout per job.
+
+## See also
+
+- `parallel-dev` — primary consumer; dispatches AFK slices into worktrees
+- `tdd-loop` — consumer; runs RED/GREEN/REFACTOR inside a worktree
+- `decision-record` — produces ADRs that may live on `main` regardless of the feature worktree (write directly to source checkout, not the worktree)
+- Superpowers' `using-git-worktrees` + `finishing-a-development-branch` — the proven pattern this skill adapts

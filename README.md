@@ -35,13 +35,15 @@ habeebs-skill/
 │   ├── plugin.json          # Claude Code plugin manifest (name, version, deps)
 │   └── marketplace.json     # Marketplace listing — enables `/plugin marketplace add`
 │
-├── skills/                  # The skills themselves (10 total)
+├── skills/                  # The skills themselves (12 total)
 │   ├── prior-art-research/
 │   │   ├── SKILL.md         # Skill definition + frontmatter trigger description
 │   │   └── references/      # Templates and reference material the skill cites
 │   │       ├── extraction-checklist.md
 │   │       ├── output-template.md
-│   │       └── source-tiers.md
+│   │       ├── source-tiers.md
+│   │       ├── recon-checklist.md          # v1.1.0 — Phase 0 reconnaissance
+│   │       └── system-context-template.md  # v1.1.0 — cached repo context
 │   ├── draft-spec/          # → references/spec-template.md
 │   ├── socratic-grill/      # → references/ambiguity-axes.md, grill-output-template.md
 │   ├── decision-record/     # → references/adr-template.md
@@ -49,6 +51,8 @@ habeebs-skill/
 │   ├── deep-modules/        # → references/LANGUAGE.md
 │   ├── parallel-dev/        # → references/dispatch-record-template.md
 │   ├── vertical-slice/      # → references/hitl-vs-afk.md
+│   ├── using-worktrees/     # v1.2.0 — isolation primitive for parallel/multi-commit work
+│   ├── systematic-debugging/ # v1.2.0 — reproduce → minimize → probe → fix → regression test
 │   ├── setup-habeebs-skill/ # → references/issue-tracker-*.md, triage-labels.md, domain.md
 │   └── using-habeebs-skill/
 │
@@ -61,6 +65,8 @@ habeebs-skill/
 │   ├── deepen.md            # /deepen     — invokes deep-modules
 │   ├── parallel.md          # /parallel   — invokes parallel-dev
 │   ├── slice.md             # /slice      — invokes vertical-slice
+│   ├── worktree.md          # /worktree   — invokes using-worktrees      (v1.2.0)
+│   ├── debug.md             # /debug      — invokes systematic-debugging (v1.2.0)
 │   └── groundwork.md        # /groundwork — invokes setup-habeebs-skill
 │
 ├── agents/                  # Subagent prompts (used by prior-art-research Deep mode)
@@ -118,10 +124,12 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 
 | Skill | What it does | Inspired by |
 |---|---|---|
-| `tdd-loop` | Red-green-refactor TDD with vertical slices | Superpowers + mattpocock |
+| `tdd-loop` | Red-green-refactor TDD with vertical slices + two-stage review (spec compliance + code quality) | Superpowers + mattpocock |
 | `deep-modules` | Ousterhout deep module check — find shallow modules, propose deepenings | mattpocock |
-| `parallel-dev` | Dispatches parallel subagents for independent tasks | Superpowers |
+| `parallel-dev` | Dispatches parallel subagents into isolated worktrees, with per-subagent commit discipline | Superpowers + OMC |
 | `vertical-slice` | Decomposes work into tracer-bullet vertical slices (HITL vs AFK) | mattpocock |
+| `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; teardown via finishing-a-development-branch | Superpowers |
+| `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem | Superpowers + OMC trace |
 
 ### Meta
 

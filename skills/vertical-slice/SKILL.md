@@ -1,6 +1,7 @@
 ---
 name: vertical-slice
 description: Decomposes a spec or plan into vertical slices (tracer bullets) — each cutting through ALL integration layers end-to-end, never a horizontal slice of one layer. Tags each slice HITL (human-in-the-loop required mid-slice) or AFK (autonomous-friendly, agent can implement and merge without human gating). Optionally publishes slices to the configured issue tracker (GitHub / Linear / local markdown per setup-habeebs-skill). Make sure to use this skill whenever a plan, spec, PRD, or feature description needs to be broken into work items — especially when the user says "break this down", "create tickets", "what are the steps", or after draft-spec produces a recommendation that needs slicing. Inspired by mattpocock's to-issues. Do NOT use to slice already-sliced work (don't re-decompose), to slice trivial tasks that fit in one slice anyway, or to slice exploration/prototyping work where the design IS the deliverable.
+next-skills: [tdd-loop, parallel-dev, socratic-grill]
 ---
 
 # Vertical Slice

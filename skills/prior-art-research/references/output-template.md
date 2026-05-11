@@ -87,6 +87,20 @@
 
 ---
 
+## Steering reconciliation
+
+(Include this section ONLY if the user supplied steering hints in Phase 1. If no steering, omit the section entirely.)
+
+For each anchor captured in Phase 1, state the verdict: **Honored**, **Honored with caveat**, or **Overridden** — with a one-line reason and citation when overridden. See `references/steering-hints.md` for the override rule.
+
+| Steering slot | Value | Verdict | Reason |
+|---|---|---|---|
+| Anchor | [term] | Honored \| Honored with caveat \| Overridden | [1 line; cite source if Overridden] |
+| Look at | [source] | Honored \| Overridden | [1 line] |
+| Avoid | [term] | Honored \| Overridden | [1 line] |
+
+---
+
 ## Decisions to make next
 
 These feed `socratic-grill` and `draft-spec`:

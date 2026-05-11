@@ -29,11 +29,29 @@ This is convergent research. Generic brainstorming generates novel options; this
 
 ## Core workflow
 
-The skill runs in 7 phases. Phases 1-2 always run. Phases 3-5 scale with mode (Quick vs Deep). Phases 6-7 always run.
+The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phases 3-5 scale with mode (Quick vs Deep). Phases 6-7 always run.
 
-### Phase 1 — Capture context
+### Phase 0 — Reconnaissance (look before you ask)
 
-Don't infer; ask. But don't drown the user in five questions at once — stage them.
+**Discipline:** before asking the user anything, grep the open repo for the answers. The user shouldn't have to tell you what `package.json` already says. The chain is at its weakest when it asks cold questions that the codebase has already answered.
+
+Walk `references/recon-checklist.md` and probe every applicable manifest. Then check for a cached `docs/agents/SYSTEM_CONTEXT.md`:
+
+- **If the file exists AND no tracked manifest has been modified since the file's mtime** (check via `git log --since "<file_mtime>" -- <manifest_paths>`): load it; skip to Phase 1 with the cache populated.
+- **If the file exists BUT manifests changed since:** emit a single banner — `⚠ SYSTEM_CONTEXT.md is stale (X changed since YYYY-MM-DD). Refresh? (Y/n)` — and proceed accordingly. Never overwrite silently.
+- **If the file does NOT exist:** populate it from probe results following `references/system-context-template.md`, write it, and ask the user to confirm/correct the inferred fields before moving on.
+
+The cached file is loaded by every subsequent chain skill (`draft-spec`, `socratic-grill`, `decision-record`) so the rest of the chain inherits the recon for free.
+
+Phase 0 NEVER runs when no repo is open (chat-only mode); Phase 1 absorbs full responsibility for context capture in that case.
+
+### Phase 1 — Fill the gaps
+
+Phase 0 populated most of the structural context. Now ask only what couldn't be inferred — and frame asks as *gap-filling*, not cold interrogation:
+
+> "I see Node 20 + Express + Postgres 16, single VM via Fly.io, no Redis. Two open questions: target scale and whether this is greenfield."
+
+Don't drown the user in five questions at once — stage them. If the cache already answered a question below, skip it.
 
 **First message (2 questions, asked together):**
 

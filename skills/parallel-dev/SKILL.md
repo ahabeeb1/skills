@@ -65,9 +65,37 @@ SUBAGENT N: <name>
   Output:      <exact deliverable location/format>
   Constraints: <what NOT to touch>
   Verification: <how the dispatcher will know the subagent succeeded>
+  Commit:      <required for any subagent that produces persistent artifacts; see "Commit discipline" below>
 ```
 
 The spec should be self-contained. The subagent should not need to ask clarifying questions — if it does, the spec was incomplete.
+
+#### Commit discipline (required for any subagent that writes to the repo)
+
+Every subagent that produces a persistent artifact (code, migration, ADR, spec, slice file, doc) **MUST commit its own work** before returning. Returning a text blob that the parent has to interpret-and-write is forbidden — too lossy, too easy to silently drop, breaks `git blame`.
+
+Each subagent commit message follows this shape:
+
+```
+<dispatch-id>/<subagent-name>: <one-line description>
+
+Dispatched-by: parallel-dev
+Dispatch-id:   <ulid or short hash from Phase 4>
+Subagent:      <name>
+Slice:         #N from <spec-path>   (if applicable)
+Parent-task:   <one line of why this work exists>
+
+What this commit does:
+- <change 1>
+- <change 2>
+
+What this commit does NOT do:
+- <intentionally deferred>
+```
+
+The subagent returns its commit SHA(s) to the dispatcher. The dispatch record (Phase 6) captures all SHAs so the run is fully replayable via `git log --grep="Dispatch-id: <id>"`.
+
+**Research subagents** (those producing structured records to be aggregated into the parent's synthesis, not files in the repo) are exempt — the parent commits the final synthesized output once aggregation completes.
 
 ### Phase 4 — Dispatch
 
@@ -80,10 +108,11 @@ Why same turn: dispatching one at a time defeats the purpose. Some agent runtime
 While subagents run, the dispatcher is idle (or can do bookkeeping). When notifications arrive:
 
 - Capture timing per subagent (`duration_ms`, `total_tokens`) — this is the only chance
+- **Capture commit SHA(s) returned by each artifact-producing subagent** — these populate the dispatch record's audit trail
 - Verify each subagent's output against its spec's verification step
 - Note any subagent that failed, returned partial results, or deviated from spec
 
-**Don't lose partial successes.** If 4 of 5 subagents succeeded, keep their work. Re-dispatch only the failed one with a clearer spec (or fall back to sequential).
+**Don't lose partial successes.** If 4 of 5 subagents succeeded, keep their work (the commits are already in the tree). Re-dispatch only the failed one with a clearer spec (or fall back to sequential).
 
 ### Phase 6 — Aggregate and synthesize
 

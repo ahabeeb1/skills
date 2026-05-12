@@ -106,9 +106,12 @@ Stacked PRs (PR B depends on PR A) are OK if the runtime supports them, but each
 [delete branch (git branch -d <name>)]  ← safe delete; -D requires user confirmation
         ↓
 [delete remote branch if it lingers (gh / git push origin --delete)]
+        ↓
+[Phase 6.5 — post-merge sync]   ← reconciles local default-branch with origin's squash,
+                                   detects ghost commits, cleans up other merged branches
 ```
 
-Never abandon a worktree. Phase 6 of this skill enforces full teardown.
+Never abandon a worktree. Phase 6 enforces full teardown; Phase 6.5 reconciles the local repo with origin after the merge actually lands.
 
 ## Core workflow
 
@@ -226,6 +229,122 @@ When the consuming skill reports its slice complete, this skill takes over teard
    ```
    Default is to leave the worktree until the PR merges. The `git worktree remove` step needs explicit user confirmation if the branch hasn't been pushed.
 
+### Phase 6.5 — Post-merge sync (squash-merge ghost-commit cleanup)
+
+After a PR is **squash-merged** on origin, the local default branch carries the original feature commits whose *content* is now duplicated by origin's squash commit. `git pull origin <default>` then conflicts on every release. This sub-phase auto-resolves the divergence — but only when it's unambiguously a squash-ghost case. Genuine local-ahead work always halts.
+
+**Triggers:**
+
+- Immediately after step 5 of Phase 6, once the PR has been merged on origin
+- Start of any subsequent chain run when `git fetch origin` reveals default-branch divergence
+- Direct invocation via `/sync`
+
+**Workflow:**
+
+1. **Fetch + prune**
+   ```bash
+   git fetch origin --prune
+   ```
+
+2. **Resolve the default branch**
+   ```bash
+   default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+   ```
+   If `origin/HEAD` is unset, fall back to `main` and emit a one-line note.
+
+3. **Check default-branch divergence**
+   ```bash
+   git checkout "$default_branch"
+   ahead=$(git rev-list --count origin/"$default_branch"..HEAD)
+   behind=$(git rev-list --count HEAD..origin/"$default_branch")
+   ```
+   - `ahead=0`: already in sync. Skip to step 6.
+   - `ahead>0, behind=0`: local has work origin doesn't. **Halt** — this is real local-only work the user must push or discard; never auto-reset it.
+   - `ahead>0, behind>0`: divergence. Run step 4 (ghost-commit detection).
+
+4. **Ghost-commit detection (the heart of the sub-phase)**
+
+   For each local-ahead commit (from `git log origin/"$default_branch"..HEAD --format=%H`), compare its tree to recent origin commits:
+   ```bash
+   for c in $(git log origin/"$default_branch"..HEAD --format=%H); do
+     local_tree=$(git rev-parse "$c^{tree}")
+     matched=
+     for o in $(git log origin/"$default_branch" -n 10 --format=%H); do
+       if [ "$(git rev-parse "$o^{tree}")" = "$local_tree" ]; then
+         matched="$o"; break
+       fi
+     done
+     if [ -z "$matched" ]; then
+       echo "UNMATCHED: $c (no tree-equivalent in origin)"; UNMATCHED=1
+     else
+       echo "GHOST: $c ↔ $matched"
+     fi
+   done
+   ```
+   - **Every local-ahead commit has a tree-match** → safe ghost-commit case. Proceed to step 5.
+   - **Any local-ahead commit has no tree-match** → genuine local divergence. **Halt**, list the unmatched commits, instruct the user.
+
+   The `-n 10` window covers typical squash-merge cases; raise via `/sync --squash-window=N` if needed.
+
+5. **Safe-reset (only when step 4 confirms ghost-commit case)**
+
+   Print a one-liner before resetting so the user sees what's about to happen:
+   ```
+   Detected N ghost commits from squash-merge. Origin contains the same content.
+   Resetting local <default_branch> → origin/<default_branch>.
+   ```
+   Then:
+   ```bash
+   git reset --hard origin/"$default_branch"
+   ```
+   The reset is destructive in principle but safe here because every local-only commit's content is preserved in origin's squash.
+
+6. **Cleanup merged feature branches**
+
+   For each local branch other than `$default_branch`:
+   ```bash
+   for b in $(git branch --format='%(refname:short)' | grep -v "^$default_branch\$"); do
+     # Prefer gh; fall back to ancestry check.
+     merged=
+     if command -v gh >/dev/null 2>&1; then
+       state=$(gh pr list --state merged --head "$b" --json number,state -q '.[0].state' 2>/dev/null)
+       [ "$state" = "MERGED" ] && merged=1
+     fi
+     if [ -z "$merged" ] && git branch --merged origin/"$default_branch" | grep -q "^[ *]*$b\$"; then
+       merged=1   # fast-forward / rebase merge; misses squash but harmless when ghost-reset already ran in step 5
+     fi
+     [ -z "$merged" ] && continue
+
+     # Worktree first (must precede branch delete).
+     wt=$(git worktree list --porcelain | awk -v b="$b" '$1=="worktree"{p=$2} $1=="branch" && $2=="refs/heads/" b {print p}')
+     [ -n "$wt" ] && git worktree remove "$wt"
+
+     git branch -d "$b"                     # safe-delete; -D never
+     git push origin --delete "$b" 2>/dev/null || true   # no-op if already deleted
+   done
+   ```
+
+7. **Prune stale worktree records**
+   ```bash
+   git worktree prune
+   ```
+
+8. **One-line summary**
+   ```
+   Synced <default_branch> ← origin (reset N ghost commits). Cleaned M merged branch(es).
+   ```
+
+**Halt conditions (never auto-resolve):**
+
+- Step 3 found `ahead>0, behind=0` (local-only work without remote advancement)
+- Step 4 found a commit with no tree-match in origin (genuine local divergence)
+- A worktree contains uncommitted changes (would lose work) — refuse `git worktree remove`
+- Mid-operation state present: `.git/MERGE_HEAD`, `.git/REBASE_HEAD`, `.git/CHERRY_PICK_HEAD`, or `.git/rebase-apply/`
+- `git fetch` failed (no network / auth issue) — Phase 6.5 must wait
+- Detached HEAD on the source checkout — halt and ask user to switch
+
+On any halt, print the diagnosis + the local-only commit list + instructions on next steps. Never destroy work.
+
 ## Anti-patterns this skill guards against
 
 - **Working in the main checkout while subagents run in parallel.** Race condition guaranteed.
@@ -235,12 +354,15 @@ When the consuming skill reports its slice complete, this skill takes over teard
 - **`git branch -D` on an unmerged branch.** Loses commits silently.
 - **Nesting worktrees inside the source checkout.** Confuses path-relative tooling.
 - **Skipping the rebase before push.** Merge conflicts surface in PR review instead of in your local worktree.
+- **Manually fighting squash-merge ghost commits.** If `git pull origin <default>` conflicts after a PR merge, run Phase 6.5 (or `/sync`) rather than resolving the conflict by hand. The ghost commits' content is already on origin; manual resolution risks introducing real drift.
+- **Auto-resetting on `ahead>0, behind=0`.** That signals genuine local-only work; resetting would lose it. Phase 6.5 halts in that case by design.
 
 ## Integration with the chain
 
 - **Consumed by `parallel-dev`** — each AFK slice subagent gets its own worktree (concurrent subagents never share a working tree)
 - **Consumed by `tdd-loop`** — non-trivial multi-commit slices run in a worktree so the source checkout stays available for other work
 - **Standalone** — humans can invoke `/worktree start <slug>` to begin a feature manually
+- **Standalone sync** — humans can invoke `/sync` after any PR merge to reconcile local default-branch with origin and clean up merged feature branches; jumps directly to Phase 6.5
 
 ## Compatibility notes
 

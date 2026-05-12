@@ -13,6 +13,43 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.5.3] — 2026-05-12
+
+Closes the squash-merge ghost-commit gap. After every PR squash-merge, local default-branch carries the original feature commits whose content is now duplicated by origin's squash, so `git pull origin <default>` conflicts on every release. v1.5.3 adds `using-worktrees` Phase 6.5 + `/sync` slash command that detects the case via tree-equivalence and auto-resolves with `git reset --hard origin/<default>` when it's unambiguously a ghost-commit case. Genuine local-only work always halts. Additive only — no contract changes.
+
+### Added
+
+- **`using-worktrees` Phase 6.5 — Post-merge sync.** Detects ghost-commit divergence after a squash-merge and reconciles local default-branch with origin. Triggers: end of Phase 6 (after the PR is merged), start of any subsequent chain run when divergence is detected, or direct invocation via `/sync`. Ghost-commit detection compares tree SHAs between local-ahead commits and the recent origin window (default 10 commits, configurable via `/sync --squash-window=N`). Safe-reset only fires when **every** local-ahead commit has a tree-match in origin; otherwise halts and asks the user. Also auto-cleans merged feature branches via `gh pr list --state merged` (or `git branch --merged` fallback), removing the worktree first.
+  - **Why:** User raised this on 2026-05-12 — "I am constantly seeing merge conflicts with squashing and pushing; our skill should auto-resolve things like that." Prior-art-research confirmed the gap is unowned: Superpowers' `finishing-a-development-branch` handles pre-merge cleanup (4 options + worktree removal) but doesn't address post-squash-merge ghost commits; their `using-git-worktrees` is pre-work setup only; their TDD skill doesn't specify commit conventions. mattpocock/skills doesn't touch this either. v1.5.3 is the first plugin to solve it natively.
+
+- **`/sync` slash command.** Stand-alone entry point that jumps directly to Phase 6.5. Use after any PR merge from any session, even if you didn't run the chain to produce the merge. Halt conditions documented inline so failures are diagnostic, not destructive.
+  - **Why:** Phase 6.5 fires across sessions (the merge typically happens at end-of-PR, the next pull is on a later session), so a dedicated entry point matters. Mirrors the cadence of `/research`, `/spec`, `/grill` etc. — discoverable via slash menu.
+
+### Changed
+
+- **`using-worktrees` Lifecycle diagram** updated to show Phase 6.5 as the final stage after the merge actually lands on origin. The diagram now distinguishes "PR merge happens on GitHub" from "local repo reconciles with the new origin state."
+- **`using-worktrees` Anti-patterns** gain two entries: "Manually fighting squash-merge ghost commits" (run Phase 6.5 instead of resolving by hand) and "Auto-resetting on `ahead>0, behind=0`" (signals real local work; Phase 6.5 halts by design).
+- **`docs/agents/SYSTEM_CONTEXT.md`** — first use of the v1.5.2 steering-flush rule. The v1.5.0-era `Active steering` block (environment binding / greenfield / look-at OMC etc.) is now under `Last reconciliation outcome` along with today's post-merge-cleanup outcome. Active steering reads `(none — flushed YYYY-MM-DD)` until the next research run captures new anchors.
+
+### Plugin metadata
+
+- `version`: 1.5.2 → 1.5.3 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- New slash command: `/sync`
+
+### Why this is a patch, not a minor
+
+No new skills (Phase 6.5 lives inside the existing `using-worktrees` skill), no breaking contract changes, no required setup. The flush of `SYSTEM_CONTEXT.md`'s `Active steering` block is a documentation-format dogfood of the v1.5.2 rule, not a contract change. Repos with active steering they want to preserve can copy it back manually before the next chain run (per the v1.5.2 opt-in-persistence rule).
+
+### Compatibility
+
+Fully backward compatible with v1.5.x. Repos that haven't experienced the squash-merge pain see no change — Phase 6.5 simply runs through with `ahead=0` and reports a one-line "already in sync." Repos with stale ghost commits get auto-resolved on next `/sync` invocation.
+
+### Dogfood
+
+This release was itself produced by the chain: `prior-art-research` (Quick mode, targeted at Superpowers' commit/PR automation, steered against pretending OMC composition could help) → recommendation skipping `draft-spec` and `socratic-grill` (the slice batch was small and unambiguous) → implementation. The research output is preserved in conversation; the steering reconciliation outcome lands in `SYSTEM_CONTEXT.md`'s `Last reconciliation outcome` section per v1.5.2.
+
+---
+
 ## [1.5.2] — 2026-05-12
 
 Locks the "habeebs-skill is standalone" rule across every discovery surface, and stops `Active steering` from bleeding across unrelated chain runs. Both gaps surfaced from a v1.5.0-style self-audit on the OMC→habeebs-skill transition — the audit recommended OMC composition and the user rejected it. ADR-0002 captures the rejection so future audits don't re-litigate.

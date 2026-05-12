@@ -1,7 +1,7 @@
 ---
 name: decision-record
 description: Captures a chosen architecture as an Architectural Decision Record (ADR) in the repo. Writes context, decision, alternatives considered (from research), consequences, and revisit triggers. The resulting ADR becomes Tier 0 prior art for future invocations of prior-art-research. Make sure to use this skill whenever a non-trivial architectural decision has been made — after socratic-grill resolves the open questions, before implementation starts, or whenever the user says "let's lock this in" or "let's document this." Do NOT use to document trivial choices (file naming, formatter config) or to write code documentation (that's docstrings).
-next-skills: [tdd-loop]
+next-skills: [write-plan, tdd-loop]
 ---
 
 # Decision Record
@@ -79,7 +79,9 @@ If `docs/agents/adrs/README.md` (or equivalent) exists, append the new ADR to it
 ### Phase 7 — Hand off
 
 ```
-HANDOFF: implementation ready — ADR locked. Spec can now enter `tdd-loop` per slice in dependency order.
+HANDOFF: implementation ready — ADR locked.
+  Next: `write-plan` to sequence slices into phases with acceptance gates, OR (if the slice list is trivial and ordering is obvious) skip directly to `tdd-loop`.
+  Decision rule: invoke `write-plan` when there are 3+ slices, when ordering isn't obvious, or before any `parallel-dev` dispatch.
 HANDOFF: future research — this ADR is now Tier 0 prior art. Future `prior-art-research` invocations on adjacent problems should check it.
 ```
 

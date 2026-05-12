@@ -1,7 +1,7 @@
 ---
 name: socratic-grill
 description: Socratic ambiguity-reduction skill. Walks through every open question and ambiguous decision in a spec or design, grilling the user across structured dimensions (performance, failure modes, scale, concurrency, migration, reversibility, observability) until each decision exits with a concrete answer or an explicitly-accepted unknown. Make sure to use this skill whenever a spec has open questions, when a decision feels hand-wavy, when the user says "we'll figure it out later," or after draft-spec produces a "HANDOFF: grill ready" line. Also use proactively when you notice implicit assumptions in any plan. Do NOT use to brainstorm or generate options (that's prior-art-research) — this is the convergent ambiguity-killer.
-next-skills: [decision-record, draft-spec]
+next-skills: [decision-record, draft-spec, agent-factors-check]
 ---
 
 # Socratic Grill
@@ -39,6 +39,10 @@ Collect every ambiguous item from the inputs:
 4. Decisions where the spec lists a choice but no reasoning
 
 Show the user the list and ask if you missed anything. The list IS the grilling agenda.
+
+**Domain extension — agent products:** If the spec describes building an agent / assistant / copilot / chatbot / LLM workflow / RAG system (anything where an LLM call is on the critical path), invoke `agent-factors-check` before Phase 2. It returns 6–13 additional Socratic questions targeting the gaps the standard 7 axes don't cover (tool-call schemas, state unification, pause/resume APIs, human-as-tool, trigger surfaces, pre-fetch). Interleave those into the agenda.
+
+If the spec is a generic CRUD / web / mobile app with no LLM orchestration, skip the factor check.
 
 ### Phase 2 — Grill each item against the ambiguity axes
 
@@ -115,5 +119,6 @@ HANDOFF: re-research needed — the grill revealed a fundamental issue with the 
 - `draft-spec` — upstream; produces specs with open questions this skill resolves
 - `prior-art-research` — fallback if grilling reveals a fundamental architectural problem
 - `decision-record` — downstream; captures grilled decisions as ADRs
+- `agent-factors-check` — domain extension invoked from Phase 1 when the spec is for an agent product
 - `references/ambiguity-axes.md` — the 7 dimensions to grill on
 - `references/grill-output-template.md` — output format

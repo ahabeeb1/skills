@@ -175,15 +175,16 @@ These are signs the slice is wrong, not that TDD is wrong:
 
 ## Integration with the chain
 
-- **Upstream:** `decision-record` locks the ADR; `draft-spec` produces slices in dependency order
+- **Upstream:** `decision-record` locks the ADR; `draft-spec` produces slices in dependency order; `write-plan` sequences slices into phases with acceptance gates (the plan, when present, is the authoritative slice order — supersedes spec-order for execution)
 - **Mid-loop:** `deep-modules` is invoked at the REFACTOR step
-- **Parallel dispatch:** `parallel-dev` runs AFK slices concurrently
-- **Downstream:** as slices complete, the spec status moves from "In-progress" → "Done"
+- **Parallel dispatch:** `parallel-dev` runs AFK slices concurrently, dispatching pgroups defined by `write-plan`
+- **Downstream:** as slices complete, mark the slice "Done" in the plan; when all slices in a phase are done, evaluate the phase gate before starting the next phase's slices
 
 ## See also
 
 - `draft-spec` — produces the slices this skill consumes
 - `decision-record` — locks the architecture this skill implements
+- `write-plan` — sequences slices into phases with acceptance gates; defines the order this skill executes in
 - `deep-modules` — invoked at the refactor step
 - `parallel-dev` — dispatches parallel TDD loops on independent slices
 - `vertical-slice` — defines what makes a slice implementable

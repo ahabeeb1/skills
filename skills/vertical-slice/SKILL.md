@@ -48,14 +48,15 @@ The first slice should be the narrowest version that proves the path. Not the po
 
 Why: you learn the most by getting one path through the full stack working. The edge cases / polish are easier to slice after the path exists.
 
-### HITL vs AFK
+### Slice labels (3 values)
 
-Each slice is labeled:
+Each slice is labeled with exactly one of:
 
-- **HITL (Human-In-The-Loop):** human input is required mid-slice. Examples: naming a domain concept that wasn't clear from the spec, choosing between two implementation seams that the slice surfaces, making an architectural decision the spec deferred.
-- **AFK (Away From Keyboard):** the slice can be implemented and merged by an agent with no human checkpoint. The spec is concrete enough; the test strategy is clear; the acceptance criteria are mechanical.
+- **`AFK:full-auto`** — no human in the loop. Agent implements, tests, commits autonomously. Dispatchable to `parallel-dev`.
+- **`HITL:inline`** — human in the *active chat session* answers a question mid-slice (e.g., domain naming, deferred architectural choice). Cheap, conversational pause.
+- **`HITL:approval-gate`** — human approves *out-of-band* before the slice may proceed (Slack/email/queue). Use when the approver is offline, when a paper trail is required (compliance, billing), or when the approver is named by org chart. Canonical reference impl: [humanlayer](https://github.com/humanlayer/humanlayer).
 
-Default to AFK unless something specific requires human attention. AFK slices can be dispatched to `parallel-dev` if independence holds.
+Default to `AFK:full-auto` unless something specific requires human attention. The full decision tree (when to pick which, borderline cases, runtime semantics) lives in `references/hitl-vs-afk.md`.
 
 ## Core workflow
 
@@ -93,23 +94,34 @@ Aim for:
 
 If you can't get a slice under 1-2 days, decompose it further. If you have more than 10 slices, you're either too granular or the feature should be multiple features.
 
-### Phase 4 — Label HITL / AFK per slice
+### Phase 4 — Label each slice (one of three values)
 
-For each slice, ask: does a human need to intervene mid-slice?
+For each slice, ask first: **does a human need to intervene mid-slice?**
 
-**HITL signals:**
+**If no →** `AFK:full-auto`. Mechanical work: write code, run tests, ship. All decisions pre-made; test strategy clear; acceptance criteria mechanical.
+
+**If yes →** distinguish by *where* the human is:
+
+| Signal | Label |
+|---|---|
+| Decision-maker is in the active chat session, can answer conversationally | `HITL:inline` |
+| Decision-maker is offline / different org / org-chart approver / requires paper trail | `HITL:approval-gate` |
+
+**`HITL:inline` signals:**
 - Architectural decision the spec didn't pre-resolve (slice will surface it)
 - Naming a domain concept that wasn't yet named
 - Choosing between two paths the spec lists as alternatives
-- Approving cost / performance trade-off discovered during implementation
 
-**AFK signals:**
-- Mechanical: write code, run tests, ship
-- All decisions pre-made
-- Test strategy clear
-- Acceptance criteria mechanical
+**`HITL:approval-gate` signals:**
+- Production data migration / irreversible operation
+- Spend / billing decision
+- Compliance / legal / security sign-off
+- External team coordination (SRE provision, vendor enablement)
+- Production canary promotion
 
-Default to AFK. Mark HITL only when something genuinely needs human input.
+When both `inline` and `approval-gate` apply, pick `approval-gate` — the audit-trail need is the stronger signal.
+
+Default to `AFK:full-auto`. Mark `HITL:*` only when something genuinely needs human input. The full decision tree, borderline cases, and runtime semantics live in `references/hitl-vs-afk.md`.
 
 ### Phase 5 — Order by dependency
 
@@ -122,7 +134,7 @@ Identify parallelizable groups: any set of AFK slices with no dependencies on ea
 For each slice, produce the entry per `draft-spec`'s spec template:
 
 ```
-### Slice N — <name> (<HITL|AFK>)
+### Slice N — <name> (<AFK:full-auto | HITL:inline | HITL:approval-gate>)
 
 **Description:** <end-to-end behavior in 1-2 sentences>
 
@@ -133,6 +145,10 @@ For each slice, produce the entry per `draft-spec`'s spec template:
 **Test strategy:** <Unit|Integration|E2E|Manual> — at <path/to/test_file>
 
 **Blocked by:** None | #N
+
+**Gate detail:** (required for HITL:* slices)
+- For HITL:inline — name the question the human will answer
+- For HITL:approval-gate — name the approver AND the channel (e.g., "On-call DBA via Slack #data-eng")
 
 **Notes:** <optional>
 ```
@@ -145,7 +161,10 @@ If `setup-habeebs-skill` has configured an issue tracker, publish each slice as 
 - Linear: via Linear MCP or API
 - Local: `.scratch/slices/<N>-<slug>.md`
 
-Use the configured triage labels (see `setup-habeebs-skill`). HITL slices get the `needs-human` label; AFK slices get `afk-ready`.
+Use the configured triage labels (see `setup-habeebs-skill`):
+- `AFK:full-auto` slices → `afk-ready`
+- `HITL:inline` slices → `needs-human-inline`
+- `HITL:approval-gate` slices → `needs-approval` plus a label naming the approving team (e.g., `needs-approval/dba`)
 
 For dependency ordering, publish in topological order so blocker references can use real issue IDs.
 
@@ -175,7 +194,8 @@ For each slice, verify:
 - [ ] Has measurable acceptance criteria (at least 2 checkboxes)
 - [ ] Has a test strategy (Unit / Integration / E2E / Manual)
 - [ ] Has a `Blocked by:` field (even if "None")
-- [ ] Is labeled HITL or AFK with reason
+- [ ] Is labeled `AFK:full-auto`, `HITL:inline`, or `HITL:approval-gate`
+- [ ] For `HITL:*` slices: gate detail names a SPECIFIC role (e.g., "on-call DBA", "eng-manager + PM quorum") and a SPECIFIC channel (Slack channel, email alias, humanlayer route). Reject vague approvers: "the team", "anyone", "whoever's around", "engineering" without a named role.
 - [ ] Doesn't secretly depend on a later slice
 
 If any item fails, refine the slice before publishing.
@@ -184,8 +204,9 @@ If any item fails, refine the slice before publishing.
 
 - **Invoked by `draft-spec`** in Phase 3 (decomposition)
 - **Optionally publishes to** the issue tracker configured by `setup-habeebs-skill`
-- **AFK slices flow into** `tdd-loop` (potentially via `parallel-dev`)
-- **HITL slices flow into** `socratic-grill` to resolve the human-input question, then to `tdd-loop`
+- **`AFK:full-auto` slices flow into** `tdd-loop` (potentially via `parallel-dev`)
+- **`HITL:inline` slices flow into** `socratic-grill` to resolve the human-input question, then to `tdd-loop`
+- **`HITL:approval-gate` slices flow into** an approval channel (Slack/email/humanlayer); the slice is blocked in `tdd-loop` until approval returns
 
 ## See also
 

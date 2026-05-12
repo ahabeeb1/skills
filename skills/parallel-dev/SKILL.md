@@ -22,7 +22,7 @@ Orchestration primitive for parallel subagent dispatch. The art is in proving in
 
 - Sequential work (slice #2 depends on slice #1 — run them in order)
 - Work touching the same files (merge conflicts, lost updates)
-- HITL slices (each needs a human checkpoint — parallelism doesn't compose with that)
+- `HITL:inline` or `HITL:approval-gate` slices (each needs a human checkpoint — parallelism doesn't compose with that). Only `AFK:full-auto` slices are eligible for parallel dispatch.
 - Tasks where the cost of coordination + verification exceeds the time saved
 - Single-task work (parallelism overhead is wasted)
 
@@ -143,7 +143,7 @@ Quick decision matrix for the most common cases:
 | Refactor: each subagent works on a separate module's tests | Usually | Check for shared test fixtures |
 | Refactor: each subagent works on a separate module's code | Maybe | Check for shared types/exports |
 | Bug fix: each subagent fixes a different bug in the same file | NO | File overlap |
-| Implementation: each subagent implements a different AFK slice | Yes if slices are truly vertical | Re-check the slice independence |
+| Implementation: each subagent implements a different `AFK:full-auto` slice | Yes if slices are truly vertical | Re-check the slice independence. HITL:* slices are NEVER eligible. |
 | Doc generation: each subagent generates docs for a different module | Usually | Check that they're not all writing to the same index |
 | Migration: each subagent migrates a different table | Usually | Check that they don't share foreign-key dependencies in the migration step |
 

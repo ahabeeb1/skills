@@ -9,6 +9,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | # | Title | Status | Date |
 |---|---|---|---|
 | 0001 | [Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol](./0001-environment-binding-via-system-context.md) | Accepted | 2026-05-11 |
+| 0002 | [habeebs-skill is standalone — no runtime-substrate composition](./0002-habeebs-skill-standalone.md) | Accepted | 2026-05-12 |
 
 ## Conventions
 

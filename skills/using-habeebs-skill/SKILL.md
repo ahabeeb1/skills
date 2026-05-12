@@ -54,6 +54,16 @@ habeebs-skill addresses each:
 2. **Socratic grilling surfaces assumptions.** Every ambiguous decision becomes explicit before code is written.
 3. **Deep modules + vertical slices preserve architecture.** Each slice cuts through all layers end-to-end. Each refactor pass deepens modules.
 
+## Standalone by design (ADR-0002)
+
+habeebs-skill is **one-time-use per feature, with no runtime dependencies.** The chain runs once for a given feature, produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code, tests), and ends. It does not depend on oh-my-claudecode, claude-mem, memsearch, vector stores, MCP servers, or any external runtime substrate. `parallel-dev` is the only in-chain parallelism primitive — it dispatches sub-agents within a single chain run via git worktrees, not a persistent worker pool.
+
+If a feature being built by the chain has long-running runtime concerns (queues, workers, sessions, dispatch), those are properties of the product spec — the chain captures them in the spec / ADR / plan and hands off to whatever production runtime the product chooses. They are NOT properties of habeebs-skill itself.
+
+Users who also run OMC, claude-mem, Superpowers, etc. can do so. Those tools are orthogonal — they don't coordinate with habeebs-skill and habeebs-skill doesn't read or write their state.
+
+See [`docs/agents/adrs/0002-habeebs-skill-standalone.md`](../../docs/agents/adrs/0002-habeebs-skill-standalone.md).
+
 ## When to skip the chain
 
 The chain is overkill for:

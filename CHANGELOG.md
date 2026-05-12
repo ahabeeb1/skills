@@ -13,6 +13,44 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.5.2] — 2026-05-12
+
+Locks the "habeebs-skill is standalone" rule across every discovery surface, and stops `Active steering` from bleeding across unrelated chain runs. Both gaps surfaced from a v1.5.0-style self-audit on the OMC→habeebs-skill transition — the audit recommended OMC composition and the user rejected it. ADR-0002 captures the rejection so future audits don't re-litigate.
+
+### Added
+
+- **ADR-0002: habeebs-skill is standalone — no runtime-substrate composition** (`docs/agents/adrs/0002-habeebs-skill-standalone.md`). The repo's second ADR. Documents the rejection of OMC composition (and by extension claude-mem, memsearch, vector stores, MCP-as-state, native runtime substrates). The "Alternatives considered" section captures all four paths considered, including the verbatim v1.5.0-audit recommendation as the rejected primary alternative.
+  - **Why:** The OMC composition question recurs every audit. ADR-0001 already established in-repo markdown as load-bearing; ADR-0002 is the corollary that locks "no external runtime, period." Together they form a stable posture: project facts live in `docs/agents/`, the chain has no runtime concerns of its own, multi-harness portability is preserved by construction.
+
+- **Plan 0002: `docs/agents/plans/0002-habeebs-skill-standalone.md`** — first plan ever produced under `write-plan`'s convention (`<NNNN-slug>.md`, ADR-paired). 9 slices across 3 phases (lock rule → add steering-flush → wire and release). Slice #9 is `HITL:inline` for the tag-and-release gate; all others are `AFK:full-auto`.
+
+- **Steering flush at Phase 7.** `skills/prior-art-research/references/steering-hints.md` gains a "Flush at end of chain" section; `skills/prior-art-research/SKILL.md` Phase 7 references it. Default: move `## Active steering` → `## Last reconciliation outcome` after handoff lines fire. Persistence across a multi-chain campaign is opt-in.
+  - **Why:** v1.3.0 added optional steering anchors and made them inheritable through the chain via `SYSTEM_CONTEXT.md`. The inheritance worked, but the lack of a flush rule meant anchors persisted across topic switches — the next unrelated `prior-art-research` run silently inherited stale weighting. The 2026-05-12 self-audit caught its own steering biasing the search; closing the loop.
+
+### Changed
+
+- **`CLAUDE.md`** — "What this plugin is NOT" first bullet rewritten. The v1.5.1 wording ("Not a replacement for oh-my-claudecode — it composes with OMC's orchestration") contradicted ADR-0002 and was the root cause of the audit-loop. New wording leads with **Standalone by design (ADR-0002)** and is explicit about orthogonality (other tools can coexist) vs coupling (no dependency).
+- **`skills/using-habeebs-skill/SKILL.md`** — new "Standalone by design (ADR-0002)" section above "When to skip the chain." Auto-loads with every chain invocation, so every agent sees the rule.
+
+### Plugin metadata
+
+- `version`: 1.5.1 → 1.5.2 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+
+### Why this is a patch, not a minor
+
+No new skills, no new behavior in existing skills (the steering-flush rule is documentation-only — Phase 7 already fired handoff lines; the flush is a new instruction inside Phase 7, not a new contract surface for downstream skills). Pure clarification + locked decision. Backward compatible with v1.5.x — the flush only affects `SYSTEM_CONTEXT.md` files that have `## Active steering` content, and the move-to-`Last reconciliation outcome` is non-destructive.
+
+### Compatibility
+
+Fully backward compatible with v1.5.1. Repos that have `SYSTEM_CONTEXT.md` with active steering get the flush behavior on the next `prior-art-research` Phase 7. Repos without steering see no change. No version bump required in any downstream config.
+
+### Out of scope (deferred to v1.6.0)
+
+- **Self-bootstrap of this repo.** The audit surfaced that `setup-habeebs-skill` has never been run here — `docs/agents/CONTEXT.md`, `triage-labels.md`, `issue-tracker.md`, and the `## Agent skills` block in `AGENTS.md`/`CLAUDE.md` don't exist. Tracked as v1.6.0 candidate; substantial enough to warrant its own release.
+- **Plan-file naming convention final pick.** v1.5.2 establishes `<NNNN-slug>.md` (ADR-paired) by writing the first plan that way; the question of whether to also support `YYYY-MM-DD-<slug>.md` (Superpowers-style date prefix) is deferred. Not blocking; current naming is precedent now.
+
+---
+
 ## [1.5.1] — 2026-05-11
 
 Wiring catch-up for the v1.4.0 skills (`write-plan`, `agent-factors-check`). These were committed in v1.4.0 with SKILL.md + references + dogfood tests, but the surrounding discovery surfaces — slash commands, README skill tables, CLAUDE.md chain diagram, `using-habeebs-skill` chain diagram, `plugin.json` keyword sync — weren't included. Originally planned as v1.4.1 but the wiring PR was open while v1.5.0 merged first, so this becomes v1.5.1 to preserve semver order.

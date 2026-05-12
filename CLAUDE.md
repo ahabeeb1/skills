@@ -23,7 +23,7 @@ Each skill produces output that the next skill consumes. The handoff lines at th
 
 ## What this plugin is NOT
 
-- Not a replacement for oh-my-claudecode — it composes with OMC's orchestration (different domain)
+- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on oh-my-claudecode, claude-mem, memsearch, vector stores, MCP servers, session-state directories, or any other runtime substrate. The chain is one-time-use per feature: it runs once (`research → spec → grill → record → plan → tdd`), produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code + tests), then ends. Users who *also* run OMC, claude-mem, or Superpowers can — those tools are orthogonal, not coupled. Don't import them.
 - Not a complement to Superpowers or mattpocock/skills — it consolidates and re-sequences their TDD, deep-module, vertical-slice, parallel-dev, worktree, and systematic-debugging patterns into the chain; you don't need them installed alongside
 - Not a replacement for Context7 — it uses Context7 as a documentation source during `prior-art-research`
 - Not an automatic code writer — implementation still happens through TDD

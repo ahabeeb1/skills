@@ -92,6 +92,30 @@ Steering is written into `docs/agents/SYSTEM_CONTEXT.md` under an `## Active ste
 
 If steering changes mid-chain (user revises), update SYSTEM_CONTEXT in place — the chain reads it on every skill activation.
 
+## Flush at end of chain
+
+Anchors are sticky by design within one chain run, but they must NOT bleed across unrelated runs. After `prior-art-research` Phase 7 handoff lines fire — and the chain either continues (the next skill in the chain takes over) or terminates (no spec produced) — the `## Active steering` section in `SYSTEM_CONTEXT.md` is moved to `## Last reconciliation outcome`:
+
+```markdown
+## Active steering
+
+(none — flushed YYYY-MM-DD; last outcome below)
+
+## Last reconciliation outcome
+
+(YYYY-MM-DD — topic: <one-line summary>)
+- Anchor "<text>": Honored / Honored with caveat / Overridden — <one-line rationale>
+- Anchor "<text>": ...
+- Look-at "<source>": ...
+- Avoid "<text>": ...
+```
+
+This preserves audit trail (so future readers can see what was tried) without leaving the anchors armed. The next `prior-art-research` run starts unweighted unless the user supplies new steering.
+
+**When the user wants steering to persist across a multi-chain campaign** (e.g., a v1.6.0 redesign spanning several research passes on related sub-questions), they should say so explicitly in the next chain's Phase 1. The agent then copies the relevant anchors from `Last reconciliation outcome` back into `Active steering`. The default is flush; persistence is opt-in.
+
+If a chain terminates without producing a Phase 6 report (declined / halted), still flush. Stale anchors with no reconciliation are worse than no anchors at all.
+
 ## Anti-patterns
 
 - **Treating anchors as rules.** Defeats the purpose. The agent's job is to find the best pattern; anchors say "look here first," not "you must pick this."

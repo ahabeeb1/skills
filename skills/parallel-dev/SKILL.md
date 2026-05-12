@@ -57,19 +57,29 @@ Document the independence check in the dispatch record. If you're uncertain, pre
 
 ### Phase 3 — Compose the dispatch
 
-For each subagent, produce a complete spec:
+For each subagent, produce a complete spec. The canonical input shape (formal JSON schema in `references/dispatch-record-template.md`) is:
 
 ```
 SUBAGENT N: <name>
-  Task:        <what to do, in 1-3 sentences>
-  Input:       <files / data / context the subagent needs>
-  Output:      <exact deliverable location/format>
-  Constraints: <what NOT to touch>
-  Verification: <how the dispatcher will know the subagent succeeded>
-  Commit:      <required for any subagent that produces persistent artifacts; see "Commit discipline" below>
+  dispatch_id:      <ulid or short hash from Phase 4>
+  subagent_name:    <name>
+  task:             <what to do, in 1-3 sentences>
+  input_files:      <[paths] the subagent reads>
+  output_path:      <exact deliverable location, when applicable>
+  constraints:      <[what NOT to touch]>
+  verification:     <how the dispatcher will know the subagent succeeded>
+  worktree_path:    <required for artifact-producing subagents; see Phase 4>
+  branch:           <required for artifact-producing subagents; see Phase 4>
+  context_preamble: <REQUIRED — full content of docs/agents/SYSTEM_CONTEXT.md
+                    per ADR-0004 Part 3; injected into the subagent's prompt
+                    so subagents inherit the parent's environment binding
+                    rather than re-running Phase 0 reconnaissance>
+  commit:           <required for any subagent that produces persistent artifacts; see "Commit discipline" below>
 ```
 
-The spec should be self-contained. The subagent should not need to ask clarifying questions — if it does, the spec was incomplete.
+The spec should be self-contained. The subagent should not need to ask clarifying questions — if it does, the spec was incomplete (which is a `STATUS: NEEDS_CONTEXT` return per the contract in `## Return contract` below).
+
+**Context preamble is mandatory** (ADR-0004 Part 3). Without it, subagents drift from the parent's environment binding, re-run Phase 0 reconnaissance, and burn tokens for no reason. The dispatcher reads `docs/agents/SYSTEM_CONTEXT.md` once and injects the content into every subagent's input.
 
 #### Commit discipline (required for any subagent that writes to the repo)
 
@@ -108,6 +118,8 @@ Launch all subagents in the same turn. (In Claude Code, this is one tool-call me
 
 Why same turn: dispatching one at a time defeats the purpose. Some agent runtimes treat sequential dispatch as cheating — verify your runtime supports concurrent spawn.
 
+**Concurrency cap:** default 5; per-pgroup override via opt-in `concurrency: <N>` field in the pgroup labeling (see `write-plan` Phase 4). The 5-default comes from appxlab's empirical 5-7 ceiling for concurrent coding agents — past that, review burden offsets parallelism gain. Override sparingly; pgroups that need >5 concurrent subagents often have a Phase 2 independence problem in disguise.
+
 ### Single-writer invariant for SYSTEM_CONTEXT.md
 
 `docs/agents/SYSTEM_CONTEXT.md` is **read-only for subagents**. The parent agent's `prior-art-research` Phase 0 is the single writer. Dispatch subagents only AFTER Phase 0 has settled (i.e., the parent has completed research-phase recon). This prevents read-during-write races and keeps the environment-binding cache consistent across the parallel batch.
@@ -136,6 +148,55 @@ After aggregation, run the full verification:
 - No subagent's output contradicts another's?
 
 If verification fails, the parallel dispatch saved nothing — and may have cost extra in tokens and complexity. Note this in the dispatch record for future calibration.
+
+## Return contract
+
+Every subagent dispatched via `parallel-dev` returns exactly one of four statuses (verbatim from Superpowers' `subagent-driven-development/implementer-prompt.md`, snapshot locked by ADR-0004). The full input + return JSON schemas live in `references/dispatch-record-template.md`; semantics below.
+
+### `DONE`
+
+The subagent completed its task fully and the output satisfies the spec's `verification` step. Commit SHAs (if any) are returned. The dispatcher advances the slice / sub-problem and moves on.
+
+### `DONE_WITH_CONCERNS`
+
+The subagent completed its task but noticed something the dispatcher should see — a smell, an inconsistency it couldn't fix in scope, a side effect that wasn't in the spec. The `notes` field is required and contains the concern. The dispatcher advances (this is NOT a halt) but emits a warning in its output and appends `notes` to the dispatch record.
+
+### `BLOCKED`
+
+The subagent could not complete the task. Required: `blocker` field with a one-line description and `suggested_action ∈ {"edit-spec-and-redispatch", "investigate-manually", "escalate-to-maintainer"}`. The dispatcher halts the pgroup, surfaces the structured BLOCKED message to the user, and does NOT re-dispatch automatically — the user decides next steps.
+
+### `NEEDS_CONTEXT`
+
+The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches once with the corrected input, then escalates as `BLOCKED` if the corrected dispatch also returns `NEEDS_CONTEXT`.
+
+### Status handling matrix
+
+| Status | Dispatcher action | User-facing emission |
+|---|---|---|
+| `DONE` | Advance | Silent (or quiet success line) |
+| `DONE_WITH_CONCERNS` | Advance | Warning with `notes` |
+| `BLOCKED` | Halt pgroup | Structured BLOCKED message |
+| `NEEDS_CONTEXT` | Re-dispatch once, then escalate | Silent on first re-dispatch; BLOCKED-shape on escalation |
+
+Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep mode synthesis) MUST honor this matrix. Free-form text returns are non-compliant; the contract is machine-readable.
+
+## Sub-patterns
+
+These are dispatch shapes that recur often enough to warrant naming. Each is a specialization of the general Phase 1-7 workflow.
+
+### Hypothesis probe (generate-N-filter-to-K)
+
+**When it fits:** Debugging or design exploration with ≥3 plausible hypotheses, where each hypothesis can be probed independently with a falsifiable test, and the probes are read-only / non-destructive.
+
+**Pattern:** Dispatch one subagent per hypothesis, each with a single-purpose probe spec (e.g., "run this query against the prod replica; report the count" or "rebuild with the suspected flag toggled; report whether the test now passes"). Collect all results; the disconfirming probes eliminate hypotheses; the confirming probes (often just one) localize the root cause.
+
+**Origin:** DeepMind's AlphaCode (competitive programming, 2022) — generate up to 1M candidate programs, filter by execution against test cases, cluster by behavior, submit 10. The generalization for debugging is the same shape with N=3-10 and "candidates = hypotheses, tests = probes".
+
+**Independence sanity:** probes are usually read-only and operate against shared infrastructure (prod replica, staging DB). File-overlap independence is automatic; resource contention (rate limits, connection pool) may need a soft cap < 5.
+
+**Consumer:** `systematic-debugging` Phase 3.5 (planned for v1.8.0+) — when ≥3 hypotheses are on the table, fan out probes via this pattern instead of probing sequentially.
+
+**Citation:** ["competitive programming with AlphaCode" — DeepMind blog](https://deepmind.google/blog/competitive-programming-with-alphacode/). Pattern adapted from generate-N-filter-to-K to N-hypothesis-fan-out via probe execution.
 
 ## Independence checklist (Phase 2 expanded)
 

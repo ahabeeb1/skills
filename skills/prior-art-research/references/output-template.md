@@ -29,6 +29,24 @@
 2. [Sub-problem 2]
 3. ...
 
+## Phase 2.5 outcome — Category-completeness critic
+
+(Include this section unless Phase 2.5 was skipped per the documented escape valve. If skipped, state the skip reason in one line and move on.)
+
+**Verdict:** APPROVED | ADDITIONS PROPOSED (N) | SKIPPED — \<reason\>
+
+**Critic-surfaced additions and lead's response:**
+
+| Category | Suggested sub-problem | Lead's response | Reason |
+|---|---|---|---|
+| [e.g. Hooks / event handlers] | [one-line sub-problem] | Accepted — added to decomposition | — |
+| [e.g. Security / auth] | [one-line sub-problem] | Rejected — non-applicable | [REQUIRED when rejected; one sentence on why this category genuinely doesn't apply to this feature + context] |
+| ... | ... | ... | ... |
+
+Silent rejection is forbidden. Every rejected addition MUST carry a written reason.
+
+If verdict was APPROVED with zero additions, write: "Critic approved the decomposition; no additions proposed."
+
 ## Case studies
 
 ### [Team / Product] — [One-line summary]

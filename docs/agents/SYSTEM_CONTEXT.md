@@ -82,7 +82,28 @@ skills/*/SKILL.md
 
 ## Active steering
 
-- **Anchor:** integration patterns, environment binding, greenfield-vs-brownfield adaptation, deep-skill vs shallow-skill (Ousterhout applied to skills themselves)
-- **Look at:** Superpowers (obra), oh-my-claudecode (Yeachan-Heo), mattpocock/skills, Anthropic's own Skills 2.0 patterns
-- **Avoid:** generic prompt-engineering advice; CI/CD setup (out of scope for this audit)
-- **Last reconciliation outcome:** [pending Phase 6]
+(none — flushed 2026-05-12 per v1.5.2 Phase 7 flush rule; last outcome below)
+
+## Last reconciliation outcome
+
+**2026-05-12 — topic: post-merge cleanup / squash-merge ghost-commit pain (v1.5.3)**
+
+- Anchor "auto-commit per change": Honored with caveat — framing was aspirational, not actual Superpowers contract; not imported.
+- Anchor "auto-PR per change": Honored — already covered by `using-worktrees` Phase 6.
+- Anchor "squash-merge recovery": Honored (with new rule) — gap in both Superpowers and habeebs-skill; filled by `using-worktrees` Phase 6.5 + `/sync` command.
+- Anchor "post-merge cleanup": Honored — same as squash-merge recovery anchor.
+- Look-at "obra/superpowers": Honored with caveat — pattern shape correct (`finishing-a-development-branch`), but Superpowers does NOT solve the post-squash-merge ghost-commit case either.
+- Look-at "mattpocock/skills": Honored — no additional precedent on this specific gap.
+- Avoid "runtime substrate": Honored — Phase 6.5 is markdown + git commands only, no daemon / hook / watcher.
+
+**2026-05-11 — topic: environment binding / greenfield-vs-brownfield (v1.5.0 + v1.5.2)**
+
+- Anchor "state persistence shape": Honored — in-repo markdown is the convergent pattern; ADR-0001.
+- Anchor "multi-runtime portability": Honored — SYSTEM_CONTEXT.md is harness-agnostic markdown.
+- Anchor "halt-vs-silent-default": Honored — mattpocock's hard-dep pattern converges with habeebs's halt-with-redirect.
+- Look-at "Superpowers (obra)": Honored — plan-files-as-markdown precedent matches.
+- Look-at "oh-my-claudecode (Yeachan-Heo)": Overridden — wrong layer; runtime substrate, not project-fact substrate; ADR-0002 locks the rejection of composition.
+- Look-at "mattpocock/skills": Honored — independent convergence on in-repo markdown + setup-bootstrap pattern.
+- Look-at "Anthropic Skills 2.0 patterns": Honored with caveat — no state-persistence guidance from Anthropic; both habeebs and OMC fill the gap differently.
+- Avoid "generic prompt-engineering advice": Honored.
+- Avoid "CI/CD setup": Honored — deferred.

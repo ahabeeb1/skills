@@ -1,0 +1,28 @@
+{
+  "description": "habeebs-skill v1.6.0 hooks — warn-only SessionStart (ghost-commit detection) and block-only PreToolUse on Bash (commits to default branch). Both follow ADR-0003: warn-or-block only, multi-harness aware via env-var detection, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/preventing-commits-to-default.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

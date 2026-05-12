@@ -13,6 +13,60 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.6.0] — 2026-05-12
+
+First-ever Claude Code hooks land in habeebs-skill, governed by **ADR-0003** ("warn-only or block-only, multi-harness aware, never own state"). Two hooks total — no more, no less — addressing the two documented user pains from prior research: squash-merge ghost-commit divergence (warned by SessionStart) and accidental commits to the default branch (blocked by PreToolUse on Bash). Plus a manual-install fallback documented in README per [Superpowers issue #773](https://github.com/obra/superpowers/issues/773) (plugin hook auto-discovery is fragile).
+
+### Added
+
+- **`hooks/session-start.sh`** — SessionStart hook. Silent `git fetch origin --prune` + ahead/behind check on the default branch. If `ahead=0, behind>0` → "Local main is N commits behind origin. Run /sync to fast-forward." If `ahead>0, behind>0` → "Diverged (likely squash-merge ghost commits) — run /sync." If `ahead>0, behind=0` → "N unpushed commit(s); push or discard." Warn-only — never resets, merges, or deletes anything. Multi-harness aware via `CLAUDE_PLUGIN_ROOT` / `CURSOR_PLUGIN_ROOT` env-var detection per Superpowers pattern.
+  - **Why:** v1.5.3 added the `/sync` command to handle ghost commits, but the user has to remember to run it. The SessionStart hook surfaces the same warning automatically at the moment it's most useful — when a new session opens and the local repo is out of sync with origin. Found by repeated user pain after every PR squash-merge; the v1.5.0-v1.5.4 self-audit chain confirmed hooks are the right primitive.
+
+- **`hooks/preventing-commits-to-default.sh`** — PreToolUse hook on `Bash`. Inspects each `git commit` / `git push` command before execution. Blocks (exit 2) when the current branch IS the default branch (resolved via `origin/HEAD`). Skips when mid-rebase, mid-merge, or mid-cherry-pick (`.git/REBASE_HEAD` etc.). Per-repo opt-out via `.claude/habeebs-allowed-branches`. Emergency disable via `HABEEBS_DISABLE_HOOKS=1`.
+  - **Why:** ADR-0001's never-commit-to-default rule was previously enforced only by skill text. Easy to violate during fast iteration ("just a tiny commit"). PreToolUse-on-Bash is the canonical mattpocock pattern (`git-guardrails-claude-code`); this is a single-rule scoped version focused on the most important guardrail.
+
+- **`hooks/hooks.json`** — declares both hooks for plugin auto-discovery. Schema follows [Anthropic's `hook-development` SKILL](https://github.com/anthropics/claude-code/blob/main/plugins/plugin-dev/skills/hook-development/SKILL.md): `description` + nested `hooks` object keyed by event name. Uses `${CLAUDE_PLUGIN_ROOT}` for portable paths.
+
+- **ADR-0003: habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state** (`docs/agents/adrs/0003-hooks-scope.md`). Locks the scope so future audits don't drift into hook sprawl. Captures four explicit rejected alternatives (reject hooks entirely / adopt full hook system / per-install authorization / prompt-based hooks for v1.6.0 / auto-fix hooks).
+
+- **Plan 0003: `docs/agents/plans/0003-hooks-v1.6.0.md`** — implementation plan for this release. 9 slices across 3 phases. Slice #9 is `HITL:inline` for tag-and-release; all others `AFK:full-auto`.
+
+- **README "Hooks (v1.6.0+)" section** — verification (`/hooks` command), manual-install fallback (paste-into-`settings.json` snippet for issue-#773 cases), per-repo opt-out via `.claude/habeebs-allowed-branches`, emergency disable via `HABEEBS_DISABLE_HOOKS=1`.
+
+### Changed
+
+- **`README.md` repo scaffolding tree** — adds `hooks/` between `agents/` and `docs/` with one-line descriptions of each file. Status line updated to "14 skills, 13 slash commands, 2 hooks."
+
+### Plugin metadata
+
+- `version`: 1.5.4 → 1.6.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- New top-level directory: `hooks/` (auto-discovered by Claude Code when the plugin loads)
+
+### Why this is a MINOR, not a patch
+
+New opt-in behavior — hooks fire automatically on install. Distinct from the v1.5.x patch series (those were bug fixes against shipped contracts). Backward compatible: repos that ran v1.5.x continue to work; hooks add automation on top.
+
+### Compatibility
+
+- **Existing v1.5.x installs**: no breaking changes. Hooks add automatic behaviors that didn't exist before; they don't replace any prior contract.
+- **Multi-harness (Codex / Cursor / OpenCode)**: hooks gracefully no-op on non-Claude-Code harnesses (env-var detection). The methodology continues to work on those harnesses via skills + commands.
+- **Sandboxed environments without `gh`/`jq`**: hooks degrade gracefully — `gh`-absent skips PR-merged detection; `jq`-absent falls back to `sed` regex extraction.
+
+### Dogfood (post-release)
+
+Per slice #9 of plan 0003, the SessionStart and PreToolUse hooks will be verified against v1.6.0's own squash-merge — opening a fresh session after the PR merges should surface the SessionStart "behind origin" warning; attempting `git commit -m "test"` on `main` should produce the BLOCKED message. Logged in plan 0003 change log after verification.
+
+### Out of scope (deferred to v1.7.x or later, per ADR-0003)
+
+- `UserPromptSubmit` hook for "I want to build X" detection — too easy to misclassify on first cut.
+- `PostToolUse` hook on `gh pr merge` — rare event; SessionStart catches the same case on next session.
+- Prompt-based hooks (Anthropic recommends them) — wait for command hooks to ship and surface their failure modes first.
+- Auto-format / auto-test hooks — out of scope for a methodology plugin per ADR-0003.
+
+Every additional hook requires a fresh ADR-grade evaluation against ADR-0003's three rules. No batch adoption.
+
+---
+
 ## [1.5.4] — 2026-05-12
 
 Two patches: (1) Phase 6.5 step 3 now covers the `ahead=0, behind>0` simple-fast-forward case — the most common post-merge state, missed in v1.5.3 and caught by the live dogfood run on v1.5.3's own merge. (2) Plugin install was failing with `agents: Invalid input` because `plugin.json` declared `commands: ["./commands/"]` and `agents: ["./agents/"]` — both directories are auto-discovered per the [Claude Code plugin reference](https://code.claude.com/docs/en/plugins-reference), so the explicit declarations were redundant and the validator rejected the directory-path form for `agents`. Both fields removed; auto-discovery handles them as it does for Superpowers and other reference plugins.

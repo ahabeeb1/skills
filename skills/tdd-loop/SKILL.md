@@ -29,10 +29,12 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 ## The core loop
 
 ```
-[Phase 0: decide worktree] → RED → GREEN → REFACTOR → 2-stage REVIEW → COMMIT → next slice
+[Phase 0: decide worktree] → [Phase 0.5: plan inspection — pgroup auto-dispatch + idempotent resume] → RED → GREEN → REFACTOR → 2-stage REVIEW → COMMIT → next slice
 ```
 
 Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
+
+Phase 0.5 (added v1.7.0) reads the active plan and, when a pgroup of size ≥2 is ready, hands off to `parallel-dev` for concurrent dispatch — each subagent runs its own Phase 1-6 cycle in its own worktree. Single-slice flows pass through Phase 0.5 unchanged.
 
 ### Pre-flight — Environment check
 
@@ -67,6 +69,59 @@ Worktrees are valuable when they isolate concurrent or multi-commit work — the
 State the decision in one line before Phase 1: e.g., `Phase 0: creating worktree at ../skills-slice-1 (slice is multi-commit; currently on main).` or `Phase 0: proceeding in current tree (single-commit trivial slice).`
 
 If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in the returned `cwd`.
+
+### Phase 0.5 — Plan inspection: pgroup auto-dispatch + idempotent re-invocation
+
+(Introduced in v1.7.0 per ADR-0004 and plan 0004. Runs only when an active plan exists at `docs/agents/plans/<slug>.md`. Skipped when there's no active plan or the plan has been flagged Done.)
+
+**Step 1 — Inspect the active plan.** Read the slice table and parallelization map. Identify the next unfinished pgroup in dependency order. Determine its size.
+
+**Step 2 — Idempotent re-invocation check (the resume mechanic).** Before dispatching anything, inspect the dispatch history:
+
+```bash
+git log --grep "Dispatch-id:" --oneline
+git log --grep "Slice: #" --oneline
+git branch --list 'slice-*'
+ls docs/agents/dispatches/ 2>/dev/null
+```
+
+For each slice in the next pgroup, classify:
+
+- **Already completed** — there exists a commit (on this branch or merged) tagged with the slice id. Skip it; mark as `DONE` in the plan.
+- **In-flight** — a `slice-<N>-*` branch or worktree exists but no completion commit. Treat as `BLOCKED — investigate-manually` and surface to the user (don't auto-resume someone else's mid-edit).
+- **Pending** — no trace. Dispatch fresh in Step 3.
+
+This is the pause/resume API: git is the durability layer (ADR-0004 Part 4). Killing the chain mid-pgroup and re-running `tdd-loop` will skip completed slices and re-dispatch only pending ones. **No checkpoint file is consulted** — only git refs and dispatch records (audit log).
+
+**Step 3 — Dispatch decision.**
+
+- **Pgroup size < 2 OR plan absent:** fall through to Phase 1 (sequential single-slice TDD). No dispatch.
+- **Pgroup size ≥ 2 AND ALL members are pending:** hand off to `parallel-dev` for concurrent dispatch (one subagent per slice, each in its own worktree per `using-worktrees`). Return to Phase 0.5 Step 4 when all subagents have returned.
+- **Pgroup size ≥ 2 AND some members are already DONE:** dispatch only the pending members. Concurrency cap from `parallel-dev` Phase 4 still applies (default 5; opt-in per-pgroup override).
+
+**Step 4 — Status aggregation per the 4-status contract** (canonical semantics in `skills/parallel-dev/SKILL.md` § Return contract):
+
+| Status returned by subagent | tdd-loop's action |
+|---|---|
+| `DONE` | Mark slice complete in the plan; advance |
+| `DONE_WITH_CONCERNS` | Mark slice complete; **emit a warning to the user** with the `notes` field content; append `notes` to the dispatch record at `docs/agents/dispatches/<dispatch-id>.json` |
+| `BLOCKED` | Halt the pgroup; surface the **structured BLOCKED message** (`{type, subagent, slice_id, reason, suggested_action}` per ADR-0004 Part 1) to the user; do NOT auto-re-dispatch |
+| `NEEDS_CONTEXT` | Re-dispatch the slice ONCE with the corrected input (typically: a clarification to the spec or a fix to the input contract); if the re-dispatch also returns `NEEDS_CONTEXT`, escalate as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
+
+**Step 5 — Loop or descend.**
+
+- If the pgroup completed cleanly (all `DONE` or `DONE_WITH_CONCERNS`): advance to the next pgroup; re-enter Step 1.
+- If any slice returned `BLOCKED`: halt. User decides next steps. Phase 0.5 exits; sequential phases (1-6) do NOT run for the halted pgroup.
+- If you've drained all pgroups in the active phase: evaluate the phase's acceptance gate (per plan). On gate-pass, advance to the next phase's first pgroup. On gate-fail, halt and surface the gate failure.
+
+**Step 6 — Single-slice fallthrough.** When the active plan has no pgroup ≥ 2 ready (or no plan at all), Phase 0.5 produces no dispatches and `tdd-loop` proceeds to Phase 1 against the next single slice. Important regression-test invariant: Phase 0.5 MUST no-op cleanly on single-slice plans (verified by `tests/dogfood/10-pgroup-dispatch/10b-no-pgroup-control.md`).
+
+**What Phase 0.5 does NOT do:**
+
+- It does not write to dispatch records mid-pgroup — only `parallel-dev` writes, after all subagents return (single-writer invariant per ADR-0004 Part 2).
+- It does not read dispatch records *during* chain execution — they are an audit log, not a substrate.
+- It does not skip the `using-worktrees` Phase 0 check; each dispatched subagent still gets its own worktree.
+- It does not auto-merge concurrent worktrees — merge to main remains sequential with rebase-then-test (per `using-worktrees` Phase 5).
 
 ### Phase 1 — RED: write the failing test
 

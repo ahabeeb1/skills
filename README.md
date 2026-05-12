@@ -8,7 +8,10 @@ Works as:
 - a **Claude Code plugin** (installable via `/plugin marketplace add ...`)
 - a **Codex CLI** (or generic agent) skill bundle, by vendoring this repo and referencing `AGENTS.md`
 
-Complements (does not replace) [Superpowers](https://github.com/obra/superpowers), [oh-my-claudecode](https://github.com/yeachan-heo/oh-my-claudecode), [Context7](https://github.com/upstash/context7), and [mattpocock/skills](https://github.com/mattpocock/skills).
+Relationship to adjacent projects:
+- **Uses** [Context7](https://github.com/upstash/context7) for library docs during `prior-art-research`.
+- **Composes with** [oh-my-claudecode](https://github.com/yeachan-heo/oh-my-claudecode) for agent orchestration — different domain, no overlap.
+- **Consolidates and re-sequences** patterns from [Superpowers](https://github.com/obra/superpowers) and [mattpocock/skills](https://github.com/mattpocock/skills) into a single methodology chain. You don't need them installed alongside — habeebs-skill absorbs their TDD, deep-module, vertical-slice, parallel-dev, worktree, and systematic-debugging patterns directly.
 
 ---
 

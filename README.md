@@ -84,6 +84,11 @@ habeebs-skill/
 │   ├── pattern-extractor.md # Identifies patterns across source records
 │   └── synthesizer.md       # Produces the final convergent recommendation
 │
+├── hooks/                   # v1.6.0 — Claude Code hooks (warn-only / block-only per ADR-0003)
+│   ├── hooks.json           # Hook declarations (auto-discovered by Claude Code)
+│   ├── session-start.sh     # Warns on local-default-branch divergence from origin
+│   └── preventing-commits-to-default.sh   # Blocks git commit/push on default branch
+│
 ├── docs/
 │   └── BUILD-PLAN.md        # Methodology / build history
 │
@@ -230,9 +235,80 @@ To invoke a single step (Codex or any agent):
 
 ---
 
+## Hooks (v1.6.0+)
+
+Two Claude Code hooks ship with the plugin, both governed by [ADR-0003](./docs/agents/adrs/0003-hooks-scope.md):
+
+| Hook | Event | What it does | Destructive? |
+|---|---|---|---|
+| `session-start.sh` | `SessionStart` | Silent `git fetch` + ahead/behind check on the default branch; surfaces a one-line warning if local main is behind origin (likely squash-merge ghost commits) | No — warn-only |
+| `preventing-commits-to-default.sh` | `PreToolUse` (`Bash` matcher) | Blocks `git commit` and `git push` when the current branch IS the default branch (enforces ADR-0001's never-commit-to-default rule) | No — block-only |
+
+Both hooks follow three rules: **warn-only or block-only** (never auto-reset, auto-delete, auto-modify), **multi-harness aware** (env-var detection per Superpowers), and **stateless** (read git + repo state; write nothing).
+
+### Verify hooks are loaded
+
+After `/plugin install habeebs-skill@habeebs-skill`, run `/hooks` — both hooks should appear in the list. If they don't (per [Superpowers issue #773](https://github.com/obra/superpowers/issues/773), auto-discovery is fragile in some Claude Code versions), use the manual-install fallback below.
+
+### Manual install (fallback for issue-#773-class bugs)
+
+Paste this into `~/.claude/settings.json` (or `<project>/.claude/settings.json` for project-scoped):
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/preventing-commits-to-default.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+If `${CLAUDE_PLUGIN_ROOT}` doesn't resolve in your install (e.g., vendored as a submodule rather than installed via marketplace), substitute the absolute path to the plugin directory.
+
+### Per-repo opt-out (PreToolUse hook)
+
+If you legitimately need to commit on the default branch for a specific repo (e.g., solo dev hotfix workflow), add the branch name to `.claude/habeebs-allowed-branches` in that repo:
+
+```bash
+echo "main" >> .claude/habeebs-allowed-branches
+```
+
+### Emergency disable (both hooks)
+
+Set the env var globally or per-shell:
+
+```bash
+export HABEEBS_DISABLE_HOOKS=1
+```
+
+Both hook scripts check this env var as their first action and exit cleanly if set. Note: hooks load at session start only (no hot-swap per [Anthropic's spec](https://code.claude.com/docs/en/hooks)) — disable the env var BEFORE starting the Claude Code session you want unhooked.
+
+---
+
 ## Status
 
-**v1.4.x — 14 skills, 13 slash commands.** See [CHANGELOG.md](./CHANGELOG.md) for the full version history.
+**v1.6.0 — 14 skills, 13 slash commands, 2 hooks.** See [CHANGELOG.md](./CHANGELOG.md) for the full version history.
 
 - **Core chain (5):** `prior-art-research`, `draft-spec`, `socratic-grill`, `decision-record`, `write-plan`
 - **Engineering primitives (6):** `tdd-loop`, `deep-modules`, `parallel-dev`, `vertical-slice`, `using-worktrees`, `systematic-debugging`

@@ -23,7 +23,9 @@ Each skill produces output that the next skill consumes. The handoff lines at th
 
 ## What this plugin is NOT
 
-- Not a replacement for Superpowers or oh-my-claudecode — it composes with them
+- Not a replacement for oh-my-claudecode — it composes with OMC's orchestration (different domain)
+- Not a complement to Superpowers or mattpocock/skills — it consolidates and re-sequences their TDD, deep-module, vertical-slice, parallel-dev, worktree, and systematic-debugging patterns into the chain; you don't need them installed alongside
+- Not a replacement for Context7 — it uses Context7 as a documentation source during `prior-art-research`
 - Not an automatic code writer — implementation still happens through TDD
 - Not a survey tool — the research phase makes opinionated recommendations
 - Not for trivial CRUD — let trivial things stay trivial

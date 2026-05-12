@@ -140,7 +140,7 @@ Per the 4-status return contract (ADR-0004 Part 1):
 
 ## See also
 
-- `skills/prior-art-research/SKILL.md` Phase 2.5 — the chain phase that invokes this critic
-- `skills/prior-art-research/references/output-template.md` — Phase 2.5 outcome section the parent fills in based on this critic's output
-- `tests/dogfood/09-category-critic/` — the 4-scenario adversarial dogfood suite this critic must pass
-- `docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md` — 4-status return contract + context_preamble requirement
+- `../skills/prior-art-research/SKILL.md` Phase 2.5 — the chain phase that invokes this critic
+- `../skills/prior-art-research/references/output-template.md` — Phase 2.5 outcome section the parent fills in based on this critic's output
+- `../tests/dogfood/09-category-critic/` — the 4-scenario adversarial dogfood suite this critic must pass
+- `../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md` — 4-status return contract + context_preamble requirement

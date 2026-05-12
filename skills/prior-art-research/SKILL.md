@@ -116,7 +116,7 @@ If any slot was empty, omit it from the echo. If no steering was provided, skip 
 
 **Why this exists:** a single-agent Phase 2 planner reliably misses entire categories of architectural concern. The chain's bleeding pain (documented 2026-05-12) was a research run that missed `hooks / event handlers` and `subagent-driven patterns` for habeebs-skill itself — and the chain blindly proceeded against the incomplete decomposition. Phase 2.5 is the coverage gate that catches this.
 
-**What runs:** dispatch ONE `category-completeness-critic` subagent (see `skills/parallel-dev/agents/category-completeness-critic.md`) via `parallel-dev` Phase 4 (single-subagent dispatch is allowed). The critic receives the proposed decomposition + Phase 1 context + the SYSTEM_CONTEXT preamble. It returns either:
+**What runs:** dispatch ONE `category-completeness-critic` subagent (see `../../agents/category-completeness-critic.md`) via `parallel-dev` Phase 4 (single-subagent dispatch is allowed). The critic receives the proposed decomposition + Phase 1 context + the SYSTEM_CONTEXT preamble. It returns either:
 
 - **APPROVED** — the decomposition is complete; proceed to Phase 3 unchanged.
 - **ADDITIONS PROPOSED** — N missing categories with rationales, each with a suggested sub-problem.

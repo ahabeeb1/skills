@@ -137,7 +137,7 @@ While subagents run, the dispatcher is idle (or can do bookkeeping). When notifi
 
 ### Phase 6 — Aggregate and synthesize
 
-Combine outputs. For research-style dispatches, this is a synthesis step (one pattern-extractor subagent can also handle this — see `agents/synthesizer.md`). For implementation-style dispatches, this is a merge step (run tests after merging; resolve conflicts if any).
+Combine outputs. For research-style dispatches, this is a synthesis step (one pattern-extractor subagent can also handle this — see `../../agents/synthesizer.md`). For implementation-style dispatches, this is a merge step (run tests after merging; resolve conflicts if any).
 
 ### Phase 7 — Verify the whole
 
@@ -242,7 +242,7 @@ These signs say "parallel isn't right here, run sequentially":
 - `prior-art-research` — primary consumer in Deep mode
 - `draft-spec` — produces parallelizable slice groups
 - `tdd-loop` — what each subagent runs internally when implementing a slice
-- `agents/source-fetcher.md` — subagent prompt for research fetching
-- `agents/pattern-extractor.md` — subagent prompt for research extraction
-- `agents/synthesizer.md` — subagent prompt for aggregating parallel results
+- `../../agents/source-fetcher.md` — subagent prompt for research fetching
+- `../../agents/pattern-extractor.md` — subagent prompt for research extraction
+- `../../agents/synthesizer.md` — subagent prompt for aggregating parallel results
 - `references/dispatch-record-template.md` — template for capturing a parallel dispatch

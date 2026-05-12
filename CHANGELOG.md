@@ -13,6 +13,77 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.7.0] — 2026-05-12
+
+Parallel subagent dispatch becomes a first-class contract, governed by **ADR-0004** (4-status return, audit-log dispatch records, mandatory `SYSTEM_CONTEXT` preamble injection, idempotent re-invocation as pause/resume API). The bleeding-pain fix lands: a new `prior-art-research` Phase 2.5 dispatches a `category-completeness-critic` subagent that catches missing-category failures (the literal v1.6.0 hooks miss is reproduced and caught by `tests/dogfood/09-category-critic/09b-missing-hooks.md`). `tdd-loop` gains a Phase 0.5 that auto-dispatches pgroups of size ≥2 via `parallel-dev`, replacing the previous "labels exist, no dispatcher consumes them" gap.
+
+### Added
+
+- **`agents/category-completeness-critic.md`** — coverage critic subagent. Receives proposed sub-problem decomposition + Phase 1 context + `SYSTEM_CONTEXT.md` preamble. Scores against a 12-category catalog of commonly-missed blind spots (hooks, agents, observability, security, migration, …). Returns either `APPROVED` or `ADDITIONS PROPOSED` with per-addition rationale. Bounded at 1 iteration. Hard no-padding rule: every proposed addition must change Phase 4 search, or be struck (false-positive gate at scenario 09d).
+  - **Why:** A single-agent Phase 2 planner reliably misses entire categories of architectural concern. The chain's bleeding pain — documented 2026-05-12 — was a research run that missed `hooks / event handlers` and `subagent-driven patterns` when researching habeebs-skill itself, and the chain blindly proceeded against the incomplete decomposition. Phase 2.5 is the coverage gate that catches this failure mode automatically. Pattern lineage: LangGraph multi-agent research critic loop + Anthropic CitationAgent.
+
+- **`prior-art-research` Phase 2.5 — Category-completeness critic (coverage gate)** in `skills/prior-art-research/SKILL.md`. Inserts the critic between current Phase 2 (Decompose) and Phase 3 (Choose mode). Lead either accepts each proposed addition or rejects with a written reason in the report's new "Phase 2.5 outcome" section (silent rejection forbidden). Skip-allowed only when Quick mode + 1 sub-problem + "shipping speed" priority.
+
+- **`prior-art-research/references/output-template.md` — Phase 2.5 outcome section.** Required between Sub-problems and Case studies. Captures verdict + per-addition response with written reason on rejection.
+
+- **`tdd-loop` Phase 0.5 — Plan inspection: pgroup auto-dispatch + idempotent re-invocation** in `skills/tdd-loop/SKILL.md`. Reads the active plan, detects the next unfinished pgroup, dispatches concurrently via `parallel-dev` when size ≥ 2. Idempotent resume via `git log --grep "Dispatch-id:"` + branch inspection — completed slices skip, in-flight surface as `BLOCKED`, pending dispatch fresh. Git is the durability layer (ADR-0004 Part 4); no checkpoint file consulted. Status handling matrix per ADR-0004 Part 1. Single-slice fallthrough preserves the pre-v1.7.0 sequential path (regression-tested by `tests/dogfood/10-pgroup-dispatch/10b-no-pgroup-control.md`).
+  - **Why:** `parallel-dev` was a dispatcher with no real callers pre-v1.7.0. `write-plan` Phase 4 labeled pgroups as parallelizable, then waited — no skill consumed the label. This phase is the first machine-readable consumer.
+
+- **`write-plan` Phase 8 — `HANDOFF: pgroup-dispatch-ready` line** in `skills/write-plan/SKILL.md`. Always emitted when the plan has any pgroup of size ≥ 2 (machine-readable trigger for `tdd-loop` Phase 0.5). Coexists with the existing `parallel dispatch ready` human-readable emit for plans with 3+ AFK slices.
+
+- **`parallel-dev` § Return contract** in `skills/parallel-dev/SKILL.md`. Locks the 4-status return contract (`DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`) verbatim from Superpowers' `subagent-driven-development/implementer-prompt.md`. Includes per-status handling matrix and `suggested_action` enum on BLOCKED.
+
+- **`parallel-dev` § Sub-patterns — Hypothesis probe** in `skills/parallel-dev/SKILL.md`. AlphaCode-style generate-N-filter-to-K pattern documented for future `systematic-debugging` Phase 3.5 consumption (v1.8.0+).
+
+- **Concurrency soft-cap with opt-in per-pgroup override.** Default 5; pgroup labelers can override with `concurrency: <N>` field. Source: appxlab's empirical 5-7 ceiling for concurrent coding agents.
+
+- **`SYSTEM_CONTEXT.md` preamble injection as subagent contract** (ADR-0004 Part 3). Dispatcher MUST read `docs/agents/SYSTEM_CONTEXT.md` and inject as `context_preamble` field in every subagent's input. Captured in `parallel-dev/SKILL.md` Phase 3 + the dispatch-record template.
+
+- **`agents/source-fetcher.md`, `agents/pattern-extractor.md`, `agents/synthesizer.md`** rewritten to honor the 4-status return contract + the `context_preamble` requirement. Per-agent additions: source-fetcher emphasizes ≤15-word quote discipline + tier health verdict; pattern-extractor adds homogeneity-bias detection (tier-narrow / vendor-narrow / benign-convergence) + missing-pattern surfacing; synthesizer runs in fresh context to dodge lead-agent context exhaustion + surfaces contradictions in Open Questions rather than silently smoothing.
+
+- **`docs/agents/dispatches/.gitkeep`** anchors the audit-log directory (ADR-0004 Part 2). Single-writer (`parallel-dev` only); no in-execution reads by any skill; 30-day retention candidate for v1.8.0+.
+
+- **`skills/parallel-dev/references/dispatch-record-template.md`** rewritten as the authoritative contract reference: input JSON schema (10 fields including mandatory `context_preamble`), return JSON schema (4-status with per-status field requirements matrix), BLOCKED structured message shape with `suggested_action` enum, dispatch record file shape. The pre-v1.7.0 markdown audit shape is preserved as a legacy / PR-description format.
+
+- **ADR-0004: Adopt the parallel subagent dispatch contract** (`docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md`). Captures the four binding parts of the contract + explicit carve-out from ADR-0002 (dispatch records are write-only audit logs, not a runtime substrate). Captures 5 rejected alternatives.
+
+- **Plan 0004: `docs/agents/plans/0004-parallel-subagent-v1.7.0.md`** — phased implementation plan for this release. 8 slices across 4 phases. Slice #8 (release) is `HITL:inline`; all others `AFK:full-auto` (but dispatched sequentially this release due to R10 chicken-and-egg: this release ships the wiring it would otherwise dispatch through).
+
+- **Adversarial dogfood suite at `tests/dogfood/09-category-critic/`** — 3 false-negative scenarios (09a observability, 09b hooks reproducer, 09c security) + 1 false-positive control (09d no-gap). Load-bearing acceptance gate for Slice #5; 09b is the literal reproducer of the v1.6.0 hooks miss that drove this work.
+
+- **Dogfood suite at `tests/dogfood/10-pgroup-dispatch/`** — positive scenario (10a, 3-slice plan with pgroup-1A) + regression scenario (10b, single-slice plan must no-op cleanly). 10b is the load-bearing regression test; every pre-v1.7.0 user's single-slice flow must keep working unchanged.
+
+### Changed
+
+- **`README.md` skills tables** — `prior-art-research` row now mentions Phase 2.5 category-completeness critic; `parallel-dev` row now mentions the 4-status contract + auto-dispatch from `tdd-loop` Phase 0.5.
+- **`README.md` repo scaffolding tree** — `agents/` directory now lists 4 files (added `category-completeness-critic.md`); descriptions noted as v1.7.0 contract-compliant.
+- **`skills/parallel-dev/SKILL.md` cross-refs** updated to point at the consolidated repo-root `/agents/` location (`../../agents/X.md` instead of broken `agents/X.md` which previously resolved to a non-existent `skills/parallel-dev/agents/X.md`).
+- **`skills/parallel-dev/SKILL.md` Phase 3 dispatch spec** now includes mandatory `context_preamble` field per ADR-0004 Part 3.
+- **`skills/parallel-dev/SKILL.md` Phase 4** now documents the concurrency cap (default 5, opt-in `concurrency: <N>` per-pgroup override).
+
+### Plugin metadata
+
+- `version`: 1.6.0 → 1.7.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- New top-level directory: `docs/agents/dispatches/` (audit log for parallel-dev runs; auto-populated by the dispatcher)
+
+### Why this is a MINOR, not a patch
+
+New opt-in behavior — Phase 2.5 critic, Phase 0.5 pgroup auto-dispatch, the 4-status contract, and the dispatch-record convention are all additive. Existing chains continue to work unchanged: the Phase 2.5 critic is skip-allowed for trivial scope; Phase 0.5 falls through cleanly when no pgroup ≥ 2 exists (regression-tested by 10b). Distinct from the v1.5.x patch series and the v1.6.0 hooks release.
+
+### Compatibility
+
+- Subagent prompts at `/agents/*.md` updated to honor the 4-status return contract. Old subagent invocations (pre-v1.7.0) that returned free-form text continue to be parseable as `DONE` for backward compatibility. New skill code MUST emit the structured contract.
+- `parallel-dev` cross-reference fixes (the path-resolution bug for `agents/X.md`) are transparent: humans following the links now hit the right files; the broken link never actually resolved before.
+- ADR-0002's "no runtime substrate" rule is **unchanged**. ADR-0004 explicitly carves out dispatch records as a permitted audit-log artifact (write-once, never read mid-chain) — this carve-out is documented in ADR-0004, not in ADR-0002's body.
+
+### Self-application irony
+
+This release's own implementation runs **sequentially** (Plan 0004 Risk R10) — by construction, you can't dispatch the wiring you're shipping through itself. The first real exercise of pgroup auto-dispatch will be the v1.8.0+ release that consumes this plan format. The plan records pgroup-1A and pgroup-2A as eligible for the next release; v1.7.0 itself walks them as a sequential list.
+
+### Token cost amplification
+
+Per the spec's Trade-offs: Phase 2.5 critic adds ~1 subagent call per research run (~1.2-1.4× research-mode amplification). Pgroup dispatch only fires when a pgroup ≥ 2 exists in the active plan; implementation runs without parallel pgroups see 1.0× (unchanged). Total expected amplification is workload-dependent; we'll measure on the first 3 real runs post-merge.
+
 ## [1.6.0] — 2026-05-12
 
 First-ever Claude Code hooks land in habeebs-skill, governed by **ADR-0003** ("warn-only or block-only, multi-harness aware, never own state"). Two hooks total — no more, no less — addressing the two documented user pains from prior research: squash-merge ghost-commit divergence (warned by SessionStart) and accidental commits to the default branch (blocked by PreToolUse on Bash). Plus a manual-install fallback documented in README per [Superpowers issue #773](https://github.com/obra/superpowers/issues/773) (plugin hook auto-discovery is fragile).

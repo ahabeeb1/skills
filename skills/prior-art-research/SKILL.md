@@ -112,6 +112,38 @@ Present the decomposition to the user before searching. They'll often add or rem
 
 If any slot was empty, omit it from the echo. If no steering was provided, skip the line entirely — silence is the default.
 
+### Phase 2.5 — Category-completeness critic (coverage gate)
+
+**Why this exists:** a single-agent Phase 2 planner reliably misses entire categories of architectural concern. The chain's bleeding pain (documented 2026-05-12) was a research run that missed `hooks / event handlers` and `subagent-driven patterns` for habeebs-skill itself — and the chain blindly proceeded against the incomplete decomposition. Phase 2.5 is the coverage gate that catches this.
+
+**What runs:** dispatch ONE `category-completeness-critic` subagent (see `../../agents/category-completeness-critic.md`) via `parallel-dev` Phase 4 (single-subagent dispatch is allowed). The critic receives the proposed decomposition + Phase 1 context + the SYSTEM_CONTEXT preamble. It returns either:
+
+- **APPROVED** — the decomposition is complete; proceed to Phase 3 unchanged.
+- **ADDITIONS PROPOSED** — N missing categories with rationales, each with a suggested sub-problem.
+
+**How the lead responds:**
+
+For each proposed addition, the lead does exactly one of:
+
+1. **Accept** — add the suggested sub-problem to the decomposition. Note "Phase 2.5: accepted (critic surfaced this)" in the running notes for the final report.
+2. **Reject with written reason** — explicitly state why the category is non-applicable for this feature + context. The reason is captured in the **Phase 2.5 outcome** section of the final report (`references/output-template.md`). Silent rejection is forbidden.
+
+**Iteration cap:** Phase 2.5 runs exactly ONCE. No re-fan-out, no second pass. If the critic missed something the user later spots, that's a v1.8.0+ improvement candidate (Phase 6 CitationAgent equivalent). The bounded loop keeps Phase 2.5 from becoming a coverage-debate hole.
+
+**When this phase is skipped:**
+
+- Quick mode with 1 sub-problem AND the user picked "shipping speed" as top priority — the coverage critic adds overhead worth more than the catch rate at trivial scope. Note the skip in the report's Phase 2.5 outcome section.
+- The user explicitly invokes `/research --skip-coverage-critic` (documented escape valve; intended only when the user has already done their own coverage audit).
+
+**Acceptance bar (dogfood-tested):**
+
+The critic must pass the four-scenario adversarial suite at `tests/dogfood/09-category-critic/`:
+
+- 09a (missing-observability), 09b (missing-hooks), 09c (missing-security): critic MUST surface the planted gap
+- 09d (no-gap control): critic MUST return APPROVED with zero hallucinated additions
+
+If the critic fails any scenario, the Phase 2.5 prompt requires tuning before the chain ships. Failure-loud is the design intent — silent rubber-stamping is the failure mode this whole phase exists to prevent.
+
 ### Phase 3 — Choose mode
 
 **Quick mode** (default for tight scopes, ~5 min):

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "habeebs-skill",
-  "version": "1.3.0",
-  "description": "Research-grounded engineering methodology for Claude Code. Find how the best teams shipped what you're building, spec it, grill the ambiguity out, lock the decision as an ADR, then implement via TDD over vertical slices with deep-modules discipline. Composable skill chain: prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop, with parallel-dev, deep-modules, vertical-slice, and setup-habeebs-skill as supporting primitives. Inspired by Superpowers, oh-my-claudecode, and mattpocock/skills.",
+  "version": "1.4.0",
+  "description": "Research-grounded engineering methodology for Claude Code. Find how the best teams shipped what you're building, spec it, grill the ambiguity out, lock the decision as an ADR, write the phased plan with acceptance gates, then implement via TDD over vertical slices with deep-modules discipline. Composable skill chain: prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop, with parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging, agent-factors-check, and setup-habeebs-skill as supporting primitives. Inspired by Superpowers, oh-my-claudecode, mattpocock/skills, and humanlayer/12-factor-agents.",
   "author": {
     "name": "Modie (Habeeb)"
   },
@@ -20,7 +20,11 @@
     "ai-assisted-development",
     "prior-art",
     "adr",
-    "ousterhout"
+    "ousterhout",
+    "plan",
+    "agent-factors",
+    "12-factor-agents",
+    "human-in-the-loop"
   ],
   "category": "development",
   "commands": [

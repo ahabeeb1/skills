@@ -69,9 +69,17 @@ This ADR should be reopened if any of:
 - Research: [Link to `prior-art-research` output]
 - Spec: [Link to `draft-spec` output]
 - Grill: [Link to `socratic-grill` output]
+- Plan: [Link to `write-plan` output, if one exists yet]
 - External sources:
   - [Source 1]
   - [Source 2]
+
+### Reference implementations cited
+
+(Only when the ADR relies on a specific external reference impl. Examples below; delete this subsection if not applicable.)
+
+- **HITL:approval-gate mechanism:** [humanlayer](https://github.com/humanlayer/humanlayer) — `@require_approval()` decorators + Slack/email routing. Cited because this ADR's approval-gate slices need an out-of-band suspend/resume API.
+- **12-factor-agents:** [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) — referenced for [factor N]: [why].
 
 ---
 

@@ -13,6 +13,71 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.4.0] — 2026-05-11
+
+Adds the definitive-plan step the chain was missing, the agent-product gap-finder, and a richer HITL vocabulary. Three features bundled because they share an audience (anyone running the chain on a non-trivial slice batch) and they reinforce each other (the plan writes labels; agent-factors-check feeds questions back into grill before plan; HITL:approval-gate slices appear in the plan's slice table).
+
+### Added
+
+- **New skill: `write-plan`.** Sits between `decision-record` and `tdd-loop`. Converts a locked ADR + sliced spec into `docs/agents/plans/<slug>.md` — phased delivery story with binary acceptance gates, dependency DAG, parallelization map, per-phase rollback hooks (or explicit one-way-door declarations), risk register, and revisit triggers. Status field lifecycle: Proposed → Active → Done → Superseded. Update mode bumps `Last updated` and appends a Change log entry; never re-writes a passed phase.
+  - **Why:** The chain went straight from "decision locked" to "implement one slice at a time" with no orchestration artifact tying slices together. Every major skill ecosystem we surveyed has this step — Superpowers' `writing-plans`, OMC's `ralplan`, mattpocock's implicit slice ordering, Claude Code's built-in Plan mode. Without it, `parallel-dev` had no contract for which batches were dispatchable; `tdd-loop` had no authoritative slice order; phase boundaries went undeclared, which meant rollback paths were silent (worst case: a one-way door no one declared, blowing up in production).
+  - Positioned after `decision-record` (not before — planning multiple approaches is waste; planning the chosen one is the value). Distinguished from `vertical-slice` (which *decomposes*) — `write-plan` *sequences and gates* the decomposition.
+  - New references: `skills/write-plan/references/plan-template.md` (the strict format), `skills/write-plan/references/phase-gate-examples.md` (good vs. bad gates by phase shape, with the "two tests" — binary in production AND user/system-observable).
+  - Wired upstream: `decision-record` HANDOFF now offers `write-plan` as the next step (with a fallback to skip directly to `tdd-loop` for trivial slice counts). `tdd-loop` upstream section now reads the plan for authoritative slice order.
+
+- **New skill: `agent-factors-check`.** Conditional domain extension invoked *from* `socratic-grill` (not a new chain phase) when the spec is for an agent / copilot / chatbot / LLM workflow / RAG system / function-calling product. Runs the spec against the 12 factors from [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) and surfaces the 6 gaps the chain's standard 7 axes don't cover — tool-call schemas (F1/F4), state unification (F5), pause/resume API (F6), human-as-tool (F7), trigger surface (F11), and pre-fetch context (F13). Returns 6–13 Socratic questions interleaved into the active grilling agenda; triages them into Must-grill / Should-grill / Nice-to-grill.
+  - **Why:** habeebs-skill's 7 ambiguity axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic — they catch production-readiness gaps but not agent-shape gaps. For agent products, "what's the tool-call schema?" and "how does the agent pause when a human approval is needed?" are make-or-break, and the standard axes leave them implicit. Folding into `socratic-grill` instead of adding a chain phase keeps the main chain lean (80%+ of specs aren't agent products and don't need this overhead). The conditional trigger ("does this orchestrate multiple LLM calls OR use tool/function calls?") fires precisely.
+  - New references: `skills/agent-factors-check/references/factor-check-template.md` (output format), `skills/agent-factors-check/references/factor-questions-bank.md` (concrete question templates per factor — used as starting points, not pasted verbatim).
+  - Cites humanlayer/12-factor-agents as the canonical factor source; cites [humanlayer](https://github.com/humanlayer/humanlayer) (the SDK) as the F7 reference implementation.
+
+- **Extended HITL/AFK vocabulary — three labels instead of two.** Bare `HITL` and `AFK` are replaced with `HITL:inline`, `HITL:approval-gate`, and `AFK:full-auto`. The new vocabulary distinguishes *where* a human gates a slice:
+  - `AFK:full-auto` — no human in the loop; eligible for `parallel-dev` autonomous dispatch.
+  - `HITL:inline` — human in the active chat session answers a question mid-slice (e.g., domain naming, deferred architectural choice). Cheap, conversational pause.
+  - `HITL:approval-gate` — human approves out-of-band (Slack / email / queue / humanlayer). Use for production data migrations, billing decisions, compliance sign-off, external coordination, or whenever a paper trail is required.
+  - **Why:** Bare HITL conflated two fundamentally different runtime shapes. An "in the chat, answer my question" pause is sub-second; an out-of-band approval can take hours. Treating them as one label forced `parallel-dev` to be conservative on every HITL slice (excluding even cheap inline ones from the dispatch eligibility check), and meant `tdd-loop` had no instruction on how to *wait* for an out-of-band approval. The three-label system lets `parallel-dev` correctly accept only `AFK:full-auto`, lets `tdd-loop` distinguish "ask in chat" from "suspend until external approval", and lets the plan's slice table show the runtime shape per row.
+  - Updated reference: `skills/vertical-slice/references/hitl-vs-afk.md` — full decision tree, tiebreaker hierarchy (paper trail > org-chart approval > async timing > chat presence), mid-slice discovery rule (an `AFK` slice that surfaces an approval need at runtime re-labels itself), and end-of-slice-review-is-NOT-HITL clarification.
+  - Updated `skills/vertical-slice/SKILL.md` Phase 4 to apply the new vocabulary and require gate-detail naming (specific role + specific channel; rejects "the team" / "anyone" / "whoever's around").
+  - Updated `skills/parallel-dev/SKILL.md` to exclude both HITL variants from dispatch eligibility.
+  - Updated `skills/decision-record/references/adr-template.md` with a "Reference implementations cited" subsection — humanlayer named there as the canonical impl for `HITL:approval-gate` slices.
+
+### Changed
+
+- **`decision-record` HANDOFF** now offers `write-plan` as the next step before `tdd-loop`. The hand-off includes a one-line decision rule for when to invoke (3+ slices, non-obvious ordering, or before parallel-dev) vs. when to skip directly to `tdd-loop`.
+- **`tdd-loop` integration section** updated: when a plan exists, it is the authoritative slice order, superseding raw spec order. Phase-gate evaluation happens when all slices in a phase are Done.
+- **`socratic-grill` Phase 1** gained a domain-extension hook: if the spec is for an agent product, invoke `agent-factors-check` before Phase 2 to augment the grilling agenda.
+
+### Dogfood tests (`tests/dogfood/`)
+
+Three new tests with criterion-by-criterion rubrics, multiple adversarial cases, and **honest surfacing of weaknesses** (not pass-the-test rubrics):
+
+- `06-write-plan.md` — rate-limiter migration scenario, 12/12 happy-path criteria, 5 adversarial cases (circular dep, all-parallelizable, bad gate, no rollback, update mode). 5 v1.4.1 follow-up improvements logged from the adversarial cases. PASS.
+- `07-agent-factors-check.md` — customer-support copilot spec, 10/10 happy-path criteria, 5 adversarial cases including a non-agent SKIP test, a borderline LLM-as-feature test, a faked-Addressed-on-F7 test, and a multi-agent shape test. 2 in-flight v1.4.0 edits + 1 known limitation logged for v1.5.0 (multi-agent extension). PASS.
+- `08-hitl-labels.md` — usage-based-billing batch with 8 mixed-shape slices, 9/9 happy-path criteria, 5 adversarial cases including mislabel cleanup, mid-slice approval discovery, vague approver rejection, and pre-v1.4.0 label migration. 4 in-flight v1.4.0 edits applied. PASS.
+
+### Edits applied from dogfood findings (before merge)
+
+- `agent-factors-check/SKILL.md` — Phase 1 trigger phrasing extended to catch single-turn tool-using products; Phase 2 N/A score given explicit legitimacy (and explicit exclusion of "I don't know" as a valid N/A reason).
+- `vertical-slice/references/hitl-vs-afk.md` — added tiebreaker hierarchy for conflicting signals, mid-slice approval-discovery runtime rule, and "end-of-slice review is NOT HITL" clarification.
+- `vertical-slice/SKILL.md` Phase 4 quality checklist — added gate-detail validation rule rejecting vague approver names.
+
+### Plugin metadata
+
+- `version`: 1.3.0 → 1.4.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- Skill count: 12 → 14 (added `write-plan`, `agent-factors-check`)
+
+### Compatibility
+
+- Old `HITL` and `AFK` bare labels remain readable in completed work — `hitl-vs-afk.md` migration note covers re-labeling on next touch. No bulk renames required.
+- `write-plan` is optional in the chain — `decision-record` HANDOFF allows skipping directly to `tdd-loop` for trivial slice counts.
+- `agent-factors-check` is conditional — fires only when the spec is for an agent product. Generic CRUD specs never see it.
+- All `next-skills` frontmatter updates are additive.
+
+### Known limitations
+
+- **Multi-agent shape coverage** — the 12 factors are written for single-agent shapes. `agent-factors-check` inherits that blind spot. Logged for v1.5.0 as either a sub-section of `agent-factors-check` or a sibling `multi-agent-shape-check` skill. Surfaced explicitly in `07-agent-factors-check.md` A4.
+
+---
+
 ## [1.3.0] — 2026-05-10
 
 ### Added

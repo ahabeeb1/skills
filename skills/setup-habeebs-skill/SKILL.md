@@ -60,6 +60,8 @@ Then the choices:
 - **Local markdown** — writes slice issues to `.scratch/slices/` in the repo
 - **Other** — describe; I'll write a custom adapter doc
 
+> Press Enter (or say `y` / `accept`) to take the GitHub default.
+
 Wait for answer. Read the corresponding reference file (`issue-tracker-github.md` / `issue-tracker-linear.md` / `issue-tracker-local.md`) and copy its template into `docs/agents/issue-tracker.md`, customized with the user's answer.
 
 ### Phase 3 — Section B: Triage label vocabulary
@@ -78,6 +80,8 @@ Present:
 >
 > What label strings does your team actually use? (Defaults: same as above. Or map to your existing vocab — e.g., if you use `🟢 in-progress` already.)
 
+> Press Enter (or say `y` / `accept`) to take the canonical 5 as-is.
+
 Wait for answer. Write `docs/agents/triage-labels.md` mapping the canonical 5 to the user's chosen strings.
 
 ### Phase 4 — Section C: Domain doc layout
@@ -92,6 +96,8 @@ Present:
 > - **`adrs/` directory** — where decision records live. `decision-record` writes here; `prior-art-research` reads here as Tier 0 internal precedent.
 >
 > Default location is `docs/agents/`. Customize if your team has another convention (`docs/architecture/`, `adr/`, `.adr/`).
+
+> Press Enter (or say `y` / `accept`) to take the `docs/agents/` default.
 
 Wait for answer. Create the directory if needed.
 

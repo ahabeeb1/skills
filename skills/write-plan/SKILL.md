@@ -43,6 +43,14 @@ If any upstream artifact is missing, halt and surface the gap. Don't fabricate a
 
 ## Core workflow
 
+### Pre-flight — Environment check
+
+Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with:
+
+> **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
+
+This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
 ### Phase 1 — Locate inputs and choose plan home
 
 ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/<slug>.md`. The slug matches the ADR slug (e.g., ADR `0008-use-yjs-for-collaborative-editing` → plan `0008-use-yjs-for-collaborative-editing.md`).

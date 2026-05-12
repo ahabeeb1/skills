@@ -34,6 +34,14 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 
 Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
 
+### Pre-flight — Environment check
+
+Before any other phase, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with:
+
+> **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
+
+This skill cannot produce reliable output without the environment-binding cache. Do not proceed.
+
 ### Phase 0 — Decide whether to run in a worktree
 
 Worktrees are valuable when they isolate concurrent or multi-commit work — they're overhead when they don't. Apply this checklist BEFORE writing the failing test:

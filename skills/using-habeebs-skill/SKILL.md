@@ -17,8 +17,11 @@ prior-art-research    → finds production patterns, recommends an approach
 draft-spec            → turns recommendation into an implementation spec
          ↓
 socratic-grill        → drives ambiguity out of decisions
+         │   ↳ agent-factors-check (conditional — only if the spec is an agent/copilot/LLM-workflow product)
          ↓
 decision-record       → captures the result as an ADR
+         ↓
+write-plan            → phased delivery doc with acceptance gates + rollback hooks (skip if trivial)
          ↓
 tdd-loop              → implements with red-green-refactor over vertical slices
          ↓
@@ -27,9 +30,15 @@ deep-modules          → refactor pass to deepen modules and remove shallow lay
 
 ## Supporting primitives (used inside the chain)
 
-- **parallel-dev** — Deep mode of `prior-art-research` uses this to dispatch subagents per sub-problem. Also used by `vertical-slice` to parallelize AFK slices.
-- **vertical-slice** — `draft-spec` uses this to decompose the spec into tracer-bullet issues. Labels each slice HITL (human-in-the-loop) or AFK (autonomous).
+- **parallel-dev** — Deep mode of `prior-art-research` uses this to dispatch subagents per sub-problem. Also consumes `write-plan`'s `pgroup-N` parallelization map to dispatch AFK:full-auto slices concurrently.
+- **vertical-slice** — `draft-spec` uses this to decompose the spec into tracer-bullet issues. Labels each slice `AFK:full-auto`, `HITL:inline`, or `HITL:approval-gate`.
 - **deep-modules** — `decision-record` references the deep-module principles; `tdd-loop` invokes deepening checks at refactor steps.
+- **using-worktrees** — isolates each non-trivial slice in its own branch + worktree with a verified-clean test baseline. Invoked from `tdd-loop` Phase 0 and `parallel-dev` Phase 4.
+- **systematic-debugging** — reproduce → minimize → probe → fix → regression-test. Invoked when a bug surfaces during or after a slice.
+
+## Conditional extensions
+
+- **agent-factors-check** — invoked *from* `socratic-grill` Phase 1 when the spec is for an agent product. Runs the 13 factors from humanlayer/12-factor-agents and adds 6–13 Socratic questions to the active grilling agenda. Skipped for non-agent specs (CRUD, web, mobile, infra).
 
 ## Why this methodology
 

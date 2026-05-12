@@ -13,6 +13,36 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.5.1] — 2026-05-11
+
+Wiring catch-up for the v1.4.0 skills (`write-plan`, `agent-factors-check`). These were committed in v1.4.0 with SKILL.md + references + dogfood tests, but the surrounding discovery surfaces — slash commands, README skill tables, CLAUDE.md chain diagram, `using-habeebs-skill` chain diagram, `plugin.json` keyword sync — weren't included. Originally planned as v1.4.1 but the wiring PR was open while v1.5.0 merged first, so this becomes v1.5.1 to preserve semver order.
+
+### Added
+
+- **`commands/plan.md`** — `/plan` slash command that delegates to `write-plan`. Halt-on-missing-input contract documented in the command body so the user sees the requirement up front (ADR, sliced spec, grill record, `SYSTEM_CONTEXT.md`).
+- **`commands/factor-check.md`** — `/factor-check` slash command that delegates to `agent-factors-check`. Documents the trigger-test honor rule so direct invocation on non-agent specs halts with `SKIP` rather than producing noise.
+
+### Changed
+
+- **`README.md`** — chain diagram now shows the v1.4.0 shape (`decision-record → write-plan → tdd-loop` with `agent-factors-check` as a conditional sibling of `socratic-grill`); skill count updated to 14; new `Conditional extensions` table row for `agent-factors-check`; `write-plan` row added to the core chain table; `vertical-slice` row updated with the 3-label vocab; command list updated with `/plan` and `/factor-check`; Status section rewritten to reflect the v1.4.x+v1.5.x reality.
+- **`CLAUDE.md`** — chain diagram updated to include `write-plan` and the conditional `agent-factors-check` branch; engineering-primitives line extended to include `using-worktrees` and `systematic-debugging`.
+- **`skills/using-habeebs-skill/SKILL.md`** — chain-at-a-glance diagram updated to show `write-plan` between `decision-record` and `tdd-loop` and the `agent-factors-check` sibling branch under `socratic-grill`; supporting-primitives section extended with `using-worktrees` and `systematic-debugging`; new `Conditional extensions` section describes `agent-factors-check` as an opt-in extension that fires only on agent products.
+- **`.claude-plugin/plugin.json`** — keywords list synced to include `plan`, `agent-factors`, `12-factor-agents`, `human-in-the-loop` (these were already in `marketplace.json` v1.4.0 but missed in `plugin.json`); description updated to reflect the v1.4.0 chain shape.
+
+### Plugin metadata
+
+- `version`: 1.5.0 → 1.5.1 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+
+### Why this is a patch, not a minor
+
+No new skills, no new behavior, no new contracts. Pure documentation + command-binding catch-up so the v1.4.0 skills are discoverable through every surface (README, CLAUDE.md, `using-habeebs-skill`, and slash commands) — which is what made them surface in the v1.5.0 self-audit as "orphans" in the first place.
+
+### Compatibility
+
+Fully backward compatible with v1.5.0 — only adds discovery surfaces; no existing skill bodies, references, halt contracts, or handoffs changed.
+
+---
+
 ## [1.5.0] — 2026-05-11
 
 Makes `docs/agents/SYSTEM_CONTEXT.md` load-bearing. The file was already written by `prior-art-research` Phase 0 (since v1.1.0) and read by downstream skills, but no skill *required* it — so silent-defaults masked unconfigured repos. v1.5.0 closes that gap with a halt-if-missing rule on 5 chain skills, a small UX polish to keep the new mandatory bootstrap painless, and the repo's first ADR documenting the choice.

@@ -5,17 +5,21 @@ This plugin gives Claude a research-grounded engineering methodology. When the u
 ## The chain
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop
+prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop
+                                       ↓
+                             agent-factors-check (only if the spec is an agent product)
 ```
 
 Each skill produces output that the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
+
+`write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` is a conditional extension of `socratic-grill` — it only fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product.
 
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** The user almost never says "research." They say "I want to build X." Read between the lines.
 - **Don't skip phases for speed.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding.
 - **Internal precedent first.** For Modie's repos (BeanBot, salahi.app, BOL automation), check local repos before going external. The user's own prior art is Tier 0.
-- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in Deep mode. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes.
+- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in Deep mode AND consumes `write-plan`'s parallelization groups. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes. `using-worktrees` isolates non-trivial slices. `systematic-debugging` handles bugs that surface during or after a slice.
 
 ## What this plugin is NOT
 

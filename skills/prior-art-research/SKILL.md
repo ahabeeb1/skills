@@ -177,7 +177,7 @@ Produce the output using the template in `references/output-template.md`. The st
 
 **Template applies when research actually runs.** If you declined the request (anti-trigger fired) or halted at Phase 1 (insufficient context), produce a much shorter output: a one-line status, what you need from the user, and a path forward. Don't pad with empty template sections.
 
-### Phase 7 — Hand off
+### Phase 7 — Hand off and flush steering
 
 End the response with explicit handoff lines. The downstream skills look for these.
 
@@ -186,6 +186,10 @@ HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation 
 HANDOFF: grill ready — invoke `socratic-grill` to drive ambiguity out of the open questions and decisions above.
 HANDOFF: record ready — once spec + grill complete, invoke `decision-record` to capture the chosen architecture as an ADR.
 ```
+
+**Then flush steering** if `SYSTEM_CONTEXT.md` has an `## Active steering` section with content. Move the block to a `## Last reconciliation outcome` section dated today. This keeps anchors from bleeding across unrelated chain runs. See `references/steering-hints.md` § "Flush at end of chain" for the exact format and the opt-in-persistence rule for multi-chain campaigns.
+
+If the chain terminated without a Phase 6 report (declined / halted), still flush — stale anchors with no reconciliation are worse than no anchors.
 
 ## Anti-patterns this skill guards against
 

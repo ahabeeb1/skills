@@ -13,6 +13,49 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.5.0] — 2026-05-11
+
+Makes `docs/agents/SYSTEM_CONTEXT.md` load-bearing. The file was already written by `prior-art-research` Phase 0 (since v1.1.0) and read by downstream skills, but no skill *required* it — so silent-defaults masked unconfigured repos. v1.5.0 closes that gap with a halt-if-missing rule on 5 chain skills, a small UX polish to keep the new mandatory bootstrap painless, and the repo's first ADR documenting the choice.
+
+### Added
+
+- **Pre-flight environment check on 5 chain skills.** `draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, and `tdd-loop` each gain a "Pre-flight — Environment check" block before Phase 1. If `docs/agents/SYSTEM_CONTEXT.md` is missing, halt with `SETUP REQUIRED: ... Run /groundwork (preferred) or /research (writes the file via Phase 0 reconnaissance) first.` `prior-art-research` is exempt — its Phase 0 IS the writer.
+  - **Why:** Before v1.5.0, missing the file meant chain skills silent-defaulted on triage labels / issue tracker / domain glossary. Most users never ran `setup-habeebs-skill` because nothing required it, and SYSTEM_CONTEXT.md was advertised as the chain's shared memory primitive but was decorative in practice. The halt-redirect makes bootstrap mandatory without making it painful (one-keystroke defaults — see UX polish below). Engineering primitives (`parallel-dev`, `deep-modules`, `vertical-slice`, `using-worktrees`, `systematic-debugging`) are NOT gated — they run from inside the chain (already covered) or standalone (debugging — halting hurts more than helps).
+
+- **ADR-0001: Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol** (`docs/agents/adrs/0001-environment-binding-via-system-context.md`). The repo's first ADR. Documents the choice of in-repo markdown over alternatives (tmux session state, vector-backed memory, hierarchical AGENTS.md, declarative project-mode field), the halt-if-missing contract, and the explicit *non-decision* to add a project-mode field — preventing the next audit from re-litigating.
+  - **Why:** The methodology dogfoods itself. This is the first time a habeebs-skill ADR records a habeebs-skill design choice. The "Alternatives considered" section is the most load-bearing content in the file — it captures the audit's evidence so future readers can judge whether the rejections still hold.
+
+- **`docs/agents/adrs/README.md`** index file for ADRs, with conventions (Nygard format, zero-padded monotonic numbering, status lifecycle, never-delete rule) and a table of contents.
+
+- **`docs/agents/specs/v1.5.0-environment-binding.md`** — the spec produced by `draft-spec` for this release. Kept as a reference for future-similar work and to demonstrate the chain dogfooding itself end-to-end.
+
+### Changed
+
+- **`setup-habeebs-skill`** — each of the three setup sections (issue tracker, triage labels, domain doc layout) now shows the default value and a one-keystroke Enter-accept hint. Keeps the new mandatory bootstrap from feeling like friction.
+  - **Why:** Making bootstrap mandatory raises the first-install bar. If the user just wants defaults, they should be able to clear all three sections with three Enter presses. Friction proportional to value: zero, since defaults are sensible for most repos.
+
+- **`parallel-dev`** — adds a "Single-writer invariant for SYSTEM_CONTEXT.md" note before Phase 5. Documents the existing invariant explicitly: parent's `prior-art-research` Phase 0 is the sole writer; subagents are read-only. No behavior change.
+  - **Why:** Concurrent subagents reading SYSTEM_CONTEXT.md mid-write would corrupt their view. The chain already orders Phase 0 before any parallel dispatch, so the race can't happen — but the invariant was implicit. Documenting makes it explicit for future maintainers.
+
+### Plugin metadata
+
+- `version`: 1.4.1 → 1.5.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+
+### Why this is a minor, not a patch
+
+New required pre-flight phase on 5 skills, new mandatory artifact (`SYSTEM_CONTEXT.md`), and a contract change (chain halts on missing file where it used to silent-default). Backward compatible *in spirit* — running `/groundwork --defaults` once unblocks any pre-v1.5.0 repo — but the chain's behavior on a fresh repo is materially different. MINOR per semver.
+
+### Dogfood
+
+This release was itself produced by the chain: `prior-art-research` (audit on env integration / greenfield-brownfield / redundancy) → `draft-spec` (initial 7-slice plan) → `socratic-grill` (cut to 2 slices via Q1–Q7 resolution + post-grill scope cut that removed the project-mode field) → `decision-record` (ADR-0001) → implementation. The spec, the grill record (in-conversation), and the ADR are all in-repo artifacts.
+
+### Compatibility
+
+- Repos that already have `docs/agents/SYSTEM_CONTEXT.md` from v1.4.x: no schema change; new field-free format works as-is.
+- Repos without the file: first chain invocation halts with the redirect message. `/groundwork --defaults` (or `/research` for users who want recon before bootstrap) clears the halt.
+
+---
+
 ## [1.4.0] — 2026-05-11
 
 Adds the definitive-plan step the chain was missing, the agent-product gap-finder, and a richer HITL vocabulary. Three features bundled because they share an audience (anyone running the chain on a non-trivial slice batch) and they reinforce each other (the plan writes labels; agent-factors-check feeds questions back into grill before plan; HITL:approval-gate slices appear in the plan's slice table).

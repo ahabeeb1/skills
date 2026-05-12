@@ -29,6 +29,14 @@ The mode is Socratic: ask questions, surface assumptions, force concrete answers
 
 ## Core workflow
 
+### Pre-flight — Environment check
+
+Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with:
+
+> **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
+
+This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
 ### Phase 1 — Inventory open questions
 
 Collect every ambiguous item from the inputs:

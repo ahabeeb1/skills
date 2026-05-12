@@ -108,6 +108,10 @@ Launch all subagents in the same turn. (In Claude Code, this is one tool-call me
 
 Why same turn: dispatching one at a time defeats the purpose. Some agent runtimes treat sequential dispatch as cheating — verify your runtime supports concurrent spawn.
 
+### Single-writer invariant for SYSTEM_CONTEXT.md
+
+`docs/agents/SYSTEM_CONTEXT.md` is **read-only for subagents**. The parent agent's `prior-art-research` Phase 0 is the single writer. Dispatch subagents only AFTER Phase 0 has settled (i.e., the parent has completed research-phase recon). This prevents read-during-write races and keeps the environment-binding cache consistent across the parallel batch.
+
 ### Phase 5 — Wait and collect
 
 While subagents run, the dispatcher is idle (or can do bookkeeping). When notifications arrive:

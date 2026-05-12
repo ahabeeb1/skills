@@ -27,6 +27,14 @@ This skill is convergent: it commits to choices, decomposes into deliverable sli
 
 ## Core workflow
 
+### Pre-flight — Environment check
+
+Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with:
+
+> **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
+
+This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
 ### Phase 1 — Locate the recommendation
 
 The spec is built from a research recommendation. Find it:

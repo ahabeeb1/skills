@@ -13,6 +13,38 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.5.4] — 2026-05-12
+
+Two patches: (1) Phase 6.5 step 3 now covers the `ahead=0, behind>0` simple-fast-forward case — the most common post-merge state, missed in v1.5.3 and caught by the live dogfood run on v1.5.3's own merge. (2) Plugin install was failing with `agents: Invalid input` because `plugin.json` declared `commands: ["./commands/"]` and `agents: ["./agents/"]` — both directories are auto-discovered per the [Claude Code plugin reference](https://code.claude.com/docs/en/plugins-reference), so the explicit declarations were redundant and the validator rejected the directory-path form for `agents`. Both fields removed; auto-discovery handles them as it does for Superpowers and other reference plugins.
+
+### Fixed
+
+- **`using-worktrees` Phase 6.5 step 3** — added the `ahead=0, behind>0` fast-forward case. Behavior: `git merge --ff-only origin/<default>` then continue to step 6 (cleanup). Previously this case fell through to the `ahead=0` "already in sync" path and silently left local main behind origin.
+  - **Why:** Caught by the live dogfood run of `/sync` against v1.5.3's own squash-merge. Local main was 1 commit behind origin (the v1.5.3 squash); the ghost-commit detection in step 4 only triggers when `ahead>0 AND behind>0`. Without the explicit FF case, the most common post-merge state was unhandled. Found-by-dogfood is the strongest test signal.
+- **`/sync` slash-command description** — now lists all four `ahead/behind` cases explicitly so the discovery surface matches the SKILL.md.
+- **`.claude-plugin/plugin.json`** — removed `commands` and `agents` fields. Both directories are auto-discovered when the plugin loads. The `agents: ["./agents/"]` declaration was the immediate cause of the user's `Failed to install: ... agents: Invalid input` error; `commands: ["./commands/"]` happened to validate but was equally redundant. Removing both follows Superpowers' convention and the [Anthropic plugins reference](https://code.claude.com/docs/en/plugins-reference).
+  - **Why:** Validator in current Claude Code rejects directory-path strings in the `agents` array (it expects individual `.md` file paths). Auto-discovery sidesteps the schema question entirely and is forward-compatible — new agents/commands register without manifest edits.
+
+### Plugin metadata
+
+- `version`: 1.5.3 → 1.5.4 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- `plugin.json` is now 4 lines shorter: no `commands` field, no `agents` field
+
+### Why this is a patch, not a minor
+
+Both changes are bug fixes against v1.5.3's stated contract. Phase 6.5 was supposed to handle "post-merge sync" — the FF case was an omission, not a new feature. Manifest fix restores install-time validity. No new skills, no contract changes.
+
+### Compatibility
+
+- **Phase 6.5 FF case**: any repo that previously had local-main-behind-origin and ran `/sync` saw no action; now it gets a clean fast-forward. Pure improvement.
+- **Manifest**: existing installs of v1.5.3 (where the agents field validator was lenient) continue to work; new installs no longer fail with the validation error. Auto-discovery means the `agents/` and `commands/` directories continue to register correctly.
+
+### Dogfood
+
+The Phase 6.5 fix was caught by running `/sync` on v1.5.3's own squash-merge — the test ran the new skill against the very state it was designed to handle, and surfaced the missing case immediately. This is the third release in a row produced by the chain dogfooding itself (v1.5.0 → v1.5.2 → v1.5.4).
+
+---
+
 ## [1.5.3] — 2026-05-12
 
 Closes the squash-merge ghost-commit gap. After every PR squash-merge, local default-branch carries the original feature commits whose content is now duplicated by origin's squash, so `git pull origin <default>` conflicts on every release. v1.5.3 adds `using-worktrees` Phase 6.5 + `/sync` slash command that detects the case via tree-equivalence and auto-resolves with `git reset --hard origin/<default>` when it's unambiguously a ghost-commit case. Genuine local-only work always halts. Additive only — no contract changes.

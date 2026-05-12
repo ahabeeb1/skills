@@ -258,9 +258,10 @@ After a PR is **squash-merged** on origin, the local default branch carries the 
    ahead=$(git rev-list --count origin/"$default_branch"..HEAD)
    behind=$(git rev-list --count HEAD..origin/"$default_branch")
    ```
-   - `ahead=0`: already in sync. Skip to step 6.
+   - `ahead=0, behind=0`: already in sync. Skip to step 6.
+   - `ahead=0, behind>0`: **simple fast-forward** — local is behind, no local-only commits. Run `git merge --ff-only origin/"$default_branch"` and proceed to step 6. This is the most common state after a PR is merged on origin and no other local work has happened on the default branch.
    - `ahead>0, behind=0`: local has work origin doesn't. **Halt** — this is real local-only work the user must push or discard; never auto-reset it.
-   - `ahead>0, behind>0`: divergence. Run step 4 (ghost-commit detection).
+   - `ahead>0, behind>0`: divergence with ghost-commit possibility. Run step 4 (ghost-commit detection).
 
 4. **Ghost-commit detection (the heart of the sub-phase)**
 

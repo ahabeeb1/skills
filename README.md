@@ -79,10 +79,11 @@ habeebs-skill/
 │   ├── factor-check.md      # /factor-check — invokes agent-factors-check   (v1.4.0)
 │   └── groundwork.md        # /groundwork   — invokes setup-habeebs-skill
 │
-├── agents/                  # Subagent prompts (used by prior-art-research Deep mode)
-│   ├── source-fetcher.md    # Fetches one source, returns a structured record
-│   ├── pattern-extractor.md # Identifies patterns across source records
-│   └── synthesizer.md       # Produces the final convergent recommendation
+├── agents/                  # Subagent prompts (used by prior-art-research Deep mode + Phase 2.5 critic)
+│   ├── source-fetcher.md           # Fetches one source, returns a structured record (v1.7.0: 4-status return + SYSTEM_CONTEXT preamble)
+│   ├── pattern-extractor.md        # Identifies patterns across source records (v1.7.0: homogeneity-bias flagging)
+│   ├── synthesizer.md              # Produces the final convergent recommendation (v1.7.0: surfaces contradictions, not silent smoothing)
+│   └── category-completeness-critic.md  # v1.7.0 — coverage critic for prior-art-research Phase 2.5; catches missing-category failures
 │
 ├── hooks/                   # v1.6.0 — Claude Code hooks (warn-only / block-only per ADR-0003)
 │   ├── hooks.json           # Hook declarations (auto-discovered by Claude Code)
@@ -130,7 +131,7 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 
 | Skill | What it does | When it fires |
 |---|---|---|
-| `prior-art-research` | Finds 3-5 production implementations of approximately-X, extracts patterns, recommends an approach | User wants to build/implement/design any non-trivial feature |
+| `prior-art-research` | Finds 3-5 production implementations of approximately-X, extracts patterns, recommends an approach. **v1.7.0:** Phase 2.5 dispatches a `category-completeness-critic` subagent to catch missing-category failures (e.g., the v1.6.0 hooks miss) before search burns budget. | User wants to build/implement/design any non-trivial feature |
 | `draft-spec` | Turns the research recommendation into an implementation spec | After `prior-art-research` completes |
 | `socratic-grill` | Drives ambiguity out of every decision through structured questioning | When a spec has open questions or implicit assumptions |
 | `decision-record` | Captures chosen architecture as an ADR for future reference | After spec + grill, before implementation |
@@ -142,7 +143,7 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 |---|---|---|
 | `tdd-loop` | Red-green-refactor TDD with vertical slices + two-stage review (spec compliance + code quality) | Superpowers + mattpocock |
 | `deep-modules` | Ousterhout deep module check — find shallow modules, propose deepenings | mattpocock |
-| `parallel-dev` | Dispatches parallel subagents into isolated worktrees, with per-subagent commit discipline | Superpowers + OMC |
+| `parallel-dev` | Dispatches parallel subagents into isolated worktrees, with per-subagent commit discipline. **v1.7.0:** 4-status return contract (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) + mandatory `SYSTEM_CONTEXT` preamble + dispatch records at `docs/agents/dispatches/` (audit log). Auto-dispatched by `tdd-loop` Phase 0.5 when an active plan has a pgroup of size ≥2. | Superpowers + OMC + Anthropic multi-agent research |
 | `vertical-slice` | Decomposes work into tracer-bullet vertical slices with the 3-label vocab (`AFK:full-auto` / `HITL:inline` / `HITL:approval-gate`) | mattpocock + humanlayer |
 | `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; teardown via finishing-a-development-branch | Superpowers |
 | `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem | Superpowers + OMC trace |

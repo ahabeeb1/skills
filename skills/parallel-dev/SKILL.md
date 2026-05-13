@@ -1,7 +1,6 @@
 ---
 name: parallel-dev
-description: Dispatches parallel subagents for independent work. Used internally by prior-art-research Deep mode (one subagent per sub-problem) and by vertical-slice (one subagent per AFK slice). Also user-invokable for parallel refactor passes, parallel codebase exploration, or any batch of work where the pieces don't share state or order dependencies. Make sure to use this skill whenever the work can be decomposed into independent units that benefit from concurrent execution — but only after verifying independence (no shared mutable state, no ordering requirements, no file conflicts). Inspired by Superpowers' subagent-driven-development and OMC's ralph/team/ultrawork. Do NOT use for sequential work, for tasks where order matters, for work touching the same files, or when the cost of coordination exceeds the parallelism gain.
-next-skills: [using-worktrees, tdd-loop]
+description: Dispatches parallel subagents for independent work. Used internally by prior-art-research Deep mode and by vertical-slice for AFK slices. Also user-invokable for parallel refactor passes, codebase exploration, or any batch where pieces don't share state or order. Make sure to use this skill whenever work decomposes into independent units that benefit from concurrent execution — but only after verifying independence (no shared state, no ordering, no file conflicts). Do NOT use for sequential work or tasks touching the same files.
 ---
 
 # Parallel Dev
@@ -123,6 +122,8 @@ Why same turn: dispatching one at a time defeats the purpose. Some agent runtime
 ### Single-writer invariant for SYSTEM_CONTEXT.md
 
 `docs/agents/SYSTEM_CONTEXT.md` is **read-only for subagents**. The parent agent's `prior-art-research` Phase 0 is the single writer. Dispatch subagents only AFTER Phase 0 has settled (i.e., the parent has completed research-phase recon). This prevents read-during-write races and keeps the environment-binding cache consistent across the parallel batch.
+
+Before reading SYSTEM_CONTEXT.md (in the parent agent prior to building each subagent's context preamble), run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). The parent dispatcher emits the banner if stale, then proceeds with whatever the consuming chain skill's policy is (most halt with `Refresh? (Y/n)`).
 
 ### Phase 5 — Wait and collect
 
@@ -246,3 +247,9 @@ These signs say "parallel isn't right here, run sequentially":
 - `../../agents/pattern-extractor.md` — subagent prompt for research extraction
 - `../../agents/synthesizer.md` — subagent prompt for aggregating parallel results
 - `references/dispatch-record-template.md` — template for capturing a parallel dispatch
+
+## Origins
+
+- Inspired by Superpowers' [`subagent-driven-development`](https://github.com/obra/superpowers) — fresh-subagent-per-task pattern + independence check
+- Inspired by oh-my-claudecode's `ralph` / `team` / `ultrawork` — burst-parallel dispatch with on-demand worker lifecycle
+- Inspired by Anthropic's multi-agent research system — lead + N-subagent fan-out with role specs and citation aggregation

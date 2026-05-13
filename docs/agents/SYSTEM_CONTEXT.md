@@ -41,8 +41,8 @@ skills/*/SKILL.md
 ## Scale envelope
 
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
-- **Skill count:** 14 in tree, all wired (the v1.4.0 orphans `write-plan` and `agent-factors-check` were brought into `commands/`, `README.md`, `CHANGELOG.md`, and `using-habeebs-skill` in v1.5.1)
-- **Chain depth:** 6 core (research → spec → grill → record → plan → tdd) + 6 primitives + 2 meta. `agent-factors-check` is a conditional extension of grill (fires when the spec is an LLM/agent product).
+- **Skill count:** 15 in tree (was 14 pre-v1.9.0; `verify-output` added in v1.9.0 slice 3 — post-tdd anti-slop pass per ADR-0008).
+- **Chain depth:** 6 core (research → spec → grill → record → plan → tdd) + 7 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging, verify-output) + 2 meta (using-habeebs-skill, setup-habeebs-skill). `agent-factors-check` is a conditional extension of grill (fires when the spec is an LLM/agent product). `verify-output` is invoked from `tdd-loop` Pass 5c between two-stage review and commit.
 
 ## Methodology / agent setup
 
@@ -50,20 +50,23 @@ skills/*/SKILL.md
 - **Issue tracker:** GitHub Issues (`docs/agents/issue-tracker.md`)
 - **Triage labels:** Canonical 5 (`docs/agents/triage-labels.md`)
 - **Domain glossary:** Populated — 13 concepts (`docs/agents/GLOSSARY.md`). Methodology-specific vocabulary; project-specific architectural vocabulary continues to live in `skills/<name>/references/LANGUAGE.md` for `deep-modules`.
-- **Latest ADR:** ADR-0005 (`lifecycle-split-glossary-and-system-context`, Accepted 2026-05-13; partially supersedes ADR-0001).
+- **Latest ADR:** ADR-0009 (`docs-agents-references-convention`, Accepted 2026-05-13). v1.9.0 batch — ADR-0006/0007/0008/0009 all Accepted 2026-05-13. ADR-0001 partially amended by ADR-0006. **All 6 v1.9.0 slices implemented 2026-05-13** (description-trim, next-skills removal, verify-output skill, /abort-chain convention, GLOSSARY widening, mtime-check helper extraction). Release pending — version stays 1.8.0 in manifests until release commit per spec § Release.
 
 ## Recent hot files
 
 (From `git log --since="60 days"` as of 2026-05-13)
 
-- `CHANGELOG.md` (touched every release)
-- `.claude-plugin/marketplace.json` / `.claude-plugin/plugin.json` (version bumps per release)
-- `skills/setup-habeebs-skill/SKILL.md` (v1.8.0 — Phase 7 chain into Phase 0)
-- `skills/prior-art-research/SKILL.md` (steady churn — Phase 0/2.5/7 evolutions)
-- `skills/parallel-dev/SKILL.md` (v1.7.0 — dispatch contract)
-- `skills/tdd-loop/SKILL.md` (v1.7.0 — Phase 0.5 pgroup auto-dispatch)
-- `docs/agents/adrs/*` (4 ADRs landed across v1.5.0–v1.7.0; ADR-0005 lands at v1.8.0)
-- `docs/agents/specs/*` (one spec per release post-v1.5.0)
+- `CHANGELOG.md` (touched every release; v1.9.0 entries land under `## Unreleased`)
+- `.claude-plugin/marketplace.json` / `.claude-plugin/plugin.json` (version bumps per release; pending 1.8.0 → 1.9.0)
+- `skills/*/SKILL.md` (all 14 pre-existing skills touched by v1.9.0 slices 1+2; descriptions trimmed, `next-skills` removed)
+- `skills/verify-output/SKILL.md` (new in v1.9.0 slice 3)
+- `skills/tdd-loop/SKILL.md` (v1.9.0 slice 3 — Pass 5c invokes verify-output between two-stage review and commit)
+- `skills/using-habeebs-skill/SKILL.md` (v1.9.0 slice 4 — `## Aborting the chain` section)
+- `docs/agents/references/system-context-staleness-check.md` (new in v1.9.0 slice 6; first inhabitant of new `docs/agents/references/` convention)
+- `docs/agents/adrs/000{6,7,8,9}-*.md` (v1.9.0 ADR batch landed 2026-05-13)
+- `docs/agents/specs/v1.9.0-ecosystem-alignment.md` + `v1.9.0-ecosystem-alignment-grill.md` (v1.9.0 spec + grill record)
+- `tests/dogfood/11-description-budget/` (slice 1+2 assertions)
+- `tests/dogfood/12-verify-output/` (slice 3 scenarios)
 
 ## Notable absences
 
@@ -87,6 +90,17 @@ skills/*/SKILL.md
 (none — flushed 2026-05-12 per Phase 7 flush rule; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-05-13 — topic: habeebs-skill ecosystem audit — Anthropic best-practices + Superpowers + mattpocock + OMC + claude-mem (v1.9.0 candidate)**
+
+- Anchor "Anthropic Skills 2.0 / progressive disclosure / SKILL.md frontmatter": Honored — habeebs-skill matches Anthropic-canonical 3-level model; all 14 descriptions under the 1,536-char cap (max 946); all SKILL.md under 500-line cap (max 379).
+- Look-at "obra/superpowers": Honored — examined; habeebs-skill is stricter on chain integrity (HANDOFF lines, Phase 0/2.5 ceremony), looser on SKILL.md inline density. Superpowers uses sibling-file refs vs habeebs's `references/` subdir (Anthropic-canonical).
+- Look-at "mattpocock/skills": Honored — examined; habeebs's claim of "consolidated and re-sequenced mattpocock's patterns into a chain" verified accurate (Ousterhout deep-modules, vertical-slice tracer-bullets, setup-skill, CONTEXT/ADR conventions all lifted directly).
+- Look-at "Yeachan-Heo/oh-my-claudecode": Honored — examined as contrast; ADR-0002 runtime-composition rejection reaffirmed. Specific skill ideas (`ai-slop-cleaner`/`ultraqa` → recommend `verify-output`; `cancel` → recommend `/abort-chain` convention) flagged for adoption WITHOUT runtime coupling.
+- Look-at "thedotmack/claude-mem": Honored with caveat — observation-memory pain is real but runtime substrate (SQLite+Chroma+MCP) rejection holds. Deferred revisit if user demand surfaces; `## Last reconciliation outcome` already partial coverage.
+- Avoid "re-litigating ADR-0002 composition rejection": Honored — all recommendations stay within markdown-only / no-runtime-substrate constraints.
+- Phase 2.5 critic outcome: APPROVED (single-lead audit; discoverability folded into sub-problem 1 during decomposition; no late additions surfaced during synthesis).
+- Verdict: aligned on speed (Phase 0 cache + bounded iteration), aligned on token-efficiency basics (canonical progressive disclosure) but with 20-30% description verbosity overhead, gap on post-impl quality (no anti-slop pass before commit) and chain-abort UX. Recommended v1.9.0 bundle: description-trim ~25%, remove unrecognized `next-skills` frontmatter, add `verify-output` skill, add `/abort-chain` convention, widen GLOSSARY.md consumption to draft-spec / socratic-grill / write-plan.
 
 **2026-05-13 — topic: reconcile CONTEXT.md (setup) vs SYSTEM_CONTEXT.md (Phase 0) — v1.8.0 candidate**
 

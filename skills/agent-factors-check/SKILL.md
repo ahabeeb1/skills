@@ -1,7 +1,6 @@
 ---
 name: agent-factors-check
-description: Domain-specific checklist invoked from socratic-grill when the spec is for an LLM/agent product (not generic CRUD). Runs the spec against the 12 factors from humanlayer/12-factor-agents and surfaces the 6 gaps habeebs-skill's main chain otherwise misses — tool-call schemas (F1/F4), state unification (F5), pause/resume API (F6), human-as-tool (F7), trigger surface (F11), and pre-fetch context (F13). Returns one Socratic question per gap to be folded into the active grilling agenda. Make sure to use this skill whenever the spec describes building an agent, assistant, copilot, chatbot, LLM workflow, RAG system, or any product where an LLM call is on the critical path. Do NOT use for generic web/CRUD/mobile apps where an LLM is absent or only peripheral, for infra-only changes, or for products that merely *consume* an external AI API without orchestrating their own agent loop.
-next-skills: [socratic-grill, draft-spec]
+description: Domain extension of socratic-grill for LLM/agent specs. Runs the spec against the 12 factors from humanlayer/12-factor-agents and surfaces 6 gaps habeebs-skill's main chain misses (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch context). Returns one Socratic question per gap for the grilling agenda. Make sure to use this skill whenever the spec is for an agent, assistant, copilot, chatbot, LLM workflow, RAG, or function-calling product. Do NOT use for generic CRUD/web/mobile apps without LLM orchestration.
 ---
 
 # Agent Factors Check
@@ -74,6 +73,10 @@ From [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agent
 | F13 Pre-fetch context | Partially in `prior-art-research`, not a primitive |
 
 ## Core workflow
+
+### Pre-flight — Environment check
+
+This skill is invoked from inside `socratic-grill` and inherits its environment. If invoked standalone (e.g., `/factor-check` directly), apply the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md) before reading SYSTEM_CONTEXT.md. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
 
 ### Phase 1 — Confirm trigger
 

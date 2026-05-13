@@ -1,7 +1,6 @@
 ---
 name: vertical-slice
-description: Decomposes a spec or plan into vertical slices (tracer bullets) — each cutting through ALL integration layers end-to-end, never a horizontal slice of one layer. Tags each slice HITL (human-in-the-loop required mid-slice) or AFK (autonomous-friendly, agent can implement and merge without human gating). Optionally publishes slices to the configured issue tracker (GitHub / Linear / local markdown per setup-habeebs-skill). Make sure to use this skill whenever a plan, spec, PRD, or feature description needs to be broken into work items — especially when the user says "break this down", "create tickets", "what are the steps", or after draft-spec produces a recommendation that needs slicing. Inspired by mattpocock's to-issues. Do NOT use to slice already-sliced work (don't re-decompose), to slice trivial tasks that fit in one slice anyway, or to slice exploration/prototyping work where the design IS the deliverable.
-next-skills: [tdd-loop, parallel-dev, socratic-grill]
+description: Decomposes a spec or plan into vertical slices (tracer bullets) — each cutting through ALL integration layers end-to-end, never a horizontal slice of one layer. Tags each slice HITL (human-in-the-loop required) or AFK (autonomous-friendly). Optionally publishes slices to the configured issue tracker. Make sure to use this skill whenever a plan, spec, PRD, or feature description needs to be broken into work items — especially when the user says "break this down", "create tickets", or "what are the steps". Do NOT use to re-slice already-sliced work or for trivial single-slice tasks.
 ---
 
 # Vertical Slice
@@ -217,3 +216,8 @@ If any item fails, refine the slice before publishing.
 - `setup-habeebs-skill` — configures the issue tracker and triage labels this skill uses
 - `references/slice-checklist.md` — quality bar for each slice
 - `references/hitl-vs-afk.md` — when to label which
+
+## Origins
+
+- Lifted from mattpocock's [`to-issues`](https://github.com/mattpocock/skills) — tracer-bullet vertical slicing terminology + the "each slice delivers a narrow but COMPLETE path through every layer" framing
+- HITL / AFK tagging axis is original to habeebs-skill (adds an autonomy-readiness dimension that mattpocock's pattern doesn't address)

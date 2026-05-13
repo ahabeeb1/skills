@@ -1,7 +1,6 @@
 ---
 name: tdd-loop
-description: Red-green-refactor TDD loop, one vertical slice at a time. Writes the failing test FIRST, watches it fail with the expected error, writes the minimal code to make it pass, watches it pass, refactors (invoking deep-modules at the refactor step), runs two-stage review (spec compliance + code quality), and commits. Make sure to use this skill whenever implementation starts — after a spec is locked, after socratic-grill closes open questions, or whenever the user is about to write production code. Especially trigger when the user says "let's start building", "implement slice N", or has a vertical slice queued. Do NOT use for spike/throwaway exploration code, prototyping flows where the design is the deliverable, or for documentation-only changes.
-next-skills: [deep-modules, parallel-dev, systematic-debugging, decision-record]
+description: Red-green-refactor TDD loop, one vertical slice at a time. Writes the failing test FIRST, watches it fail with the expected error, writes minimal code to pass, watches it pass, refactors (invoking deep-modules), runs two-stage review (spec compliance + code quality), and commits. Make sure to use this skill whenever implementation starts — after a spec is locked, after socratic-grill closes open questions, or when the user says "let's start building" or "implement slice N". Do NOT use for spike/throwaway exploration code, prototyping where the design is the deliverable, or documentation-only changes.
 ---
 
 # TDD Loop
@@ -43,6 +42,8 @@ Before any other phase, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missin
 > **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
 
 This skill cannot produce reliable output without the environment-binding cache. Do not proceed.
+
+**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
 
 ### Phase 0 — Decide whether to run in a worktree
 
@@ -203,7 +204,16 @@ Before declaring the slice complete, run TWO independent passes. Skipping either
 - Naming that fights the domain glossary
 - Helper that's used in exactly one place and should be inlined
 
-If 5a or 5b surfaces something material, fix in this slice's commit chain. Don't push the cleanup to "later."
+**Pass 5c — Anti-slop review (verify-output):** stage the slice's diff (`git add` the relevant files) and invoke [`verify-output`](../verify-output/SKILL.md). The skill scans for the seven slop heuristics (unjustified comments, defensive validation past trusted boundaries, half-finished implementations, dead code, repeated boilerplate, feature creep, backward-compat shims for unshipped code). 4-status return per ADR-0004:
+
+- `DONE` → proceed to Phase 4 COMMIT.
+- `DONE_WITH_CONCERNS` → read the concerns, decide deliberately; ANNOTATE mode is the default and does NOT block. Proceed to commit (or fix and re-run if the concerns are worth addressing).
+- `BLOCKED` → severe slop found (half-finished impl, unreachable code, declared-and-unused). The commit is halted. Fix the concerns and re-run Pass 5c, OR commit with `--override <ref>` if the stub is intentional and tracked (the override is recorded in the commit message and is `git log`-auditable).
+- `NEEDS_CONTEXT` → an ambiguous case the skill couldn't decide. Surface to the user, resolve, re-run.
+
+Pass 5c is invoked in ANNOTATE mode by default. Projects that want stricter enforcement configure `verify-output --gate` in their setup (moderate slop becomes blocking).
+
+If 5a, 5b, or 5c surfaces something material, fix in this slice's commit chain. Don't push the cleanup to "later."
 
 ### Phase 6 — Check in and advance
 
@@ -249,6 +259,7 @@ These are signs the slice is wrong, not that TDD is wrong:
 - `decision-record` — locks the architecture this skill implements
 - `write-plan` — sequences slices into phases with acceptance gates; defines the order this skill executes in
 - `deep-modules` — invoked at the refactor step
+- `verify-output` — invoked at Pass 5c between two-stage review and commit; anti-slop pass
 - `parallel-dev` — dispatches parallel TDD loops on independent slices
 - `vertical-slice` — defines what makes a slice implementable
 - `references/test-seam-guide.md` — choosing unit vs integration vs e2e

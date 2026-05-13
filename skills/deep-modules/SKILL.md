@@ -1,6 +1,6 @@
 ---
 name: deep-modules
-description: Ousterhout-style deep-module checker and improver. Identifies shallow modules — interfaces nearly as complex as their implementations — and pass-through layers that earn nothing. Applies the deletion test (if removing a module makes complexity vanish, it was a pass-through; if complexity reappears across N callers, it was earning its keep). Proposes deepenings that combine shallow seams into single deep abstractions. Make sure to use this skill at the REFACTOR step of every tdd-loop cycle, and periodically as a standalone codebase-health pass (mattpocock recommends every few days). Especially trigger when the user says "this code feels off", "too many small files", "I keep bouncing between files to understand this", or after a feature ships that touched many modules. Do NOT use to rewrite already-deep modules, to argue against ADRs already decided, or to add abstractions where they aren't yet earned.
+description: Ousterhout-style deep-module checker and improver. Identifies shallow modules — interfaces nearly as complex as their implementations — and pass-through layers that earn nothing. Applies the deletion test (remove the module; if complexity vanishes, it was pass-through). Proposes deepenings that combine shallow seams. Make sure to use this skill at the REFACTOR step of every tdd-loop cycle, periodically as a standalone codebase-health pass, or when the user says "this code feels off" or "too many small files". Do NOT use to rewrite already-deep modules or to add abstractions that aren't yet earned.
 ---
 
 # Deep Modules
@@ -196,3 +196,8 @@ Capturing this is valuable — it confirms the check ran, which prevents the "no
 - `setup-habeebs-skill` — sets up GLOSSARY.md and ADR directory this skill reads
 - `references/LANGUAGE.md` — Ousterhout architectural vocabulary
 - `references/deletion-test-examples.md` — worked examples of the deletion test
+
+## Origins
+
+- Lifted from John Ousterhout's *A Philosophy of Software Design* — the deep/shallow module concept, the deletion test, and the "complexity should be inside, not at the interface" principle
+- Inspired by mattpocock's [`improve-codebase-architecture`](https://github.com/mattpocock/skills) — recurring refactor-cadence framing (run this skill every few days, not just at end-of-feature)

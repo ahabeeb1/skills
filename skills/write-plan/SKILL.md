@@ -1,7 +1,6 @@
 ---
 name: write-plan
-description: Converts a locked ADR + sliced spec into a definitive implementation plan — phased delivery with explicit acceptance gates, dependency DAG, parallelization map, per-phase rollback hooks, and revisit triggers. The plan is the orchestration artifact that tdd-loop reads slice-by-slice and that parallel-dev consults when batching AFK groups. Inspired by oh-my-claudecode's `ralplan` (convergent phased planning) and Superpowers' `writing-plans` (commit-able plan docs). Make sure to use this skill whenever decision-record produces "HANDOFF: implementation ready", whenever the user says "what's the plan / give me a plan / map this out", whenever multiple slices need sequencing and you're tempted to wing it, or before any parallel-dev dispatch of 3+ slices. Do NOT use for single-slice work, exploration spikes, doc-only changes, or when no ADR exists yet (run decision-record first).
-next-skills: [tdd-loop, parallel-dev, systematic-debugging]
+description: Converts a locked ADR + sliced spec into a definitive implementation plan — phased delivery with explicit acceptance gates, dependency DAG, parallelization map, per-phase rollback hooks, and revisit triggers. The plan is the orchestration artifact tdd-loop reads slice-by-slice and parallel-dev consults when batching AFK groups. Make sure to use this skill whenever decision-record emits "HANDOFF: implementation ready", whenever the user says "give me a plan" or "map this out", or before any parallel-dev dispatch of 3+ slices. Do NOT use for single-slice work, exploration spikes, or when no ADR exists yet.
 ---
 
 # Write Plan
@@ -50,6 +49,10 @@ Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt 
 > **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
 
 This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
+**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
+
+**GLOSSARY lookup (on-demand):** If methodology terminology in this spec / grill / plan feels ambiguous (e.g., "slice", "phase", "dispatch group", "pgroup", "HITL", "AFK"), Read `docs/agents/GLOSSARY.md` immediately before proceeding. Don't guess at habeebs-skill vocabulary — the glossary is the canonical reference.
 
 ### Phase 1 — Locate inputs and choose plan home
 
@@ -214,3 +217,8 @@ When called on an existing plan:
 - `references/phase-gate-examples.md` — good vs. bad acceptance gates
 - oh-my-claudecode `ralplan` — convergent phased planning (the pattern this adapts)
 - Superpowers `writing-plans` — commit-able plan docs (the format this adapts)
+
+## Origins
+
+- Inspired by oh-my-claudecode's [`ralplan`](https://github.com/Yeachan-Heo/oh-my-claudecode) — convergent phased planning with explicit acceptance gates
+- Inspired by Superpowers' [`writing-plans`](https://github.com/obra/superpowers) — commit-able plan documents that live in the same repo as the code they orchestrate

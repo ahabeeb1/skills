@@ -1,7 +1,6 @@
 ---
 name: prior-art-research
-description: Research-grounded implementation discovery. Before building any non-trivial feature, find 3-5 production implementations of approximately-X by real teams, extract the actual patterns they used (architecture, decisions, trade-offs, what they migrated from), and recommend an approach grounded in those patterns rather than generic best-practices. Make sure to use this skill whenever the user says they want to "build", "implement", "design", "architect", or "add" any non-trivial feature, system, integration, or capability — even when they don't explicitly ask for research. Especially trigger when the user has a vague idea but no concrete approach, when the design space is large, or when multiple credible approaches exist. Do NOT use for trivial CRUD endpoints, single-function utilities, bug fixes with known causes, or API surface questions (Context7 handles those). This is convergent research, NOT divergent brainstorming.
-next-skills: [draft-spec, socratic-grill, decision-record]
+description: Research-grounded implementation discovery. Before building any non-trivial feature, find 3-5 production implementations by real teams, extract the patterns (architecture, decisions, trade-offs, migrations), and recommend an approach. Convergent research, not divergent brainstorming. Make sure to use this skill whenever the user wants to "build", "implement", "design", "architect", or "add" any non-trivial feature, system, or capability — even when they don't explicitly ask for research. Especially trigger when the user has a vague idea but no concrete approach. Do NOT use for trivial CRUD, single-function utilities, bug fixes with known causes, or API-surface questions (Context7 handles those).
 ---
 
 # Prior-Art Research
@@ -36,13 +35,15 @@ The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is ope
 
 **Discipline:** before asking the user anything, grep the open repo for the answers. The user shouldn't have to tell you what `package.json` already says. The chain is at its weakest when it asks cold questions that the codebase has already answered.
 
-Walk `references/recon-checklist.md` and probe every applicable manifest. Then check for a cached `docs/agents/SYSTEM_CONTEXT.md`:
+Walk `references/recon-checklist.md` and probe every applicable manifest. Then run the **staleness-check protocol** per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md):
 
-- **If the file exists AND no tracked manifest has been modified since the file's mtime** (check via `git log --since "<file_mtime>" -- <manifest_paths>`): load it; skip to Phase 1 with the cache populated.
-- **If the file exists BUT manifests changed since:** emit a single banner — `⚠ SYSTEM_CONTEXT.md is stale (X changed since YYYY-MM-DD). Refresh? (Y/n)` — and proceed accordingly. Never overwrite silently.
-- **If the file does NOT exist:** populate it from probe results following `references/system-context-template.md`, write it, and ask the user to confirm/correct the inferred fields before moving on.
+- **File fresh** → load it; skip to Phase 1 with the cache populated.
+- **File stale** → emit the staleness banner and refresh inline (prior-art-research is the canonical SYSTEM_CONTEXT.md writer per ADR-0005 single-writer invariant; other chain skills only read).
+- **File missing** → populate from probe results following `references/system-context-template.md`, write it, and ask the user to confirm/correct the inferred fields before moving on.
 
-The cached file is loaded by every subsequent chain skill (`draft-spec`, `socratic-grill`, `decision-record`) so the rest of the chain inherits the recon for free.
+See the shared protocol doc for the canonical mtime-check command, banner format, and failure-mode fallbacks (git-history-unavailable, file-malformed). This skill's Phase 0 is the only place a chain skill is permitted to write SYSTEM_CONTEXT.md.
+
+The cached file is loaded by every subsequent chain skill (`draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`) so the rest of the chain inherits the recon for free.
 
 Phase 0 NEVER runs when no repo is open (chat-only mode); Phase 1 absorbs full responsibility for context capture in that case.
 

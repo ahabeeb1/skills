@@ -1,7 +1,7 @@
 # ADR-0004: Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume
 
-**Status:** Proposed
-**Date:** 2026-05-12
+**Status:** Accepted
+**Date:** 2026-05-12 (Proposed) → 2026-05-13 (Accepted — 4-status return contract consumed by v1.9.0 `verify-output` skill per ADR-0008)
 **Deciders:** Modie (Habeeb)
 
 ## Context

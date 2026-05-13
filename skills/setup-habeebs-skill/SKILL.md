@@ -1,6 +1,6 @@
 ---
 name: setup-habeebs-skill
-description: One-time per-repo bootstrap. Configures the issue tracker (GitHub / Linear / local markdown), the triage label vocabulary, and the domain doc layout (GLOSSARY.md + ADR directory) that the other habeebs-skills consume. Writes an "## Agent skills" block to AGENTS.md and/or CLAUDE.md at the repo root so future habeebs-skill invocations know how this repo is configured. Make sure to use this skill before first use of vertical-slice, draft-spec, decision-record, deep-modules, or any skill that publishes issues or reads/writes domain docs. Also use when those skills appear to be missing context about the issue tracker, triage labels, or domain docs. Do NOT use to reconfigure already-configured repos (just edit the relevant files), to set up Claude Code itself (that's an install task), or for global config across multiple repos.
+description: One-time per-repo bootstrap. Configures the issue tracker (GitHub / Linear / local markdown), triage label vocabulary, and domain doc layout (GLOSSARY.md + ADR directory) that other habeebs-skills consume. Writes an "## Agent skills" block to AGENTS.md and/or CLAUDE.md so future invocations know how the repo is configured. Make sure to use this skill before first use of vertical-slice, draft-spec, decision-record, deep-modules, or any skill that publishes issues or reads/writes domain docs. Do NOT use to reconfigure already-configured repos or for global config across multiple repos.
 ---
 
 # Setup habeebs-skill
@@ -150,7 +150,7 @@ Re-running `/setup` on an already-configured repo is therefore a no-op for `SYST
 1. **`[unknown]` tags in the written file** (common; Phase 0 couldn't infer a field — e.g., scale envelope on a new repo). NOT a failure. Phase 0 successfully wrote `SYSTEM_CONTEXT.md` with self-documenting `[unknown]` markers. Proceed to Phase 8 and let the confirm message report the count: *"SYSTEM_CONTEXT.md written with N fields tagged `[unknown]` — review and fill in when ready."*
 2. **Write failure** (rare; permission denied, disk full, sandbox blocks the write, git uninitialized). Halt-loud at end of setup with a `SETUP_INCOMPLETE` banner that names the specific error and the recovery command: *"SETUP_INCOMPLETE — Phase 7 (reconnaissance) failed: \<error\>. SYSTEM_CONTEXT.md was not written. Re-run /setup once \<cause\> is fixed, OR run /research directly to populate the file."* Existing writes from Phases 5–6 (GLOSSARY.md, issue-tracker.md, triage-labels.md, adrs/README.md, `## Agent skills` block) are preserved — they are independently valid, and re-running `/setup` is idempotent.
 
-**Single-writer invariant** — `setup-habeebs-skill` MUST NOT write `SYSTEM_CONTEXT.md` directly. It invokes Phase 0. The reconnaissance logic lives in `prior-art-research/SKILL.md` § Phase 0 and stays the single source of truth for environment-binding writes.
+**Single-writer invariant** — `setup-habeebs-skill` MUST NOT write `SYSTEM_CONTEXT.md` directly. It invokes Phase 0. The reconnaissance logic lives in `prior-art-research/SKILL.md` § Phase 0 and stays the single source of truth for environment-binding writes. The canonical staleness/freshness check that Phase 0 enforces is documented at [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md).
 
 ### Phase 8 — Confirm
 

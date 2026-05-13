@@ -1,6 +1,6 @@
 # ADR-0001: Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol
 
-**Status:** Accepted — partially superseded by [ADR-0005](./0005-lifecycle-split-glossary-and-system-context.md) (2026-05-13). The load-bearing rule and single-writer invariant for `SYSTEM_CONTEXT.md` (§ Decision bullets 1–4) remain in force. The undefined relationship between `CONTEXT.md` and `SYSTEM_CONTEXT.md`, and the "Notable absences" line under § Context, are superseded — see ADR-0005 § Supersedes.
+**Status:** Accepted — partially superseded by [ADR-0005](./0005-lifecycle-split-glossary-and-system-context.md) (2026-05-13); partially amended by [ADR-0006](./0006-remove-next-skills-frontmatter.md) (2026-05-13). The load-bearing rule and single-writer invariant for `SYSTEM_CONTEXT.md` (§ Decision bullets 1–4) remain in force. The undefined relationship between `CONTEXT.md` and `SYSTEM_CONTEXT.md`, and the "Notable absences" line under § Context, are superseded — see ADR-0005 § Supersedes. The implicit load-bearing assumption around `next-skills:` frontmatter — never explicitly required here but tacitly relied on by early chain documentation — is amended by ADR-0006: chain-relationship surfaces are body-level (HANDOFF / `## See also` / prose), never frontmatter.
 **Date:** 2026-05-11
 **Deciders:** Modie (Habeeb)
 

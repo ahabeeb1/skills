@@ -1,7 +1,6 @@
 ---
 name: decision-record
-description: Captures a chosen architecture as an Architectural Decision Record (ADR) in the repo. Writes context, decision, alternatives considered (from research), consequences, and revisit triggers. The resulting ADR becomes Tier 0 prior art for future invocations of prior-art-research. Make sure to use this skill whenever a non-trivial architectural decision has been made — after socratic-grill resolves the open questions, before implementation starts, or whenever the user says "let's lock this in" or "let's document this." Do NOT use to document trivial choices (file naming, formatter config) or to write code documentation (that's docstrings).
-next-skills: [write-plan, tdd-loop]
+description: Captures a chosen architecture as an ADR (Architectural Decision Record) in the repo. Writes context, decision, alternatives, consequences, and revisit triggers. The resulting ADR becomes Tier 0 prior art for future prior-art-research. Make sure to use this skill whenever a non-trivial architectural decision has been made — after socratic-grill resolves open questions, before implementation, or when the user says "lock this in" or "document this". Do NOT use for trivial choices (file naming, formatter config) or code documentation.
 ---
 
 # Decision Record
@@ -35,6 +34,8 @@ Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt 
 > **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
 
 This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
+**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
 
 ### Phase 1 — Locate the ADR home
 

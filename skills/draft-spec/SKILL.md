@@ -1,7 +1,6 @@
 ---
 name: draft-spec
-description: Turns a prior-art-research recommendation into a concrete implementation spec. Decomposes the chosen approach into vertical slices (tracer bullets) labeled HITL (human-in-the-loop) or AFK (autonomous), with acceptance criteria, test strategy, and dependency ordering per slice. Make sure to use this skill whenever you have a research recommendation and need to convert it into something an engineer (or coding agent) can actually start building from. Triggers automatically when prior-art-research produces a "HANDOFF: spec ready" line, or explicitly via /spec. Do NOT use to research alternatives (that's prior-art-research) or to debug an existing spec (that's socratic-grill).
-next-skills: [socratic-grill, decision-record, tdd-loop]
+description: Turns a prior-art-research recommendation into a concrete implementation spec. Decomposes the chosen approach into vertical slices labeled HITL or AFK, with acceptance criteria, test strategy, and dependency ordering per slice. Make sure to use this skill whenever you have a research recommendation and need to convert it into something an engineer or coding agent can start building from. Triggers automatically when prior-art-research emits "HANDOFF: spec ready", or explicitly via /spec. Do NOT use to research alternatives or debug an existing spec.
 ---
 
 # Draft Spec
@@ -34,6 +33,10 @@ Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt 
 > **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
 
 This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
+**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
+
+**GLOSSARY lookup (on-demand):** If methodology terminology in this spec / grill / plan feels ambiguous (e.g., "slice", "phase", "dispatch group", "pgroup", "HITL", "AFK"), Read `docs/agents/GLOSSARY.md` immediately before proceeding. Don't guess at habeebs-skill vocabulary — the glossary is the canonical reference.
 
 ### Phase 1 — Locate the recommendation
 

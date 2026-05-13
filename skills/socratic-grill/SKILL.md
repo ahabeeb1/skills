@@ -1,7 +1,6 @@
 ---
 name: socratic-grill
-description: Socratic ambiguity-reduction skill. Walks through every open question and ambiguous decision in a spec or design, grilling the user across structured dimensions (performance, failure modes, scale, concurrency, migration, reversibility, observability) until each decision exits with a concrete answer or an explicitly-accepted unknown. Make sure to use this skill whenever a spec has open questions, when a decision feels hand-wavy, when the user says "we'll figure it out later," or after draft-spec produces a "HANDOFF: grill ready" line. Also use proactively when you notice implicit assumptions in any plan. Do NOT use to brainstorm or generate options (that's prior-art-research) — this is the convergent ambiguity-killer.
-next-skills: [decision-record, draft-spec, agent-factors-check]
+description: Socratic ambiguity-reduction skill. Walks through every open question and ambiguous decision in a spec, grilling the user across structured dimensions (performance, failure modes, scale, concurrency, migration, reversibility, observability) until each decision exits with a concrete answer or an explicitly-accepted unknown. Make sure to use this skill whenever a spec has open questions, when a decision feels hand-wavy, when the user says "we'll figure it out later", or after draft-spec emits "HANDOFF: grill ready". Also use proactively when you notice implicit assumptions in any plan. Do NOT use to brainstorm or generate options, or in pure debugging tasks.
 ---
 
 # Socratic Grill
@@ -36,6 +35,10 @@ Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt 
 > **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
 
 This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
+
+**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
+
+**GLOSSARY lookup (on-demand):** If methodology terminology in this spec / grill / plan feels ambiguous (e.g., "slice", "phase", "dispatch group", "pgroup", "HITL", "AFK"), Read `docs/agents/GLOSSARY.md` immediately before proceeding. Don't guess at habeebs-skill vocabulary — the glossary is the canonical reference.
 
 ### Phase 1 — Inventory open questions
 

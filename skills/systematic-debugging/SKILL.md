@@ -1,7 +1,6 @@
 ---
 name: systematic-debugging
-description: Root-cause debugging via reproduce → minimize → hypothesis-driven probe → fix → regression-test → postmortem. Replaces "try things until it stops failing" with a structured method that produces evidence at each step. Make sure to use this skill whenever the user reports a bug, a test starts failing, behavior is unexpected, or something "worked yesterday." Especially trigger when previous fix attempts have failed (the cycle of vibe-fixes is the failure mode this skill exists to prevent). Inspired by Superpowers' systematic-debugging and OMC's trace lane. Do NOT use for already-understood bugs where the fix is obvious (just fix), for performance investigations without a known regression (use profiling/observability), or for "is this a bug" questions where the spec itself is unclear (use socratic-grill on the spec first).
-next-skills: [tdd-loop, decision-record]
+description: Root-cause debugging via reproduce → minimize → hypothesis-driven probe → fix → regression-test → postmortem. Replaces "try things until it stops failing" with a structured method that produces evidence at each step. Make sure to use this skill whenever the user reports a bug, a test starts failing, behavior is unexpected, or something "worked yesterday". Especially trigger when previous fix attempts have failed (the cycle of vibe-fixes is the failure mode this skill exists to prevent). Do NOT use for already-understood bugs where the fix is obvious or for performance investigations without a known regression.
 ---
 
 # Systematic Debugging
@@ -133,3 +132,8 @@ If the root cause exposes an architectural problem (not just a code bug), the po
 - `socratic-grill` — use first when the bug is actually a spec ambiguity
 - Superpowers' `systematic-debugging` — pattern source
 - OMC `trace` — adjacent (causal investigation with competing hypotheses)
+
+## Origins
+
+- Inspired by Superpowers' [`systematic-debugging`](https://github.com/obra/superpowers) — four-phase root-cause discipline (Investigate → Pattern → Hypothesize → Implement)
+- Inspired by oh-my-claudecode's `trace` lane — causal investigation framing with hypothesis competition

@@ -1,7 +1,6 @@
 ---
 name: using-worktrees
-description: Isolate each feature, AFK slice, or experimental refactor in its own git worktree on its own branch, with a verified-clean test baseline before work starts and a clean teardown when work ends. Used by parallel-dev to dispatch AFK slices into separate worktrees (so concurrent subagents never fight over the same working tree), and used directly when starting any non-trivial multi-commit task. Inspired by Superpowers' using-git-worktrees + finishing-a-development-branch. Make sure to use this skill whenever the user says "let's work on a new feature", "start a branch", "let's experiment", before parallel-dev dispatches AFK slices, or whenever tdd-loop is about to begin a multi-commit slice. Do NOT use for trivial one-commit changes, for read-only investigation, when the user has explicitly opted out of worktrees, or when the host runtime cannot create worktrees (e.g., some sandboxed environments).
-next-skills: [tdd-loop, parallel-dev]
+description: Isolate each feature, AFK slice, or experimental refactor in its own git worktree on its own branch, with a verified-clean test baseline before work starts and a clean teardown when work ends. Used by parallel-dev to dispatch AFK slices into separate worktrees so concurrent subagents never conflict. Make sure to use this skill whenever the user says "let's work on a new feature", "start a branch", "let's experiment", before parallel-dev dispatches AFK slices, or whenever tdd-loop begins a multi-commit slice. Do NOT use for trivial one-commit changes or read-only investigation.
 ---
 
 # Using Worktrees
@@ -377,3 +376,8 @@ On any halt, print the diagnosis + the local-only commit list + instructions on 
 - `tdd-loop` — consumer; runs RED/GREEN/REFACTOR inside a worktree
 - `decision-record` — produces ADRs that may live on `main` regardless of the feature worktree (write directly to source checkout, not the worktree)
 - Superpowers' `using-git-worktrees` + `finishing-a-development-branch` — the proven pattern this skill adapts
+- [`using-habeebs-skill` § Aborting the chain](../using-habeebs-skill/SKILL.md) — when a chain abort triggers worktree teardown, follow Phase 6 from this skill (no destructive ops beyond user-confirmed `git worktree remove`)
+
+## Origins
+
+- Inspired by Superpowers' [`using-git-worktrees`](https://github.com/obra/superpowers) (setup) + [`finishing-a-development-branch`](https://github.com/obra/superpowers) (teardown) — this skill consolidates both into a single lifecycle with explicit Phase 6.5 squash-merge ghost-commit reconciliation that Superpowers does not cover

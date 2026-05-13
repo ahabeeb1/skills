@@ -14,7 +14,7 @@ Add an **in-repo `docs/agents/SYSTEM_CONTEXT.md`** populated by a new Phase 0 in
 - **Scale:** ~10 skills compose; each chain run produces 1 ADR + 1 spec + 1 grill; <100 ADRs expected per repo lifetime
 - **Stack:** Markdown skills inside a Claude Code plugin; users may also have `graphify`, `claude-mem`, or `claude-context` installed separately
 - **Constraints:** Plugin manifest can't bundle MCP servers; can't assume any specific MCP is present
-- **Existing:** Greenfield within the plugin; Claude Code's built-in Explore agent + `setup-habeebs-skill`'s `CONTEXT.md` pattern are the closest precedents
+- **Existing:** Greenfield within the plugin; Claude Code's built-in Explore agent + `setup-habeebs-skill`'s `GLOSSARY.md` pattern are the closest precedents
 - **Priorities:** Composability with existing tools, operational simplicity
 
 ## Sub-problems
@@ -69,7 +69,7 @@ Each chain invocation re-runs reconnaissance from scratch via Explore subagents.
 
 ### Pattern B — Plain-text in-repo cache + staleness check (`setup-habeebs-skill` style)
 
-A markdown file (`docs/agents/CONTEXT.md`, `SYSTEM_CONTEXT.md`) written once and refreshed when a tracked manifest changes. Version-controlled, human-reviewable, loads in any agent for ~free.
+Two markdown files split by writer lifecycle: `docs/agents/SYSTEM_CONTEXT.md` (tool-written by `prior-art-research` Phase 0, auto-refreshed when a tracked manifest changes) and `docs/agents/GLOSSARY.md` (human-written by `setup-habeebs-skill`, edited as the codebase evolves). Both version-controlled, human-reviewable, load in any agent for ~free.
 
 **Fits when:** Structure recon is slow-changing (package files, schema, deploy shape) and the team values "human can edit the cache" over "machine maintains the cache."
 

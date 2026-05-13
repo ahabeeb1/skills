@@ -13,6 +13,64 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.8.0] — 2026-05-13
+
+The two-file context layout becomes deliberate. **ADR-0005** locks the split: `docs/agents/GLOSSARY.md` is the human-authored domain glossary; `docs/agents/SYSTEM_CONTEXT.md` is the tool-authored environment-binding recon. Different writers, different refresh cadences, different readers — and now different filenames so the one-token collision (`CONTEXT.md` vs `SYSTEM_CONTEXT.md`) that confused agents porting the plugin to fresh repos is gone. The same release closes ADR-0001's latent bug — setup-habeebs-skill never honored the ADR's stated intent that "setup defers the recon write to Phase 0 when invoked through the chain." It does now, via a new Phase 7 that invokes Phase 0 inline after writing the human-answered config. Single-writer invariant for SYSTEM_CONTEXT.md preserved by construction (setup invokes; Phase 0 writes).
+
+### Added
+
+- **`docs/agents/GLOSSARY.md` — the canonical name for habeebs-skill's human-authored domain glossary.** Replaces legacy `CONTEXT.md`. Written by `setup-habeebs-skill` Phase 5 from the renamed `references/domain.md` template. Read by `deep-modules` (vocabulary) and `draft-spec` (slice naming). This repo's own GLOSSARY ships with 13 concepts: skill, chain, slice, ADR, harness, runtime substrate, dispatch group, single-writer invariant, steering, halt-with-redirect, context preamble, dogfood, project mode.
+  - **Why:** The original filename `CONTEXT.md` collided one-token with `SYSTEM_CONTEXT.md`. When the plugin was ported to a fresh repo, the user got `CONTEXT.md` from setup but no `SYSTEM_CONTEXT.md` because nothing in the setup flow invoked Phase 0 — and the filename collision made the two-file mental model invisible. Renaming to `GLOSSARY.md` makes the lifecycle role legible from the filename alone.
+
+- **`setup-habeebs-skill/SKILL.md` Phase 7 — Trigger Phase 0 reconnaissance.** After Phases 5–6 write GLOSSARY + tracker + labels + adrs/README + the `## Agent skills` block, Phase 7 invokes `prior-art-research` Phase 0 inline. Phase 0 remains the sole writer of `SYSTEM_CONTEXT.md` (ADR-0001 single-writer invariant preserved). Phase 0's existing cache-check governs idempotency — re-running `/setup` on a configured repo is a no-op for SYSTEM_CONTEXT when the file is fresh. **Forked failure handling**: `[unknown]` tags in Phase 0 output pass through with a success-message count; write-failure (permission denied, disk full, sandbox restriction, git uninitialized) halts loud at end of setup with a `SETUP_INCOMPLETE` banner naming the specific error and the recovery command (existing GLOSSARY/tracker/labels writes preserved — idempotent re-run).
+  - **Why:** ADR-0001 already declared this chain should exist — "setup is the bootstrap entry point but defers the actual write of the recon digest to Phase 0 when invoked through the chain." The skill never implemented it. v1.8.0 closes that latent bug. Net UX win: one invocation, fully bootstrapped repo, no surprise `SYSTEM_CONTEXT.md` appearing later, no halt on first `/research`.
+
+- **`setup-habeebs-skill/SKILL.md` Phase 8 — Confirm** (renumbered from old Phase 7). File list now includes `docs/agents/SYSTEM_CONTEXT.md` and surfaces the `[unknown]` field count from Phase 0.
+
+- **`deep-modules/SKILL.md` pre-flight halt block** — `SETUP REQUIRED: docs/agents/GLOSSARY.md missing. Run /setup to populate the domain glossary stub.` Two writers (setup + Phase 0) now produce two halt paths (`/setup` vs `/research`). Other chain skills' existing SYSTEM_CONTEXT halt blocks are unchanged.
+
+- **ADR-0005: Split project context into GLOSSARY.md and SYSTEM_CONTEXT.md by writer lifecycle, and chain `setup-habeebs-skill` into Phase 0 inline** (`docs/agents/adrs/0005-lifecycle-split-glossary-and-system-context.md`). Captures the 5 locked decisions, 6 alternatives considered, 6 revisit triggers. Partially supersedes ADR-0001 (the "Notable absence" line and the undefined CONTEXT.md/SYSTEM_CONTEXT.md relationship); ADR-0001's load-bearing rule for SYSTEM_CONTEXT.md and its single-writer invariant remain in force, unchanged.
+
+- **Spec + Grill record at `docs/agents/specs/v1.8.0-glossary-rename-and-setup-chain.md` + `-grill.md`.** Grill resolved 5 items (the 4 spec-listed open questions + 1 surfaced mid-grill: 4 file-touch sites the spec's slice 1 had missed). `agent-factors-check` fired as conditional extension and added zero net-new questions — all 6 factor gaps were already covered by existing chain contracts (ADR-0001 / ADR-0004) or the spec itself.
+
+- **Slice 3 dogfood: `setup-habeebs-skill` ran on this canonical repo for the first time.** Produced the three previously-absent methodology files: `docs/agents/issue-tracker.md` (GitHub), `docs/agents/triage-labels.md` (canonical 5), `docs/agents/GLOSSARY.md` (13 concepts). Refreshed `docs/agents/SYSTEM_CONTEXT.md` via the new Phase 7 chain. Added `## Agent skills` blocks to `AGENTS.md` and `CLAUDE.md`. The v1.5.0 "Notable absences" list is now fully resolved.
+
+### Changed
+
+- **`CONTEXT.md` → `GLOSSARY.md` rename across all writers, readers, templates, and tests.** Touched: `skills/setup-habeebs-skill/SKILL.md`, `skills/setup-habeebs-skill/references/domain.md`, `skills/deep-modules/SKILL.md`, `skills/prior-art-research/references/system-context-template.md`, `skills/prior-art-research/references/recon-checklist.md`, `tests/evals/phase-3.evals.json`, `tests/dogfood/05-research-recon-and-memory.md`. CHANGELOG.md mentions are NOT rewritten (release history is immutable).
+
+- **`tests/dogfood/05-research-recon-and-memory.md` — Pattern B description.** Previously conflated `CONTEXT.md` and `SYSTEM_CONTEXT.md` as if they were one file ("A markdown file (`docs/agents/CONTEXT.md`, `SYSTEM_CONTEXT.md`) written once and refreshed when a tracked manifest changes"). This was the literal symptom of the bug v1.8.0 fixes. Rewritten to make the lifecycle split explicit: two files, two writers, two refresh cadences.
+
+- **`AGENTS.md` "What this is NOT" section** — removed stale "composes with Superpowers/OMC" line that contradicted ADR-0002. Replaced with the ADR-0002 standalone-by-design statement.
+
+- **ADR-0001 status field** — annotated "partially superseded by ADR-0005" with a one-line forward link. ADR-0001's load-bearing rule for `SYSTEM_CONTEXT.md` and its single-writer invariant are unchanged; only the CONTEXT.md handling and the "Notable absence" line are superseded.
+
+- **ADR index (`docs/agents/adrs/README.md`)** — added ADR-0005 row, marked ADR-0001 as "Accepted (partially superseded by 0005)".
+
+### Plugin metadata
+
+- `version`: 1.7.0 → 1.8.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- No new top-level directories
+- No new skills (v1.8.0 is a contract clarification + filename rename, not a new capability)
+
+### Why this is a MINOR, not a patch
+
+New opt-in behavior — Phase 7 chain into Phase 0 is additive (skip-allowed when re-running on a configured repo via the cache-check). New file naming (`GLOSSARY.md`) is additive — Phase 0's `SYSTEM_CONTEXT.md` is unchanged, the 5 downstream chain skills' halt-if-missing blocks are unchanged, only the new `deep-modules` halt-if-missing block adds a redirect. The forked failure handling in setup Phase 7 is a new contract surface that downstream chain runs must honor.
+
+### Why this is NOT a MAJOR
+
+No breaking change to any skill's frontmatter, output template, or handoff contract. The rename `CONTEXT.md` → `GLOSSARY.md` affects only the artifact filename produced by setup; consumer skills (`deep-modules`, `draft-spec`) read the renamed file via the updated paths in the same release. Personal repo — no shipped consumers to migrate. ADR-0001's load-bearing rule is partially superseded but not contradicted.
+
+### Compatibility
+
+- Repos previously bootstrapped with v1.7.0 (which would have `CONTEXT.md`) need a one-line `git mv docs/agents/CONTEXT.md docs/agents/GLOSSARY.md`. No migrator shim ships in this release — explicitly rejected as overkill for a personal-repo plugin (ADR-0005 § Alternatives: ESLint-style and Rails-style migrators considered and cut).
+- `parallel-dev`'s `context_preamble` injection (ADR-0004 Part 3) reads `SYSTEM_CONTEXT.md`, NOT `GLOSSARY.md` — unaffected.
+- ADR-0002's "no runtime substrate" rule is unchanged. ADR-0005 is markdown-only, in-repo, multi-harness portable by construction.
+
+### Self-application loop closure
+
+This release's implementation **dogfooded itself**: research → spec → grill → record → tdd-loop, with `setup-habeebs-skill` being run on its own canonical repo as slice 3. The original symptom (the `tests/dogfood/05` Pattern B description conflating the two files) was fixed in the same slice that fixes the bug it describes — clean loop closure between bug-as-documented and bug-as-fixed.
+
 ## [1.7.0] — 2026-05-12
 
 Parallel subagent dispatch becomes a first-class contract, governed by **ADR-0004** (4-status return, audit-log dispatch records, mandatory `SYSTEM_CONTEXT` preamble injection, idempotent re-invocation as pause/resume API). The bleeding-pain fix lands: a new `prior-art-research` Phase 2.5 dispatches a `category-completeness-critic` subagent that catches missing-category failures (the literal v1.6.0 hooks miss is reproduced and caught by `tests/dogfood/09-category-critic/09b-missing-hooks.md`). `tdd-loop` gains a Phase 0.5 that auto-dispatches pgroups of size ≥2 via `parallel-dev`, replacing the previous "labels exist, no dispatcher consumes them" gap.

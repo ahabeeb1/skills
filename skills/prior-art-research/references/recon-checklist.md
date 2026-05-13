@@ -56,9 +56,9 @@ If a probe is irrelevant (wrong language ecosystem), skip it — don't run probe
 | Probe | Tells you |
 |---|---|
 | `AGENTS.md` / `CLAUDE.md` at repo root | Existing agent instructions |
-| `docs/agents/` | habeebs-skill setup — issue tracker, labels, ADRs, CONTEXT |
+| `docs/agents/` | habeebs-skill setup — issue tracker, labels, ADRs, GLOSSARY |
 | `docs/agents/adrs/` | Prior decisions (Tier-0 prior art) |
-| `docs/agents/CONTEXT.md` | Domain glossary |
+| `docs/agents/GLOSSARY.md` | Domain glossary |
 | `CONTRIBUTING.md` | Branching model, review process |
 | `.editorconfig`, `.prettierrc`, `tsconfig.json` | Style/strictness baseline |
 

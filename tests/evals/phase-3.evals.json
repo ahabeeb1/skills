@@ -26,14 +26,14 @@
       "name": "deepen-auth-subsystem",
       "input": "Run deep-modules on a hypothetical auth subsystem with pass-throughs and a hypothetical seam.",
       "assertions": [
-        {"name": "read_domain_context", "check": "Output references CONTEXT.md or domain glossary"},
+        {"name": "read_domain_context", "check": "Output references GLOSSARY.md or domain glossary"},
         {"name": "checked_adrs", "check": "Output references at least one existing ADR"},
         {"name": "applied_deletion_test", "check": "Each candidate has 'Deletion-test result' field"},
         {"name": "uses_ousterhout_vocabulary", "check": "References at least 2 of: deep, shallow, pass-through, hypothetical seam, information leakage"},
         {"name": "surfaced_2plus_candidates", "check": "At least 2 candidates surfaced"},
         {"name": "flagged_adr_conflicts", "check": "Any ADR conflicts marked explicitly"},
         {"name": "asks_user_to_pick", "check": "Output ends with 'which to explore' or similar — does NOT propose implementation"},
-        {"name": "uses_domain_vocabulary", "check": "Uses CONTEXT.md vocabulary (e.g., User/Session/Credential, not Account/Auth)"}
+        {"name": "uses_domain_vocabulary", "check": "Uses GLOSSARY.md vocabulary (e.g., User/Session/Credential, not Account/Auth)"}
       ]
     },
     {

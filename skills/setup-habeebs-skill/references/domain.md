@@ -1,6 +1,6 @@
-# CONTEXT.md — Domain Glossary Template
+# GLOSSARY.md — Domain Glossary Template
 
-Copy this skeleton to `docs/agents/CONTEXT.md` and fill it in as the codebase grows.
+Copy this skeleton to `docs/agents/GLOSSARY.md` and fill it in as the codebase grows.
 
 ```markdown
 # Domain Glossary
@@ -36,11 +36,11 @@ When two terms are interchangeable in everyday English but distinct in this doma
 If we used to call X "Y" and now we call it "Z," note it here so old code/comments can be re-read with context.
 ```
 
-## Why CONTEXT.md matters
+## Why GLOSSARY.md matters
 
 - `deep-modules` uses these names when proposing module names. "the Order intake module" not "the FooBarHandler."
 - `draft-spec` uses these names in slice descriptions
 - `decision-record` uses these names in ADR titles and bodies
-- `socratic-grill` can challenge decisions that use vocabulary not in CONTEXT.md ("you called this an 'Account' but our glossary says 'User' — which is it?")
+- `socratic-grill` can challenge decisions that use vocabulary not in GLOSSARY.md ("you called this an 'Account' but our glossary says 'User' — which is it?")
 
-The doc starts small. It grows as the team makes naming decisions. Every clarifying conversation about "what should we call this?" should end with a one-line update to CONTEXT.md.
+The doc starts small. It grows as the team makes naming decisions. Every clarifying conversation about "what should we call this?" should end with a one-line update to GLOSSARY.md.

@@ -61,7 +61,7 @@ fly.toml
 - **habeebs-skill configured:** Yes (via `setup-habeebs-skill` on YYYY-MM-DD) | No
 - **Issue tracker:** [GitHub Issues / Linear / Local markdown / Other]
 - **Triage labels:** [link to docs/agents/triage-labels.md, or "default"]
-- **Domain glossary:** [link to docs/agents/CONTEXT.md, or "not yet populated"]
+- **Domain glossary:** [link to docs/agents/GLOSSARY.md, or "not yet populated"]
 - **Latest ADR:** [e.g., ADR-0007 / "no ADRs yet"]
 
 ## Recent hot files

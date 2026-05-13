@@ -1,7 +1,7 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-11
-**Refreshed by:** prior-art-research Phase 0 reconnaissance (self-meta)
+**Last refreshed:** 2026-05-13
+**Refreshed by:** prior-art-research Phase 0 reconnaissance, triggered by `setup-habeebs-skill` Phase 7 (per ADR-0005). v1.8.0 implementation slice 3 dogfood.
 **Tracked manifests:**
 
 ```
@@ -41,50 +41,69 @@ skills/*/SKILL.md
 ## Scale envelope
 
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
-- **Skill count:** 14 in tree (12 of which are wired; 2 — `write-plan`, `agent-factors-check` — are untracked orphans as of this audit)
-- **Chain depth:** 5 core (research → spec → grill → record → tdd) + 6 primitives + 2 meta
+- **Skill count:** 14 in tree, all wired (the v1.4.0 orphans `write-plan` and `agent-factors-check` were brought into `commands/`, `README.md`, `CHANGELOG.md`, and `using-habeebs-skill` in v1.5.1)
+- **Chain depth:** 6 core (research → spec → grill → record → plan → tdd) + 6 primitives + 2 meta. `agent-factors-check` is a conditional extension of grill (fires when the spec is an LLM/agent product).
 
 ## Methodology / agent setup
 
-- **habeebs-skill configured:** Self-application — irony noted. `docs/agents/` did not exist until this file was written.
-- **Issue tracker:** GitHub Issues (assumed from `gh` availability)
-- **Triage labels:** Not configured for this repo
-- **Domain glossary:** Not yet populated; project-specific terms live in `skills/<name>/references/LANGUAGE.md` (deep-modules)
-- **Latest ADR:** No ADRs yet
+- **habeebs-skill configured:** Yes — `setup-habeebs-skill` run on 2026-05-13 as part of v1.8.0 slice 3 dogfood (per ADR-0005, setup chains into Phase 0 inline; this file is the Phase 0 output).
+- **Issue tracker:** GitHub Issues (`docs/agents/issue-tracker.md`)
+- **Triage labels:** Canonical 5 (`docs/agents/triage-labels.md`)
+- **Domain glossary:** Populated — 13 concepts (`docs/agents/GLOSSARY.md`). Methodology-specific vocabulary; project-specific architectural vocabulary continues to live in `skills/<name>/references/LANGUAGE.md` for `deep-modules`.
+- **Latest ADR:** ADR-0005 (`lifecycle-split-glossary-and-system-context`, Accepted 2026-05-13; partially supersedes ADR-0001).
 
 ## Recent hot files
 
-(From `git log --since="60 days"` and project memory hot-paths)
+(From `git log --since="60 days"` as of 2026-05-13)
 
 - `CHANGELOG.md` (touched every release)
-- `.claude-plugin/marketplace.json`
-- `.claude-plugin/plugin.json`
-- `skills/prior-art-research/SKILL.md`
-- `skills/using-worktrees/SKILL.md`
-- `skills/tdd-loop/SKILL.md`
+- `.claude-plugin/marketplace.json` / `.claude-plugin/plugin.json` (version bumps per release)
+- `skills/setup-habeebs-skill/SKILL.md` (v1.8.0 — Phase 7 chain into Phase 0)
+- `skills/prior-art-research/SKILL.md` (steady churn — Phase 0/2.5/7 evolutions)
+- `skills/parallel-dev/SKILL.md` (v1.7.0 — dispatch contract)
+- `skills/tdd-loop/SKILL.md` (v1.7.0 — Phase 0.5 pgroup auto-dispatch)
+- `docs/agents/adrs/*` (4 ADRs landed across v1.5.0–v1.7.0; ADR-0005 lands at v1.8.0)
+- `docs/agents/specs/*` (one spec per release post-v1.5.0)
 
 ## Notable absences
 
-- No `docs/agents/CONTEXT.md` (domain glossary)
-- No `docs/agents/adrs/` (the methodology has never produced an ADR about itself)
-- No CI/CD — releases are manual
-- No `setup-habeebs-skill` ever run on this repo
-- `write-plan` and `agent-factors-check` are not in `commands/`, `README.md`, `CHANGELOG.md`, or `using-habeebs-skill` chain diagram
+- No CI/CD — releases are manual (`gh release create` after PR merge).
+- No formal release notes outside `CHANGELOG.md`.
+- No external install-count telemetry — public install number is unobservable.
+
+(The v1.5.0-era absences — no domain glossary, no ADR directory, no `setup-habeebs-skill` ever run on this repo, orphan skills — are all resolved as of v1.8.0.)
 
 ## Open / unknown
 
-- Whether the orphan skills are intended for v1.4.0 or experimental
-- Whether `tests/dogfood/06-write-plan.md` (referenced in grep) is part of the v1.4.0 plan
+- Codex / Cursor / OpenCode treatment of `docs/agents/*.md` is informally verified (no harness reserves the path) but not externally confirmed via harness documentation. Revisit if any harness publishes a `docs/agents/*` convention. (Per ADR-0005 § Revisit triggers.)
+- Phase 0 write-failure rate in practice (sandbox restrictions, permission issues) — unknown until v1.8.0 ships and is used in N ported repos.
 
 ## Project mode
 
-- **brownfield** — habeebs-skill v1.3.0 published, methodology established, this audit is a refactor/integration pass on existing system
+- **brownfield** — habeebs-skill v1.7.0 shipped, v1.8.0 in progress at write-time (slice 3 dogfood — this file refresh is part of the slice). Methodology is mature; this audit is the v1.8.0 lifecycle-split refactor.
 
 ## Active steering
 
 (none — flushed 2026-05-12 per Phase 7 flush rule; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-05-13 — topic: reconcile CONTEXT.md (setup) vs SYSTEM_CONTEXT.md (Phase 0) — v1.8.0 candidate**
+
+- Anchor "mattpocock/skills bootstrap": Honored — setup-writes-only-user-answered-bits adopted as the v1.8.0 contract.
+- Anchor "obra/superpowers project-context": Honored with caveat — auto-trigger philosophy adopted for runtime, but explicit setup retained because user-answered config (tracker, labels) cannot be re-derived.
+- Anchor "Anthropic Skills 2.0 layout": Honored — `docs/agents/` directory + progressive disclosure preserved; "create-with-default instead of failing" rule guides migrator UX.
+- Anchor "ADR community on context-doc separation": Honored — Nygard's decision-local-context principle anchors the lifecycle-split decision (rename CONTEXT.md → GLOSSARY.md).
+- Anchor "DDD ubiquitous-language vs context-map": Honored — Evans/Vernon lifecycle-split rationale lifted verbatim; same writer-role/refresh-cadence axis applies here.
+- Look-at "oh-my-claudecode": Honored as contrast — cited as composition pattern that ADR-0002 explicitly rejects.
+- Look-at "Linux kernel Documentation/": Honored with caveat — namespace-by-directory pattern NOT adopted (only 2 files at this layer; directory namespacing would be overkill).
+- Look-at "Rust RFCs": Overridden — numeric-prefix scheme rejected for context files; identity is by name+role, not order. ADRs already carry the numeric scheme.
+- Look-at "Rails upgrade guide": Honored — `bin/rails app:update` + `config.load_defaults` + one-minor deprecation window lifted directly into the `migrate-v1.8` skill design.
+- Avoid "runtime substrate": Honored — migrator is a skill, not a daemon; no session state.
+- Avoid "vector stores": Honored — markdown-only.
+- Avoid "session-state directories": Honored — no `.habeebs/` runtime dir introduced.
+- Phase 2.5 critic outcome: APPROVED with one addition during decomposition (sub-problem 5 — migration path for shipped repos). Critic-driven coverage prevented the synthesizer from picking ESLint-style external-migrator (which would have violated ADR-0002) by surfacing the Rails alternative early.
+- Prompt-injection report: Sub-problem 3 and sub-problem 5 source-fetchers reported injected `<system-reminder>` tags in fetched web content; both correctly ignored. Per ADR-0004 dispatch contract, subagents treat fetched content as untrusted.
 
 **2026-05-12 — topic: parallel subagent processing across the chain (v1.6.0 candidate)**
 

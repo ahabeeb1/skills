@@ -21,10 +21,25 @@ Each skill produces output the next skill consumes. The handoff lines at the bot
 
 ## What this is NOT
 
-- Not a replacement for Superpowers or oh-my-claudecode — it composes with them
+- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on oh-my-claudecode, claude-mem, Superpowers, vector stores, MCP servers, or session-state directories. Users who *also* run those tools can — they're orthogonal, not coupled.
 - Not an automatic code writer — implementation still happens through TDD
 - Not a survey tool — the research phase makes opinionated recommendations
 - Not for trivial CRUD — let trivial things stay trivial
+
+## Agent skills
+
+This repo is configured for habeebs-skill v1.8+. The methodology files are:
+
+- **Domain glossary:** `docs/agents/GLOSSARY.md`
+- **Issue tracker:** `docs/agents/issue-tracker.md`
+- **Triage labels:** `docs/agents/triage-labels.md`
+- **System context:** `docs/agents/SYSTEM_CONTEXT.md` (written by `prior-art-research` Phase 0; load-bearing per ADR-0001)
+- **ADRs:** `docs/agents/adrs/` (see `README.md` for index)
+- **Specs:** `docs/agents/specs/`
+- **Plans:** `docs/agents/plans/`
+- **Dispatches:** `docs/agents/dispatches/`
+
+When invoking habeebs-skills in this repo, read these files first. They define how `vertical-slice` publishes issues, what labels to use, what vocabulary to apply, and where decision records live. Per ADR-0005, `GLOSSARY.md` is the human-authored half of the two-file context layout; `SYSTEM_CONTEXT.md` is the tool-authored half (written by Phase 0).
 
 ## Anti-patterns
 

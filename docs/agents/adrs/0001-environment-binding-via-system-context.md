@@ -1,6 +1,6 @@
 # ADR-0001: Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol
 
-**Status:** Accepted
+**Status:** Accepted — partially superseded by [ADR-0005](./0005-lifecycle-split-glossary-and-system-context.md) (2026-05-13). The load-bearing rule and single-writer invariant for `SYSTEM_CONTEXT.md` (§ Decision bullets 1–4) remain in force. The undefined relationship between `CONTEXT.md` and `SYSTEM_CONTEXT.md`, and the "Notable absences" line under § Context, are superseded — see ADR-0005 § Supersedes.
 **Date:** 2026-05-11
 **Deciders:** Modie (Habeeb)
 

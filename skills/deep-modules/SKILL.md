@@ -30,14 +30,22 @@ This skill is informed by the project's domain model. The domain language gives 
 
 ## Core workflow
 
+### Pre-flight — GLOSSARY check
+
+Before Phase 1, verify `docs/agents/GLOSSARY.md` exists. If missing, halt with:
+
+> **SETUP REQUIRED:** `docs/agents/GLOSSARY.md` missing. Run `/setup` to populate the domain glossary stub. (Per ADR-0005, GLOSSARY.md is the domain-vocabulary half of habeebs-skill's two-file context layout; `deep-modules` cannot propose names without it.)
+
+This skill cannot produce good deepenings without the domain vocabulary. Do not proceed to Phase 1.
+
 ### Phase 1 — Read the domain context
 
-If `setup-habeebs-skill` has been run, read:
+`GLOSSARY.md` is now guaranteed to exist (pre-flight). Read:
 
-- `docs/agents/CONTEXT.md` (or wherever the project's domain glossary lives) — get the vocabulary
+- `docs/agents/GLOSSARY.md` — get the vocabulary
 - `docs/agents/adrs/` — note which architectural decisions are already settled
 
-Use this vocabulary in everything you propose. If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "FooBarHandler," not "the Order service."
+Use this vocabulary in everything you propose. If `GLOSSARY.md` defines "Order," talk about "the Order intake module" — not "FooBarHandler," not "the Order service."
 
 ### Phase 2 — Walk the area organically
 
@@ -185,6 +193,6 @@ Capturing this is valuable — it confirms the check ran, which prevents the "no
 
 - `tdd-loop` — invokes this skill at the REFACTOR step
 - `decision-record` — captures significant deepenings as ADRs
-- `setup-habeebs-skill` — sets up CONTEXT.md and ADR directory this skill reads
+- `setup-habeebs-skill` — sets up GLOSSARY.md and ADR directory this skill reads
 - `references/LANGUAGE.md` — Ousterhout architectural vocabulary
 - `references/deletion-test-examples.md` — worked examples of the deletion test

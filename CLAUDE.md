@@ -48,6 +48,21 @@ When researching:
 - Never reconstruct an article's structure with detailed paraphrase
 - Cite every claim that follows from a search result
 
+## Agent skills
+
+This repo is configured for habeebs-skill v1.8+ (self-dogfood). The methodology files are:
+
+- **Domain glossary:** `docs/agents/GLOSSARY.md` — habeebs-skill's own vocabulary (skill, slice, chain, ADR, harness, dispatch group, etc.). Written by `setup-habeebs-skill`; edited as the codebase evolves.
+- **System context:** `docs/agents/SYSTEM_CONTEXT.md` — stack, scale envelope, deployment shape, recent hot files, last reconciliation outcomes. Written exclusively by `prior-art-research` Phase 0 (load-bearing per ADR-0001; single-writer invariant per ADR-0005).
+- **Issue tracker:** `docs/agents/issue-tracker.md` (GitHub for this repo).
+- **Triage labels:** `docs/agents/triage-labels.md` (canonical 5).
+- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 5 ADRs as of v1.8.0).
+- **Specs:** `docs/agents/specs/` (one per release).
+- **Plans:** `docs/agents/plans/` (one per release that warranted phased delivery).
+- **Dispatches:** `docs/agents/dispatches/` (parallel-dev audit records).
+
+When invoking habeebs-skills in this repo, read these files first. Per ADR-0005, GLOSSARY and SYSTEM_CONTEXT split by writer lifecycle — GLOSSARY is human-authored and domain-stable; SYSTEM_CONTEXT is tool-authored and environment-bound.
+
 ## When the user pushes back
 
 The user (Modie) prefers:

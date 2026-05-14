@@ -13,6 +13,58 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.10.0] — 2026-05-13
+
+Context-engineering alignment release. The 2026-05-13 audit (second-pass, broader than the morning v1.9.0 audit) pulled Anthropic Skills 2.0 + Claude Code best-practices + Effective harnesses for long-running agents, Hamel Husain + Shreya Shankar evals FAQ, Cognition AI "Don't Build Multi-Agents", OpenAI Agents SDK, Google ADK Workflow Agents, and LangChain Context Engineering for Agents (8 case studies total). Three new ADRs (0010 / 0011 / 0012) plus an in-place amendment to ADR-0004. Five recommendations (R1–R5) shipped as 6 vertical slices. Headline outcomes: SYSTEM_CONTEXT.md narrows to non-re-derivable cross-session state (~40% size reduction); HANDOFF semantics formalized as navigation pointers with full-doc-read contract; chain-postmortem cadence introduced as section in `using-habeebs-skill` with `verify-output` and postmortems classified as complementary (static-pre-commit vs. dynamic-post-incident); description trigger precision measured at 90% across 30-prompt corpus (4 skills flagged for v1.11.0 tuning); Compress-at-overflow protocol added with 7-section session-summary template — fills LangChain's missing 4th context-engineering move (Write/Select/Compress/Isolate).
+
+### Added (Slice #3 — error-analysis cadence)
+
+- **`docs/agents/postmortems/`** — new directory with `README.md` template documenting the 8-section transition-failure-matrix structure (Hamel + Shreya). One retrospective entry committed for the 2026-05-12 missed-architectural-categories incident that drove Phase 2.5 critic adoption in v1.6.0.
+  - **Why:** Per [ADR-0011](docs/agents/adrs/0011-error-analysis-cadence.md), error-analysis-before-infrastructure is the load-bearing principle from Hamel's evals FAQ. The chain had a static evaluator (`verify-output`) but no dynamic feedback loop on real chain runs. Synthetic dogfood approaches 100% pass rate by construction (Hamel's red flag). Postmortems generate the rules that `verify-output` enforces; postmortems find the rules `verify-output` missed.
+
+- **`tests/dogfood/15-postmortem-structure/`** — dogfood assertion that every postmortem file contains the 8 required sections + the README template documents them.
+
+### Added (Slice #4 — trigger-precision audit)
+
+- **`tests/dogfood/13-trigger-precision/`** — one-time R4 audit. 30-prompt corpus (15 happy-path + 15 adversarial across 4 categories: vague / wrong-skill-bait / multi-skill-applicable / edge cases). Manual reading exercise; audit report `audit-report-2026-05-13.md` records 27/30 correct (90% — below Hamel's 100% red-flag threshold by design). Four skills flagged for v1.11.0 description tuning: `prior-art-research` (precision 0.80 on vague-intent FP), `socratic-grill` (recall 0.50 on "verify this design" FN), `parallel-dev` (precision 0.50 on debug-of-subagents FP), `verify-output` (precision 0.50 on "verify this design" FP — coupled with the socratic-grill miss).
+  - **Why:** Per Anthropic's Claude Code best-practices, description quality is **the** correctness axis for skills. v1.9.0 trimmed all 14 descriptions for budget compliance ([ADR-0007](docs/agents/adrs/0007-description-budget-policy.md)) but did not measure whether the trimmed descriptions still trigger correctly. This audit fills that gap.
+
+### Added (Slice #5 — Compress-at-overflow)
+
+- **`docs/agents/templates/session-summary-template.md`** — 7-section summary template per [ADR-0012](docs/agents/adrs/0012-compress-at-overflow-protocol.md): Active artifacts / Current slice / Last successful action / What's blocking / Open grill Qs / Recent test state / Branch / worktree pointer. New section in `using-habeebs-skill/SKILL.md` documents the summary-and-flush protocol for sessions approaching context-window pressure. `tdd-loop/SKILL.md` gains a cross-reference (most likely overflow site).
+  - **Why:** Per [LangChain's "Context Engineering for Agents"](https://blog.langchain.com/context-engineering-for-agents/) framework, agents have 4 context-engineering moves: Write / Select / Compress / Isolate. habeebs-skill covered Write (SYSTEM_CONTEXT, ADRs), Select (prior-art-research fetches), Isolate (parallel-dev dispatch), and Compress-at-ingest (extraction-checklist ≤15-word quote rule) — but had no Compress-at-overflow move for long sessions. ADR-0012 closes the gap with a markdown-only passive-doc protocol (ADR-0002 preserved).
+
+- **`tests/dogfood/16-session-summary-template/`** — dogfood assertion that the template has the 7 required sections and the `using-habeebs-skill` section references ADR-0012 + template path + v1.11.0 promotion criterion.
+
+### Added (Slice #1 — SYSTEM_CONTEXT contents prune)
+
+- **`tests/dogfood/14-system-context-schema/`** — dogfood assertion that `docs/agents/SYSTEM_CONTEXT.md` matches the new ADR-0010 schema (retained sections present, dropped sections absent) and the template documents the new schema with a "DO NOT persist" guidance block.
+
+### Changed (Slice #1 — SYSTEM_CONTEXT contents prune)
+
+- **`skills/prior-art-research/references/system-context-template.md`** rewritten with new schema. Retained sections: Scale envelope, Methodology / agent setup, Notable absences, Project mode, Active steering, Last reconciliation outcome. Dropped sections: Stack, Persistence, Deployment shape, External services, Recent hot files, Open / unknown, Tracked manifests — all re-derivable by Claude from `package.json` + `git log` + imports on fresh invocation (per Anthropic's [Claude Code best-practices](https://code.claude.com/docs/en/best-practices) ❌ Exclude rule: *"Anything Claude can figure out by reading code"*).
+- **`docs/agents/SYSTEM_CONTEXT.md`** migrated to the new schema (this repo's own self-migration in Slice #6).
+  - **Why:** Per [ADR-0010](docs/agents/adrs/0010-system-context-contents-prune.md), Anthropic's prune test (*"Would removing this cause Claude to make mistakes?"*) applies. The dropped sections persisted facts Claude derives instantly; the retained sections carry non-re-derivable cross-session state (scale, agent setup, steering, reconciliation history) — the file's primary value across invocations.
+
+### Changed (Slice #2 — HANDOFF semantics)
+
+- **`skills/using-habeebs-skill/SKILL.md`** gains `## HANDOFF lines — navigation, not state transfer`: HANDOFF strings are pointers to which skill runs next; state transfer happens via the previous phase's **full output document**, which the next skill MUST read in full. Cites OpenAI Agents SDK ("Handoff = ownership transfer" primitive) as positive validation and Walden Yan's "[Don't Build Multi-Agents](https://cognition.ai/blog/dont-build-multi-agents)" (Cognition AI, 2025-06-12) as the anti-pattern guarded against.
+- **`skills/prior-art-research/SKILL.md` Phase 7** cross-references the HANDOFF semantics section so downstream skills know to read the full Phase 6 doc, not just the HANDOFF line.
+  - **Why:** The invariant was implicit (each phase reads previous phase's full output by default) but never explicitly stated. Making it explicit forecloses a future drift toward thin handoffs that would re-create Yan's "implicit decision divergence" failure mode.
+
+### Changed (Slice #2 — ADR-0004 amendment)
+
+- **[ADR-0004](docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md) amended in place.** Part 3 gains the "share full traces" clause: subagents MUST receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent input payload. Citation: Walden Yan, Cognition AI. New Part 5 codifies the treat-fetched-content-as-untrusted rule with a dated 2026-05-13 evidence paragraph documenting three fabricated `<system-reminder>` tags surfaced in fetched HTML from `developers.googleblog.com`, `adk.dev`, and `code.claude.com` during this release's prior-art-research dispatches (all ignored per the rule).
+  - **Why:** Share-full-traces was implicit in current dispatch templates; making it explicit guards against future drift. The untrusted-content rule was implicit in source-fetcher subagent prompts; codifying it in ADR-0004 with dated lived-evidence makes the invariant load-bearing in the canonical contract doc.
+
+### Documented (Slice #0 — chain artifacts)
+
+- **`docs/agents/research/v1.10.0-context-engineering-alignment-research.md`** — archives the prior-art-research run (8 case studies, 6 patterns, 4 Breunig failure modes, R1–R5 recommendations, steering reconciliation) as durable Tier-0 prior art per `prior-art-research` § "Internal precedent first".
+- **`docs/agents/specs/v1.10.0-context-engineering-alignment.md`** — spec (status: Grilled).
+- **`docs/agents/specs/v1.10.0-context-engineering-alignment-grill.md`** — grill record resolving Q1–Q8 (Q8 surfaced by agent-factors-check F6 pause/resume gap on the R5 summary schema).
+- **`docs/agents/plans/0010-context-engineering-alignment-v1.10.0.md`** — phased delivery plan: 3 phases, 8 slices, pgroup-1B = {#1, #2, #4} parallel triplet, serial chain `#2 → #3 → #5` due to `using-habeebs-skill/SKILL.md` file-overlap. 12 risks tracked.
+- **Three new ADRs (0010 / 0011 / 0012)** locked; **ADR-0001 status updated** to record scope narrowing by 0010.
+
 ## [1.9.0] — 2026-05-13
 
 Ecosystem alignment + chain hygiene. The 2026-05-13 audit against Anthropic Skills 2.0 + Superpowers + mattpocock/skills + OMC + claude-mem produced four new ADRs (0006-0009) and six vertical slices, shipped as a single release. Headline outcomes: skill-listing budget recovers ~700 tokens/turn (avg description trimmed 796 → 593 chars across 14 skills); unrecognized `next-skills` frontmatter removed (chain integrity now testable via 29-pair assertion script); new `verify-output` skill closes the post-impl anti-slop gap habeebs-skill had vs OMC's `ai-slop-cleaner`; `/abort-chain` convention documents the cleanup path that was previously implicit; GLOSSARY consumption widened from 2 of 14 skills to 5; SYSTEM_CONTEXT mtime-check protocol extracted from `prior-art-research` Phase 0 into `docs/agents/references/` as the first inhabitant of a new cross-cutting-helpers directory convention.

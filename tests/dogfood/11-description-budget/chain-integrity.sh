@@ -23,6 +23,9 @@ total=0
 matched=0
 
 while IFS=',' read -r source target; do
+    # Strip trailing CR (Windows checkouts auto-convert LF -> CRLF; bash read leaves \r on the last field)
+    target="${target%$'\r'}"
+    source="${source%$'\r'}"
     [[ -z "$source" || -z "$target" ]] && continue
     total=$((total + 1))
 

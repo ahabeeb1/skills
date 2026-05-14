@@ -18,8 +18,9 @@ Precision per skill = (true-positives) / (true-positives + false-positives). Rec
 
 ## Files
 
-- `corpus.md` — 30 prompts in two sections (15 happy-path + 15 adversarial/boundary), each tagged with expected trigger
-- `audit-report-2026-05-13.md` — the 2026-05-13 manual audit results: precision/recall per skill + flagged descriptions for v1.11.0
+- `corpus.md` — 34 prompts in three sections (15 happy-path + 15 v1.10.0 adversarial + 4 v1.11.0 new Cat-3), each tagged with expected trigger
+- `audit-report-2026-05-13.md` — the v1.10.0 baseline audit: 27/30 (90%), 4 skills flagged for v1.11.0 tuning
+- `audit-report-2026-05-14.md` — the v1.11.0 re-audit after tuning: 34/34 (100%), 0 skills flagged
 
 ## Running
 
@@ -28,7 +29,7 @@ Precision per skill = (true-positives) / (true-positives + false-positives). Rec
 cat tests/dogfood/13-trigger-precision/corpus.md
 
 # Read the latest audit report
-cat tests/dogfood/13-trigger-precision/audit-report-2026-05-13.md
+cat tests/dogfood/13-trigger-precision/audit-report-2026-05-14.md
 ```
 
 The audit itself is a human-graded manual exercise — there is no automated script (per Hamel's anti-eval-driven-development thesis, automating trigger precision before observing failure modes is premature). Future re-audits append a new dated audit-report file; the corpus may be re-curated per the revisit triggers in the v1.10.0 plan.

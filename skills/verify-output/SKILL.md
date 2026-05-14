@@ -1,6 +1,6 @@
 ---
 name: verify-output
-description: Post-generation anti-slop pass. Scans the staged diff for unjustified comments, half-finished implementations, dead code, defensive validation past trusted boundaries, repeated boilerplate, feature creep beyond task scope, and backward-compat shims for unshipped code. Returns one of 4 statuses per ADR-0004 (DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT). Make sure to use this skill whenever tdd-loop reaches GREEN (all tests passing) before commit, or when the user says "verify this", "check this for slop", or "review before commit". Do NOT use for refactor concerns (that's deep-modules), style/formatting (that's the linter), or security review.
+description: Post-generation anti-slop pass on a staged code diff. Scans for unjustified comments, half-finished implementations, dead code, defensive validation past trusted boundaries, repeated boilerplate, feature creep beyond task scope, and backward-compat shims for unshipped code. Returns one of 4 statuses per ADR-0004. Make sure to use this skill whenever tdd-loop reaches GREEN before commit, or when the user says "verify this code", "check this diff for slop", or "review before commit". Do NOT use for pre-implementation review of designs, plans, or specs (that's socratic-grill). Do NOT use for refactor concerns (deep-modules), style, or security review.
 ---
 
 # Verify Output

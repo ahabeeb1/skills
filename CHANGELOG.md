@@ -13,6 +13,36 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.11.0] — 2026-05-14
+
+Trigger-precision tuning release. The v1.10.0 audit ([`audit-report-2026-05-13.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-13.md)) flagged 4 skills with precision or recall below the 0.80 threshold across a 30-prompt corpus. v1.11.0 applies the audit's suggested tunings (4 surgical edits to SKILL.md `description:` fields, ≤100 chars each), expands the corpus by 4 Cat-3 adversarial prompts per the audit's recommendation #3, and re-runs the audit. New audit ([`audit-report-2026-05-14.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-14.md)) reports 34/34 (100%) with 0 skills flagged.
+
+### Changed (description tunings)
+
+- **`prior-art-research/SKILL.md`** — added anti-trigger: `Do NOT use when the user's intent is too vague to commit to a feature — ask a clarifying question instead.`
+  - **Why:** v1.10.0 P16 false positive on "I want to add something useful to this codebase." The existing "trivial CRUD" anti-trigger didn't disqualify content-free intent; "add" + "vague idea" trigger language combined to over-trigger. Precision 0.80 → 1.00.
+
+- **`socratic-grill/SKILL.md`** — added positive triggers: `"verify this design"` and `"pressure-test this approach" before implementation`.
+  - **Why:** v1.10.0 P22 false negative — the auditor expected socratic-grill to fire on "I need to verify this design before we commit to it" but no description language matched. Recall 0.50 → 1.00.
+
+- **`parallel-dev/SKILL.md`** — added anti-trigger: `Do NOT use for debugging existing parallel dispatches — that's systematic-debugging.`
+  - **Why:** v1.10.0 P27 false positive on "Debug why my parallel subagents are returning conflicting results." The "parallel subagents" keyword pulled parallel-dev's trigger above systematic-debugging's "Debug" / "behavior is unexpected" trigger. Precision 0.50 → 1.00.
+
+- **`verify-output/SKILL.md`** — sharpened positive triggers from "verify this" / "check this for slop" to "verify this **code**" / "check this **diff** for slop"; hoisted anti-trigger `Do NOT use for pre-implementation review of designs, plans, or specs (that's socratic-grill)` to first position; added explicit scope clause "Post-generation anti-slop pass on a staged code diff (post-implementation, pre-commit)".
+  - **Why:** v1.10.0 P22 false positive (coupled with the socratic-grill miss above) on "I need to verify this design before we commit to it." The word "verify" + "before commit" matched verify-output verbatim; the existing "Pre-implementation review" anti-trigger was buried at line 4 of 4. The pair fix was treated as one tuning per the v1.10.0 audit's coupled-fault note. Precision 0.50 → 1.00.
+
+### Added (corpus expansion)
+
+- **`tests/dogfood/13-trigger-precision/corpus.md`** — 4 new Cat-3 (multi-skill-applicable) prompts. P31 + P32 specifically probe the v1.11.0 tunings; P33 + P34 probe Cat-3 boundaries not exercised by v1.10.0 (write-plan vs explicit user opt-out; prior-art-research vs vertical-slice when PRD exists but no ADR).
+  - **Why:** v1.10.0 audit recommendation #3 — "Add 3-5 new adversarial prompts to the corpus before re-running, biased toward category 3 (multi-skill) since that's where this audit was weakest (3/4 = 75%)." 4 chosen as the mid-point of the recommended range.
+
+- **`tests/dogfood/13-trigger-precision/audit-report-2026-05-14.md`** — v1.11.0 re-audit report. Cross-references the v1.10.0 baseline; documents per-prompt resolution for P16, P22, P27; notes Hamel's "100% red flag" caveat applies because the curated re-audit corpus is verification, not discovery.
+
+### Notes
+
+- **No skill behavior change beyond trigger surfaces.** No new skills, no new phases, no contract changes. Net description-size delta is *negative* — the 4 trigger/anti-trigger additions are paired with filler trims in the same 4 descriptions, so the avg-chars-per-description metric drops from 626 (post-additions, pre-trim) to 594 (post-trim), comfortably under the [ADR-0007](docs/agents/adrs/0007-description-budget-policy.md) target of 600. Items trimmed: prior-art-research dropped the redundant "Convergent research, not divergent brainstorming" tagline + the "vague idea" trigger now superseded by the new anti-trigger; socratic-grill dropped the long "until each decision exits..." clause; verify-output dropped the redundant parentheticals "(post-implementation, pre-commit)", "(all tests passing)", and the inline status-name enumeration (the ADR reference still names them); parallel-dev dropped the "used internally by..." context-line (belongs in body, not description).
+- **Hamel's "100% pass rate is a red flag" caveat acknowledged.** The 100% rate reflects that the new corpus prompts were curated *after* the v1.10.0 failure modes were already known. v1.12.0 must grow the corpus toward genuinely-unknown failure modes (target: 5–8 new prompts from real transcripts) for the audit to retain diagnostic value.
+
 ## [1.10.0] — 2026-05-13
 
 Context-engineering alignment release. The 2026-05-13 audit (second-pass, broader than the morning v1.9.0 audit) pulled Anthropic Skills 2.0 + Claude Code best-practices + Effective harnesses for long-running agents, Hamel Husain + Shreya Shankar evals FAQ, Cognition AI "Don't Build Multi-Agents", OpenAI Agents SDK, Google ADK Workflow Agents, and LangChain Context Engineering for Agents (8 case studies total). Three new ADRs (0010 / 0011 / 0012) plus an in-place amendment to ADR-0004. Five recommendations (R1–R5) shipped as 6 vertical slices. Headline outcomes: SYSTEM_CONTEXT.md narrows to non-re-derivable cross-session state (~40% size reduction); HANDOFF semantics formalized as navigation pointers with full-doc-read contract; chain-postmortem cadence introduced as section in `using-habeebs-skill` with `verify-output` and postmortems classified as complementary (static-pre-commit vs. dynamic-post-incident); description trigger precision measured at 90% across 30-prompt corpus (4 skills flagged for v1.11.0 tuning); Compress-at-overflow protocol added with 7-section session-summary template — fills LangChain's missing 4th context-engineering move (Write/Select/Compress/Isolate).

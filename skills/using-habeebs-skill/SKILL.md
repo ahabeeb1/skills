@@ -28,6 +28,16 @@ tdd-loop              → implements with red-green-refactor over vertical slice
 deep-modules          → refactor pass to deepen modules and remove shallow layers
 ```
 
+## HANDOFF lines — navigation, not state transfer
+
+Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the spec file written by `draft-spec`, the grill record written by `socratic-grill`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line.
+
+Worked example: `socratic-grill` finishes a session by writing `docs/agents/specs/<slug>-grill.md` (the full record) and emitting `HANDOFF: record ready — invoke decision-record to capture as ADRs`. When `decision-record` runs, it reads the grill record IN FULL — every resolved item, every axes-grilled rationale, every revisit trigger. The HANDOFF line tells you which skill runs next; the grill record tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
+
+This shape positively matches [OpenAI's Agents SDK](https://openai.github.io/openai-agents-python/multi_agent/) "Handoff = ownership transfer" primitive — handoffs at the markdown layer carry full state via the file the next skill reads, not via the pointer string. It also guards against the failure mode documented in Walden Yan's ["Don't Build Multi-Agents"](https://cognition.ai/blog/dont-build-multi-agents) (Cognition AI, 2025-06-12): subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The full-doc-read contract is what keeps habeebs-skill's chain on the right side of Yan's line. Same invariant applies to `parallel-dev` subagent dispatches per [ADR-0004 § Part 3](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md): subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
+
+If you're a downstream skill author: when you encounter a `HANDOFF: X ready` line, your first action is to READ the file it points to (the spec, the grill, the ADR). Don't infer what the previous phase decided from the HANDOFF text alone.
+
 ## Supporting primitives (used inside the chain)
 
 - **parallel-dev** — Deep mode of `prior-art-research` uses this to dispatch subagents per sub-problem. Also consumes `write-plan`'s `pgroup-N` parallelization map to dispatch AFK:full-auto slices concurrently.

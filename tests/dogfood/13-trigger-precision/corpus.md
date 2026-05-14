@@ -169,3 +169,31 @@ Each prompt is tagged with `expected:` — the skill the auditor expects to trig
 **Prompt:** Add a quick CRUD endpoint for the new `notifications` table.
 **expected:** `[no-skill]`
 **rationale:** Explicitly trivial. `prior-art-research` anti-trigger: "trivial CRUD endpoints with one obvious approach". Direct implementation; chain is overkill. `tdd-loop` could fire if the user wants TDD for the endpoint, but the prompt doesn't request TDD — `[no-skill]` is the most conservative answer. Acceptable to fire `tdd-loop` if the user has tdd-default culture; auditor notes the ambiguity.
+
+---
+
+## v1.11.0 corpus expansion (4 new Cat-3 prompts)
+
+Added 2026-05-14 per v1.10.0 audit recommendation #3 ("Add 3-5 new adversarial prompts to the corpus before re-running, biased toward category 3 (multi-skill) since that's where this audit was weakest"). P31 + P32 specifically probe the v1.11.0 tunings; P33 + P34 probe Cat-3 boundaries not exercised by v1.10.0.
+
+### Category 3 — Multi-skill-applicable (new)
+
+#### P31
+**Prompt:** Pressure-test our proposed event-sourcing approach before we commit to it.
+**expected:** `socratic-grill`
+**rationale:** "Pressure-test this approach" is verbatim language added to socratic-grill's trigger in v1.11.0. The word "before commit" is bait for `verify-output`, but v1.11.0 hoisted verify-output's "Do NOT use for pre-implementation review of designs, plans, or specs (that's socratic-grill)" anti-trigger to first position. False positive on `verify-output` is the v1.10.0 P22 failure mode — this prompt validates the fix from the other side (proactive design review, not reactive).
+
+#### P32
+**Prompt:** Why are my three parallel research subagents converging on the same answer instead of exploring different paths?
+**expected:** `systematic-debugging`
+**rationale:** "Debug" isn't said outright, but "Why are X behaving Y" + reported-unexpected-outcome ("converging instead of exploring") = bug. `parallel-dev`'s v1.11.0 anti-trigger ("Do NOT use for debugging existing parallel dispatches — that's systematic-debugging") explicitly catches this. v1.10.0 P27 failure mode (parallel-dev FP on "parallel subagents" keyword) — this prompt validates the fix.
+
+#### P33
+**Prompt:** ADR is locked, but the slices are obvious. Skip the plan doc and just start TDD on slice 1.
+**expected:** `tdd-loop`
+**rationale:** Two skills are nominally applicable (`write-plan` since ADR is locked, `tdd-loop` since implementation is starting), but the user explicitly says "skip the plan doc" — `write-plan` is skippable per `CLAUDE.md` ("write-plan is skip-able when the slice list is trivial and ordering is obvious"). The auditor should match `tdd-loop`'s "implement slice N" / "let's start building" trigger over `write-plan`'s "ADR locked" trigger when the user has explicitly opted out of the plan step. Tests whether description language respects user opt-out cues.
+
+#### P34
+**Prompt:** We have a 200-line PRD but no ADR yet. Break it into tickets we can prioritize.
+**expected:** `vertical-slice`
+**rationale:** Three skills are nominally applicable (`prior-art-research` since "PRD exists, no ADR" implies research-gap; `vertical-slice` since "break it into tickets"; `write-plan` since multi-slice + prioritization). `write-plan` correctly defers (anti-trigger: "no ADR exists yet"). `prior-art-research` could trigger but the PRD names the feature, removing the "vague idea" trigger. `vertical-slice`'s "break this down, create tickets" matches verbatim. Tests Cat-3 boundary between `prior-art-research` (architecture not yet picked) and `vertical-slice` (decomposition pending) — the prompt sits in the gap where a PRD exists but ADR doesn't.

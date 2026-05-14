@@ -1,6 +1,6 @@
 ---
 name: prior-art-research
-description: Research-grounded implementation discovery. Before building any non-trivial feature, find 3-5 production implementations by real teams, extract the patterns (architecture, decisions, trade-offs, migrations), and recommend an approach. Convergent research, not divergent brainstorming. Make sure to use this skill whenever the user wants to "build", "implement", "design", "architect", or "add" any non-trivial feature, system, or capability — even when they don't explicitly ask for research. Especially trigger when the user has a vague idea but no concrete approach. Do NOT use for trivial CRUD, single-function utilities, bug fixes with known causes, or API-surface questions (Context7 handles those).
+description: Research-grounded implementation discovery. Before building any non-trivial feature, find 3-5 production implementations by real teams, extract the patterns (architecture, decisions, trade-offs, migrations), and recommend an approach. Make sure to use this skill whenever the user wants to "build", "implement", "design", "architect", or "add" any non-trivial feature — even when they don't explicitly ask for research. Do NOT use when the user's intent is too vague to commit to a feature — ask a clarifying question instead. Do NOT use for trivial CRUD, single-function utilities, bug fixes with known causes, or API-surface questions (Context7 handles those).
 ---
 
 # Prior-Art Research

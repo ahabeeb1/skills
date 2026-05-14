@@ -1,6 +1,6 @@
 ---
 name: parallel-dev
-description: Dispatches parallel subagents for independent work. Used internally by prior-art-research Deep mode and by vertical-slice for AFK slices. Also user-invokable for parallel refactor passes, codebase exploration, or any batch where pieces don't share state or order. Make sure to use this skill whenever work decomposes into independent units that benefit from concurrent execution — but only after verifying independence (no shared state, no ordering, no file conflicts). Do NOT use for sequential work or tasks touching the same files.
+description: Dispatches parallel subagents for independent work. User-invokable for parallel refactor passes, codebase exploration, or any batch where pieces don't share state or order. Make sure to use this skill whenever work decomposes into independent units that benefit from concurrent execution — but only after verifying independence (no shared state, no ordering, no file conflicts). Do NOT use for debugging existing parallel dispatches — that's systematic-debugging. Do NOT use for sequential work or tasks touching the same files.
 ---
 
 # Parallel Dev

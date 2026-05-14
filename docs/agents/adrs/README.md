@@ -8,15 +8,18 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 
 | # | Title | Status | Date |
 |---|---|---|---|
-| 0001 | [Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol](./0001-environment-binding-via-system-context.md) | Accepted (partially superseded by 0005; partially amended by 0006) | 2026-05-11 |
+| 0001 | [Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol](./0001-environment-binding-via-system-context.md) | Accepted (partially superseded by 0005; partially amended by 0006; scope-narrowed by 0010) | 2026-05-11 |
 | 0002 | [habeebs-skill is standalone — no runtime-substrate composition](./0002-habeebs-skill-standalone.md) | Accepted | 2026-05-12 |
 | 0003 | [habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state](./0003-hooks-scope.md) | Accepted | 2026-05-12 |
-| 0004 | [Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume](./0004-parallel-subagent-dispatch-contract.md) | Accepted | 2026-05-12 |
+| 0004 | [Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume](./0004-parallel-subagent-dispatch-contract.md) | Accepted (amended in place 2026-05-13 — Part 3 share-full-traces clause + Part 5 treat-fetched-content-as-untrusted) | 2026-05-12 |
 | 0005 | [Split project context into GLOSSARY.md and SYSTEM_CONTEXT.md by writer lifecycle, and chain setup-habeebs-skill into Phase 0 inline](./0005-lifecycle-split-glossary-and-system-context.md) | Accepted | 2026-05-13 |
 | 0006 | [Remove `next-skills` frontmatter; surface chain relationships via HANDOFF / `## See also` / prose](./0006-remove-next-skills-frontmatter.md) | Accepted | 2026-05-13 |
 | 0007 | [Adopt a description budget policy — 1,200-char hard cap, 600-char target, three-keystone protected anti-triggers, `## Origins` body convention for credits](./0007-description-budget-policy.md) | Accepted | 2026-05-13 |
 | 0008 | [Add `verify-output` skill — post-tdd anti-slop pass with ANNOTATE default and GATE opt-in](./0008-verify-output-skill-scope.md) | Accepted | 2026-05-13 |
 | 0009 | [Establish `docs/agents/references/` as the directory convention for chain-shared cross-cutting helpers](./0009-docs-agents-references-convention.md) | Accepted | 2026-05-13 |
+| 0010 | [Prune SYSTEM_CONTEXT.md contents to non-re-derivable cross-session state](./0010-system-context-contents-prune.md) | Accepted | 2026-05-13 |
+| 0011 | [Adopt error-analysis-first evals cadence — chain-postmortem section + verify-output classified as complementary](./0011-error-analysis-cadence.md) | Accepted | 2026-05-13 |
+| 0012 | [Adopt the Compress-at-overflow protocol — markdown-only summary-and-flush, 7-section template, passive doc for v1.10.0](./0012-compress-at-overflow-protocol.md) | Accepted | 2026-05-13 |
 
 ## Conventions
 

@@ -4,50 +4,34 @@ Written by `prior-art-research` Phase 0 reconnaissance. Lives at `docs/agents/SY
 
 Edit by hand whenever it's wrong. The skill will detect staleness via `git log` against tracked manifest files; on stale, it prompts before overwriting.
 
+## Scope (per ADR-0010)
+
+This file carries **non-re-derivable cross-session state only**. Anthropic's [Claude Code best-practices](https://code.claude.com/docs/en/best-practices) prune test applies: *"Would removing this cause Claude to make mistakes?"* If Claude can derive it from `package.json` / `git log` / imports on a fresh invocation, **don't persist it here.**
+
+**DO NOT persist** (re-derivable by Claude on read; persisting violates Anthropic's ❌ Exclude rule):
+
+- Stack — Runtime / Framework / Test runner / Type-checker (Claude greps manifests)
+- Persistence — Datastore / ORM / Migrations location (Claude reads config + imports)
+- Deployment shape — Topology / Regions / CI/CD / Observability (Claude reads CI config + Dockerfile + monitoring config)
+- External services (Claude reads imports + env)
+- Recent hot files (`git log --since` runs instantly)
+
+**DO persist** (cross-session state OR inference too expensive to redo per invocation):
+
+- Scale envelope — not in code
+- Methodology / agent setup — user-answered config from `setup-habeebs-skill`
+- Active steering — opt-in anchors that persist across chain runs
+- Last reconciliation outcome — dated summaries from past `prior-art-research` runs (the value of this file across invocations)
+- Notable absences — inferential prior knowledge; requires synthesizing across files to reconstruct
+- Project mode — one-line judgment (brownfield/greenfield/replacement); derivable but expensive
+
 ---
 
 # SYSTEM_CONTEXT
 
 **Last refreshed:** YYYY-MM-DD
 **Refreshed by:** prior-art-research Phase 0 reconnaissance
-**Tracked manifests:** (the files whose modification triggers a staleness banner — keep this list aligned with what you actually probed)
-
-```
-package.json
-prisma/schema.prisma
-Dockerfile
-fly.toml
-.github/workflows/deploy.yml
-```
-
-## Stack
-
-- **Runtime:** [e.g., Node 20.11, Python 3.12, Go 1.22]
-- **Framework:** [e.g., Express 4.18, Django 5.0, Gin]
-- **Test runner:** [e.g., Vitest, pytest, go test]
-- **Type-checker / linter:** [e.g., tsc strict, mypy, golangci-lint]
-
-## Persistence
-
-- **Primary datastore:** [e.g., Postgres 16 on managed RDS]
-- **ORM / driver:** [e.g., Prisma 5, SQLAlchemy 2, pgx]
-- **Migrations location:** [e.g., prisma/migrations/]
-- **Other datastores:** [Redis? Mongo? S3? Vector DB? Or "none"]
-
-## Deployment shape
-
-- **Topology:** [e.g., single VM on Fly.io / k8s on EKS / Vercel serverless / AWS Lambda]
-- **Regions:** [e.g., us-east-1 only / multi-region active-active]
-- **CI/CD:** [e.g., GitHub Actions → Fly deploy on main]
-- **Observability:** [e.g., Datadog APM + Sentry / "none currently"]
-
-## External services
-
-(Anything `.env.example` or wire-level config reveals. One bullet per service.)
-
-- [e.g., Stripe — payments]
-- [e.g., SendGrid — transactional email]
-- [e.g., S3 — user uploads]
+**Schema:** per ADR-0010 (contents-prune; non-re-derivable cross-session state only)
 
 ## Scale envelope
 
@@ -62,37 +46,39 @@ fly.toml
 - **Issue tracker:** [GitHub Issues / Linear / Local markdown / Other]
 - **Triage labels:** [link to docs/agents/triage-labels.md, or "default"]
 - **Domain glossary:** [link to docs/agents/GLOSSARY.md, or "not yet populated"]
-- **Latest ADR:** [e.g., ADR-0007 / "no ADRs yet"]
-
-## Recent hot files
-
-(From `git log --since="60 days" --stat`. The 3-7 paths the team has touched most often. Tells the agent which seams are likely live.)
-
-- `path/one.ts`
-- `path/two.ts`
-- ...
+- **Latest ADR:** [e.g., ADR-0012 / "no ADRs yet"]
 
 ## Notable absences
 
-(Things you'd expect but didn't find. Often more valuable than what's there.)
+(Things you'd expect but didn't find. Inferential — often more valuable than what's there. Includes anything Phase 0 couldn't determine — accept `[unknown]` and proceed with `[assumed]` tags downstream.)
 
 - [e.g., No rate limiter currently]
 - [e.g., No background job runner]
 - [e.g., No structured logging]
 - [e.g., No feature flag system]
-
-## Open / unknown
-
-Anything Phase 0 couldn't determine. The user is expected to fill these in (or accept `[unknown]` and proceed with `[assumed]` tags downstream).
-
 - [e.g., Exact user count — order of magnitude only]
 - [e.g., Whether multi-tenancy is on the near-term roadmap]
 
+## Project mode
+
+- **brownfield** | **greenfield** | **replacement** — one-line judgment with optional context (e.g., "brownfield — v1.x live in production since 2024, mid-rewrite of auth subsystem")
+
 ## Active steering
 
-(Optional. Captured by `prior-art-research` Phase 1 if the user supplied anchors. Inherited by `draft-spec`, `socratic-grill`, and `decision-record` so the whole chain respects the same hints. Updated in place when the user revises. Cleared after the related research run completes if no longer relevant.)
+(Optional. Captured by `prior-art-research` Phase 1 if the user supplied anchors. Inherited by `draft-spec`, `socratic-grill`, and `decision-record` so the whole chain respects the same hints. Updated in place when the user revises. Flushed after the related research run completes per Phase 7 — see `references/steering-hints.md` § "Flush at end of chain".)
 
 - **Anchor:** [terms/techniques to bias toward, or `[none]`]
 - **Look at:** [specific projects/teams/sources to fetch first, or `[none]`]
 - **Avoid:** [out-of-scope terms or anti-patterns, or `[none]`]
-- **Last reconciliation outcome:** [link or short summary from the most recent Phase 6 reconciliation — e.g., "Celery anchor overridden 2026-05-10; recommendation uses procrastinate"]
+
+## Last reconciliation outcome
+
+(Dated summaries from past `prior-art-research` Phase 6 runs. Cross-session memory — this is the file's primary value across invocations. Append new entries; never overwrite. Older entries may be archived if the file grows past ~5KB.)
+
+**YYYY-MM-DD — topic: [research-run topic]**
+
+- Anchor "[...]" : Honored | Honored with caveat | Overridden — [1-line reason]
+- Look-at "[source]" : Honored | Overridden — [1-line reason]
+- Avoid "[...]" : Honored
+- Phase 2.5 critic outcome: APPROVED | ADDITIONS PROPOSED (N accepted / M rejected with reason)
+- Verdict: [1-2 sentences]

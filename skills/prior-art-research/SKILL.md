@@ -212,7 +212,7 @@ Produce the output using the template in `references/output-template.md`. The st
 
 ### Phase 7 — Hand off and flush steering
 
-End the response with explicit handoff lines. The downstream skills look for these.
+End the response with explicit handoff lines. The downstream skills look for these. **Note:** these HANDOFF lines are navigation pointers, not state payloads — downstream skills MUST read the full Phase 6 output document (the case studies, recommendations, decisions-to-make-next, open questions, sources) to do their work. See [`using-habeebs-skill` § "HANDOFF lines — navigation, not state transfer"](../using-habeebs-skill/SKILL.md) for the full-doc-read contract that governs every HANDOFF in the chain.
 
 ```
 HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec.

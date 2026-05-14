@@ -28,6 +28,16 @@ tdd-loop              → implements with red-green-refactor over vertical slice
 deep-modules          → refactor pass to deepen modules and remove shallow layers
 ```
 
+## HANDOFF lines — navigation, not state transfer
+
+Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the spec file written by `draft-spec`, the grill record written by `socratic-grill`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line.
+
+Worked example: `socratic-grill` finishes a session by writing `docs/agents/specs/<slug>-grill.md` (the full record) and emitting `HANDOFF: record ready — invoke decision-record to capture as ADRs`. When `decision-record` runs, it reads the grill record IN FULL — every resolved item, every axes-grilled rationale, every revisit trigger. The HANDOFF line tells you which skill runs next; the grill record tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
+
+This shape positively matches [OpenAI's Agents SDK](https://openai.github.io/openai-agents-python/multi_agent/) "Handoff = ownership transfer" primitive — handoffs at the markdown layer carry full state via the file the next skill reads, not via the pointer string. It also guards against the failure mode documented in Walden Yan's ["Don't Build Multi-Agents"](https://cognition.ai/blog/dont-build-multi-agents) (Cognition AI, 2025-06-12): subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The full-doc-read contract is what keeps habeebs-skill's chain on the right side of Yan's line. Same invariant applies to `parallel-dev` subagent dispatches per [ADR-0004 § Part 3](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md): subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
+
+If you're a downstream skill author: when you encounter a `HANDOFF: X ready` line, your first action is to READ the file it points to (the spec, the grill, the ADR). Don't infer what the previous phase decided from the HANDOFF text alone.
+
 ## Supporting primitives (used inside the chain)
 
 - **parallel-dev** — Deep mode of `prior-art-research` uses this to dispatch subagents per sub-problem. Also consumes `write-plan`'s `pgroup-N` parallelization map to dispatch AFK:full-auto slices concurrently.
@@ -35,6 +45,23 @@ deep-modules          → refactor pass to deepen modules and remove shallow lay
 - **deep-modules** — `decision-record` references the deep-module principles; `tdd-loop` invokes deepening checks at refactor steps.
 - **using-worktrees** — isolates each non-trivial slice in its own branch + worktree with a verified-clean test baseline. Invoked from `tdd-loop` Phase 0 and `parallel-dev` Phase 4.
 - **systematic-debugging** — reproduce → minimize → probe → fix → regression-test. Invoked when a bug surfaces during or after a slice.
+
+## When chain runs go wrong — postmortem cadence
+
+Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.
+
+**Trigger conditions** — write a postmortem when:
+- A chain run produced a wrong-shaped output (spec missed a sub-problem; grill missed a question; ADR locked something that's wrong in retrospect)
+- A slice landed but with concerns (`verify-output` returned `DONE_WITH_CONCERNS`; behavior diverged from spec)
+- A dispatched subagent BLOCKED unexpectedly
+- The user says "that didn't work" / "this chain went sideways"
+- A previously-passing dogfood scenario started failing
+
+**Artifact:** one markdown file at `docs/agents/postmortems/YYYY-MM-DD-<slug>.md` per incident. Template structure (transition-failure-matrix per Hamel + Shreya): see [`docs/agents/postmortems/README.md`](../../docs/agents/postmortems/README.md).
+
+**What postmortems produce:** named failure categories that feed back into `verify-output`'s ruleset (new static rules), into a SKILL.md's anti-pattern list, or into a new ADR. The output is durable rule-derivation, not narrative.
+
+**v1.11.0 promotion criterion** (per ADR-0011): if 10+ real postmortems land in 90 days OR the user explicitly requests a `/postmortem` slash-command → promote this section to a standalone `chain-postmortem` skill with description tuned to failure-shaped trigger phrases.
 
 ## Conditional extensions
 
@@ -102,6 +129,33 @@ After cleanup completes, choose one of two handoffs:
 
 - **HANDOFF: re-research needed** — invoke `prior-art-research` with the new constraint or revised feature definition. The chain restarts from Phase 1.
 - **HANDOFF: back to user** — the work is genuinely paused and we are not currently working on a next step. Echo this explicitly so future-you knows the abort was not in service of a pivot.
+
+## When sessions grow long — summary-and-flush
+
+Per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), the chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-only summary-and-flush protocol for sessions that approach context-window pressure. The other three moves (Write, Select, Isolate per [LangChain's framework](https://blog.langchain.com/context-engineering-for-agents/)) are already covered by SYSTEM_CONTEXT writes, prior-art-research fetches, parallel-dev dispatch isolation. This section closes the Compress gap.
+
+**Trigger signals** (agent notices these; no runtime detection):
+
+- Conversation length approaching the prompt-cache TTL boundary (rough heuristic: > 100 tool-call turns)
+- Tool feedback accumulating past obvious-relevance (the agent has re-read the same file 3+ times)
+- A long `tdd-loop` running 20+ slices in one conversation
+- User explicitly says "this session is getting long" / "context feels heavy"
+
+**Action: summary-and-flush.** Write a markdown summary to `.scratch/session-summary-<timestamp>.md` using the 7-section template at [`docs/agents/templates/session-summary-template.md`](../../docs/agents/templates/session-summary-template.md). Then signal to the user that a fresh sub-session should start loading the summary + the active artifacts (current spec, ADRs in flight, current slice file, recent commits). The fresh sub-session inherits enough context to continue work mid-chain without a Phase 1 cold start.
+
+**7-section template** (copy from the template file when flushing):
+
+1. **Active artifacts** — file paths for current spec, ADRs being authored, current slice file, current grill record (if any), current postmortem (if any)
+2. **Current slice** — slice number + name + acceptance-criteria status (which boxes checked, which open, which the agent was working on at flush time)
+3. **Last successful action** — commit SHA + message, OR "test X passed" with path, OR "file Y written" with path
+4. **What's blocking** — immediate next action + any blocker (missing input, failing test, open grill question)
+5. **Open grill Qs from this session** — Q-IDs from grill records that drove current decisions
+6. **Recent test state** — last dogfood / test run outcome + any red commits since
+7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time
+
+`.scratch/` is gitignored by user convention (not enforced by ADR — these are ephemeral working-set files, not durable artifacts). Cleanup is manual or per-user-environment policy. Per ADR-0002, no runtime substrate manages the lifecycle.
+
+**v1.11.0 promotion criterion** (per ADR-0012): 3+ postmortems in `docs/agents/postmortems/` showing Context Distraction OR Context Confusion as the failure mode → promote this passive doc to an active skill (`chain-overflow-flush` or similar) with richer detection heuristics.
 
 ## When to skip the chain
 

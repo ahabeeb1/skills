@@ -130,6 +130,33 @@ After cleanup completes, choose one of two handoffs:
 - **HANDOFF: re-research needed** — invoke `prior-art-research` with the new constraint or revised feature definition. The chain restarts from Phase 1.
 - **HANDOFF: back to user** — the work is genuinely paused and we are not currently working on a next step. Echo this explicitly so future-you knows the abort was not in service of a pivot.
 
+## When sessions grow long — summary-and-flush
+
+Per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), the chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-only summary-and-flush protocol for sessions that approach context-window pressure. The other three moves (Write, Select, Isolate per [LangChain's framework](https://blog.langchain.com/context-engineering-for-agents/)) are already covered by SYSTEM_CONTEXT writes, prior-art-research fetches, parallel-dev dispatch isolation. This section closes the Compress gap.
+
+**Trigger signals** (agent notices these; no runtime detection):
+
+- Conversation length approaching the prompt-cache TTL boundary (rough heuristic: > 100 tool-call turns)
+- Tool feedback accumulating past obvious-relevance (the agent has re-read the same file 3+ times)
+- A long `tdd-loop` running 20+ slices in one conversation
+- User explicitly says "this session is getting long" / "context feels heavy"
+
+**Action: summary-and-flush.** Write a markdown summary to `.scratch/session-summary-<timestamp>.md` using the 7-section template at [`docs/agents/templates/session-summary-template.md`](../../docs/agents/templates/session-summary-template.md). Then signal to the user that a fresh sub-session should start loading the summary + the active artifacts (current spec, ADRs in flight, current slice file, recent commits). The fresh sub-session inherits enough context to continue work mid-chain without a Phase 1 cold start.
+
+**7-section template** (copy from the template file when flushing):
+
+1. **Active artifacts** — file paths for current spec, ADRs being authored, current slice file, current grill record (if any), current postmortem (if any)
+2. **Current slice** — slice number + name + acceptance-criteria status (which boxes checked, which open, which the agent was working on at flush time)
+3. **Last successful action** — commit SHA + message, OR "test X passed" with path, OR "file Y written" with path
+4. **What's blocking** — immediate next action + any blocker (missing input, failing test, open grill question)
+5. **Open grill Qs from this session** — Q-IDs from grill records that drove current decisions
+6. **Recent test state** — last dogfood / test run outcome + any red commits since
+7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time
+
+`.scratch/` is gitignored by user convention (not enforced by ADR — these are ephemeral working-set files, not durable artifacts). Cleanup is manual or per-user-environment policy. Per ADR-0002, no runtime substrate manages the lifecycle.
+
+**v1.11.0 promotion criterion** (per ADR-0012): 3+ postmortems in `docs/agents/postmortems/` showing Context Distraction OR Context Confusion as the failure mode → promote this passive doc to an active skill (`chain-overflow-flush` or similar) with richer detection heuristics.
+
 ## When to skip the chain
 
 The chain is overkill for:

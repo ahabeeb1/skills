@@ -46,6 +46,23 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 - **using-worktrees** — isolates each non-trivial slice in its own branch + worktree with a verified-clean test baseline. Invoked from `tdd-loop` Phase 0 and `parallel-dev` Phase 4.
 - **systematic-debugging** — reproduce → minimize → probe → fix → regression-test. Invoked when a bug surfaces during or after a slice.
 
+## When chain runs go wrong — postmortem cadence
+
+Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.
+
+**Trigger conditions** — write a postmortem when:
+- A chain run produced a wrong-shaped output (spec missed a sub-problem; grill missed a question; ADR locked something that's wrong in retrospect)
+- A slice landed but with concerns (`verify-output` returned `DONE_WITH_CONCERNS`; behavior diverged from spec)
+- A dispatched subagent BLOCKED unexpectedly
+- The user says "that didn't work" / "this chain went sideways"
+- A previously-passing dogfood scenario started failing
+
+**Artifact:** one markdown file at `docs/agents/postmortems/YYYY-MM-DD-<slug>.md` per incident. Template structure (transition-failure-matrix per Hamel + Shreya): see [`docs/agents/postmortems/README.md`](../../docs/agents/postmortems/README.md).
+
+**What postmortems produce:** named failure categories that feed back into `verify-output`'s ruleset (new static rules), into a SKILL.md's anti-pattern list, or into a new ADR. The output is durable rule-derivation, not narrative.
+
+**v1.11.0 promotion criterion** (per ADR-0011): if 10+ real postmortems land in 90 days OR the user explicitly requests a `/postmortem` slash-command → promote this section to a standalone `chain-postmortem` skill with description tuned to failure-shaped trigger phrases.
+
 ## Conditional extensions
 
 - **agent-factors-check** — invoked *from* `socratic-grill` Phase 1 when the spec is for an agent product. Runs the 13 factors from humanlayer/12-factor-agents and adds 6–13 Socratic questions to the active grilling agenda. Skipped for non-agent specs (CRUD, web, mobile, infra).

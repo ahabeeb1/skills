@@ -18,6 +18,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0008 | [Add `verify-output` skill — post-tdd anti-slop pass with ANNOTATE default and GATE opt-in](./0008-verify-output-skill-scope.md) | Accepted | 2026-05-13 |
 | 0009 | [Establish `docs/agents/references/` as the directory convention for chain-shared cross-cutting helpers](./0009-docs-agents-references-convention.md) | Accepted | 2026-05-13 |
 | 0010 | [Prune SYSTEM_CONTEXT.md contents to non-re-derivable cross-session state](./0010-system-context-contents-prune.md) | Accepted | 2026-05-13 |
+| 0011 | [Adopt error-analysis-first evals cadence — chain-postmortem section + verify-output classified as complementary](./0011-error-analysis-cadence.md) | Accepted | 2026-05-13 |
 
 ## Conventions
 

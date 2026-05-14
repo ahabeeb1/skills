@@ -179,6 +179,7 @@ This skill's return contract matches the parallel-dev dispatch contract from ADR
 - [`references/slop-heuristics.md`](references/slop-heuristics.md) — the 7 heuristics this skill applies
 - [ADR-0008](../../docs/agents/adrs/0008-verify-output-skill-scope.md) — scope, default mode, blocking criteria, separation from deep-modules
 - [ADR-0004](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md) — 4-status return contract
+- [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md) — when verify-output keeps missing a failure class, [`docs/agents/postmortems/`](../../docs/agents/postmortems/) is the canonical place to document the new category and propose a rule for the next release. Static pre-commit check (this skill) and post-incident error analysis (postmortems) are complementary loops, not peers.
 - `CLAUDE.md` at repo root — canonical source for H1-H4
 
 ## Origins

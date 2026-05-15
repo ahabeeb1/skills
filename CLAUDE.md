@@ -56,7 +56,7 @@ This repo is configured for habeebs-skill v1.8+ (self-dogfood). The methodology 
 - **System context:** `docs/agents/SYSTEM_CONTEXT.md` — stack, scale envelope, deployment shape, recent hot files, last reconciliation outcomes. Written exclusively by `prior-art-research` Phase 0 (load-bearing per ADR-0001; single-writer invariant per ADR-0005).
 - **Issue tracker:** `docs/agents/issue-tracker.md` (GitHub for this repo).
 - **Triage labels:** `docs/agents/triage-labels.md` (canonical 5).
-- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 5 ADRs as of v1.8.0).
+- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 13 ADRs as of 2026-05-15).
 - **Specs:** `docs/agents/specs/` (one per release).
 - **Plans:** `docs/agents/plans/` (one per release that warranted phased delivery).
 - **Dispatches:** `docs/agents/dispatches/` (parallel-dev audit records).

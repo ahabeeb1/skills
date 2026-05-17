@@ -13,6 +13,23 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.12.0] — 2026-05-17
+
+Context-gate adaptivity release. A review of the `/research` command surfaced a contradiction between `commands/research.md` (hard-blocked on 5 context questions — "Do not proceed without them") and `prior-art-research/SKILL.md` Phase 1 (accepts partial answers, proceeds with unknowns flagged). v1.12.0 resolves it in favor of the skill: the Phase 1 gate stays questions-first but scales the asking to the anticipated mode and never hard-blocks. The decision is recorded as ADR-0013.
+
+### Changed
+
+- **`skills/prior-art-research/SKILL.md`** — Phase 1 gains a "Scale the asking to the anticipated mode" paragraph: an obviously-Quick scope collapses to the 2 foundational questions (or a single confirmation line when Phase 0 + the prompt already cover them); the full staged 2-then-3 is reserved for Deep-mode scopes.
+  - **Why:** the gate was binary — full 5 questions regardless of scope. For an obviously-Quick run the two question round-trips can cost more than the research itself. Adaptive asking removes that fixed tax while keeping questions-first as the canonical gate.
+
+- **`commands/research.md`** — the Phase 1 instruction is rewritten from "Ask the user the 5 context questions. Wait for answers. Do not proceed without them." to match SKILL.md Phase 1: staged questions, skip anything Phase 0 or the prompt already answered, accept partial / "I don't know" answers (flagged `[assumed]`/`[unknown]`), and block only the Phase 4 search — not the whole run — until context is captured or explicitly waived.
+  - **Why:** the command is read after the skill, so its absolute hard block silently overrode the skill's accept-partial rule. The skill is the single source of truth for gate behavior; the command must not contradict it.
+
+### Added
+
+- **`docs/agents/adrs/0013-research-context-gate.md`** — ADR-0013: the `prior-art-research` Phase 1 context gate is adaptive, not a hard block. Records why questions-first is kept (research is convergent and expensive; context weights Phase 4 source tiering and is the only thing preventing the skill's own "FAANG-scale solutions for non-FAANG-scale problems" anti-pattern).
+  - **Why:** the review was a question about whether the *existing* gate is shaped right, not a proposal to add one — capturing the answer as Tier-0 prior art stops the same review recurring.
+
 ## [1.11.0] — 2026-05-14
 
 Trigger-precision tuning release. The v1.10.0 audit ([`audit-report-2026-05-13.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-13.md)) flagged 4 skills with precision or recall below the 0.80 threshold across a 30-prompt corpus. v1.11.0 applies the audit's suggested tunings (4 surgical edits to SKILL.md `description:` fields, ≤100 chars each), expands the corpus by 4 Cat-3 adversarial prompts per the audit's recommendation #3, and re-runs the audit. New audit ([`audit-report-2026-05-14.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-14.md)) reports 34/34 (100%) with 0 skills flagged.

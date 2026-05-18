@@ -52,6 +52,7 @@ If none of these exist, halt and ask: "I need a chosen approach to spec. Either 
 
 From the recommendation, extract:
 
+- **Tier** — the `**Tier:**` field in the research report header (Quick / Balanced / Deep). This skill inherits it; it does not re-decide it. Echo it into the spec header's `**Tier:**` field. See [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md). If the research report predates the tier system and has no `Tier:` field, default to Balanced.
 - **Architecture sketch** — components, data flow, network boundaries (from the research Recommendation section)
 - **Concrete picks** — the table of decisions from the research output
 - **Trade-offs accepted** — what you're explicitly giving up
@@ -59,6 +60,8 @@ From the recommendation, extract:
 - **Open questions** — anything research didn't resolve
 
 If "decisions still to make" or "open questions" are non-empty, flag them prominently in the spec — they're candidates for `socratic-grill` to resolve before implementation starts.
+
+**Tier shapes the spec's depth, never its correctness.** A **Quick** spec is terse — slice list, acceptance criteria, and test seam per slice, no dependency DAG and no parallelization map. A **Balanced** spec follows the full template. A **Deep** spec follows the full template plus a DAG and parallelization map. The tier governs ceremony only: open questions and unresolved decisions are flagged prominently at *every* tier (per `tier-scale.md` invariant 1 — a real decision always reaches `socratic-grill`).
 
 ### Phase 3 — Decompose into vertical slices
 
@@ -94,7 +97,7 @@ The slice's first commit should be the failing test (RED phase from `tdd-loop`).
 
 Number slices in implementation order. A slice depending on another must come after it. Express dependencies as `Blocked by: #N` references.
 
-For Deep specs (5+ slices), produce a small DAG comment showing the structure. AFK slices that share no dependencies can be marked `Parallelizable` for `parallel-dev` dispatch.
+DAG and parallelization scale with the tier: **Quick** — skip both (slices run in spec order). **Balanced** — produce a small DAG comment when the spec has 5+ slices. **Deep** — always produce the DAG. At Balanced and Deep, AFK slices that share no dependencies can be marked `Parallelizable` for `parallel-dev` dispatch.
 
 ### Phase 6 — Write the spec document
 
@@ -131,3 +134,4 @@ HANDOFF: implementation ready — once spec is locked, invoke `tdd-loop` per sli
 - `decision-record` — downstream; captures the locked spec as an ADR
 - `tdd-loop` — implementation skill; runs against each slice
 - `references/spec-template.md` — strict format for the spec document
+- `docs/agents/references/tier-scale.md` — the tier this spec inherits and how it shapes spec depth

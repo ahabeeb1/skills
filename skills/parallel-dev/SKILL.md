@@ -11,7 +11,7 @@ Orchestration primitive for parallel subagent dispatch. The art is in proving in
 
 **Trigger on:**
 
-- `prior-art-research` enters Deep mode (one subagent per sub-problem to research)
+- `prior-art-research` enters the Deep tier (one subagent per sub-problem to research)
 - `draft-spec` produces a "Parallelizable group" of AFK slices
 - The user requests a batch operation across files / modules ("update all docstrings", "audit all API endpoints", "fix all TypeScript errors")
 - Codebase exploration where multiple areas can be investigated independently
@@ -179,7 +179,7 @@ The subagent's input was incomplete or ambiguous and it cannot proceed without m
 | `BLOCKED` | Halt pgroup | Structured BLOCKED message |
 | `NEEDS_CONTEXT` | Re-dispatch once, then escalate | Silent on first re-dispatch; BLOCKED-shape on escalation |
 
-Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep mode synthesis) MUST honor this matrix. Free-form text returns are non-compliant; the contract is machine-readable.
+Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep-tier synthesis) MUST honor this matrix. Free-form text returns are non-compliant; the contract is machine-readable.
 
 ## Sub-patterns
 
@@ -234,13 +234,13 @@ These signs say "parallel isn't right here, run sequentially":
 
 ## Integration with the chain
 
-- **Used by `prior-art-research`** in Deep mode — one subagent per sub-problem, plus a synthesizer subagent that aggregates findings
+- **Used by `prior-art-research`** in the Deep tier — one subagent per sub-problem, plus a synthesizer subagent that aggregates findings
 - **Used by `vertical-slice` / `draft-spec`** — AFK slices marked "Parallelizable" run concurrently here
 - **Standalone** for batch refactors, audits, doc generation
 
 ## See also
 
-- `prior-art-research` — primary consumer in Deep mode
+- `prior-art-research` — primary consumer in the Deep tier
 - `draft-spec` — produces parallelizable slice groups
 - `tdd-loop` — what each subagent runs internally when implementing a slice
 - `../../agents/source-fetcher.md` — subagent prompt for research fetching

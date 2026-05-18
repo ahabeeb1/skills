@@ -2,6 +2,7 @@
 
 **Slug:** `feature-slug`
 **Status:** Draft | Grilled | Locked | In-progress | Done
+**Tier:** Quick | Balanced | Deep (inherited from the research report)
 **Spec'd from:** [Link to research output or ADR]
 **Spec'd on:** [Date]
 

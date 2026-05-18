@@ -1,6 +1,6 @@
 ---
 name: pattern-extractor
-description: Research subagent that extracts named patterns across N source records returned by `source-fetcher` subagents. Identifies converging patterns, competing patterns, and flags homogeneity bias. Dispatched by `prior-art-research` Deep mode after source-fetcher fan-out completes. Returns structured pattern records, not a recommendation.
+description: Research subagent that extracts named patterns across N source records returned by `source-fetcher` subagents. Identifies converging patterns, competing patterns, and flags homogeneity bias. Dispatched by `prior-art-research` in the Deep tier after source-fetcher fan-out completes. Returns structured pattern records, not a recommendation.
 ---
 
 # Pattern Extractor (subagent prompt)

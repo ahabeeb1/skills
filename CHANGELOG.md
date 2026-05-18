@@ -13,6 +13,35 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.12.0] — 2026-05-18
+
+Chain-wide depth tiers. `prior-art-research` had a binary Quick/Deep *mode* that governed only its own research depth — the rest of the chain applied uniform spec / grill / ADR / plan ceremony regardless of how much the feature warranted. v1.12.0 generalizes that binary into a graded, chain-wide **tier** (Quick / Balanced / Deep), decided once by `prior-art-research` Phase 3 and inherited by every downstream skill via a `Tier:` artifact-header field. ADR-0014 records the decision; it extends ADR-0013's adaptive-gate reasoning from one phase to the whole chain. Two invariants are load-bearing: the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR — even under a `--quick` override), and tier-related user-facing output stays task-focused (no token/cost/time rationale).
+
+### Added
+
+- **`docs/agents/adrs/0014-chain-wide-depth-tier.md`** — the decision: the chain runs at a tier, carried in artifact headers (not runtime state, not the HANDOFF string). Extends ADR-0013.
+  - **Why:** the binary mode was research-only; trivial features still paid full downstream ceremony. A graded chain-wide scale lets simple work reach a plan fast while ambitious work keeps the full treatment.
+- **`docs/agents/references/tier-scale.md`** — canonical tier table, the three-signal auto-detect rule (residual ambiguity + sub-problem count + constraint complexity), and the two invariants. All six chain skills link here per ADR-0009.
+  - **Why:** single source of truth — skills reference the scale instead of each restating it and drifting.
+- **`tests/dogfood/17-depth-tier/`** — tier-detection eval: a labelled calibration set of borderline task prompts, scored on whether Phase 3 auto-routes the expected tier, plus the invariant checks. Methodology follows Anthropic's skill-creator eval guidance (baseline-style, grade the outcome not the path).
+  - **Why:** the feature's core risk is mis-tiering; an eval over borderline cases is the primary regression signal.
+
+### Changed
+
+- **`prior-art-research/SKILL.md`** — Phase 3 "Choose mode" rewritten to "Choose tier": three tiers, the scored auto-detect rule with an ambiguity floor (a high-ambiguity task never auto-routes to Quick), and `--quick`/`--balanced`/`--deep` overrides. Phase 1 / Phase 2.5 / examples updated from "mode" to "tier".
+  - **Why:** Phase 3 is the single point where the chain-wide tier is decided.
+- **Output / artifact templates** — `prior-art-research` output-template `Mode: Quick | Deep` → `Tier: Quick | Balanced | Deep`; spec, grill-record, ADR, and plan templates gain an inherited `Tier:` header field.
+  - **Why:** the tier propagates through the headers downstream skills already read in full — the same mechanism as `Slug`/`Status`. This is an additive output-template change; all consumers are updated in the same release.
+- **`draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`** — each reads the inherited `Tier:`, echoes it into its own header, and scales its work to the tier. `socratic-grill` always runs on a non-empty open-questions inventory regardless of tier; `decision-record` always records a one-way-door decision; `tdd-loop` always runs in full and now treats a missing plan as the expected Quick state.
+  - **Why:** the tier is only useful if the whole chain honors it — and only safe if the quality gates hold at every tier (invariant 1).
+- **Vocabulary swap** — "Quick/Deep **mode**" → "Quick/Balanced/Deep **tier**" across `parallel-dev`, `using-habeebs-skill`, `source-fetcher`, `pattern-extractor`, `CLAUDE.md`, and `GLOSSARY.md` (new "Tier" core concept; "mode" retired). Behavior of the Deep tier is unchanged — only the word.
+  - **Why:** "mode" was a research-only binary; "tier" is chain-wide and graded. One consistent word prevents confused agents (GLOSSARY discipline).
+
+### Notes
+
+- **No frontmatter or handoff-contract change.** Quick and Deep keep their existing meaning, so no existing `/research` invocation breaks; Balanced is purely additive. The only format change is the `Mode:`→`Tier:` template-header rename, applied in lockstep across all chain templates and their consuming skills in this release.
+- **The v1.11.0 trigger-precision corpus-growth item is not in this release.** That remains open; v1.12.0's new corpus is the tier-detection calibration set, a separate eval surface.
+
 ## [1.11.0] — 2026-05-14
 
 Trigger-precision tuning release. The v1.10.0 audit ([`audit-report-2026-05-13.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-13.md)) flagged 4 skills with precision or recall below the 0.80 threshold across a 30-prompt corpus. v1.11.0 applies the audit's suggested tunings (4 surgical edits to SKILL.md `description:` fields, ≤100 chars each), expands the corpus by 4 Cat-3 adversarial prompts per the audit's recommendation #3, and re-runs the audit. New audit ([`audit-report-2026-05-14.md`](tests/dogfood/13-trigger-precision/audit-report-2026-05-14.md)) reports 34/34 (100%) with 0 skills flagged.

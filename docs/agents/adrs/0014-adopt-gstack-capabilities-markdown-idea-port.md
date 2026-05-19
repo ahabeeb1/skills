@@ -14,7 +14,7 @@ The research found gstack's value splits cleanly on a substrate test: capabiliti
 
 We will adopt **three** gstack capabilities, each re-implemented as a pure-markdown skill written from scratch (methodology is portable; gstack's MIT-licensed skill text is not copied):
 
-- **`security-audit`** — a standalone slash-invokable skill (`/security-audit`) ported from gstack `/cso`, trimmed to a markdown-only core: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated false-positive filter, markdown report. Ships **v1.13.0**.
+- **`security-audit`** — a standalone slash-invokable skill (`/security-audit`) ported from gstack `/cso`, trimmed to a markdown-only core: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated false-positive filter, markdown report. Ships **v1.14.0**.
 - **`release`** — a new terminal chain link after `tdd-loop`, ported from gstack `/ship` with `/document-release` doc-sync folded in. Ships **v1.14.0**. (The hook change it requires is recorded separately as ADR-0015.)
 - **`devex-review`** — a conditional extension of `socratic-grill` ported from gstack `/plan-devex-review`, mirroring `agent-factors-check`; fires when the spec's product is consumed primarily by developers (CLI / SDK / library API / plugin / framework). Ships **v1.14.0**.
 
@@ -43,7 +43,7 @@ Portfolio ceiling: **3 new skills, 0 new conventions** — the chain grows from 
 
 ### Operational impact
 
-- Staggered release: v1.13.0 (`security-audit` alone) then v1.14.0 (`release` + `devex-review`), isolating the hook/ADR-0015 change from the new skills.
+- Released as a single **v1.14.0** cut. The spec's D6 decision staggered this into v1.13.0 (`security-audit`) + v1.14.0 (`release` + `devex-review`); implementation ran all three slices together, so the bundle ships once as v1.14.0 and v1.13.0 is intentionally skipped.
 - Three new dogfood scenarios: `tests/dogfood/17-security-audit/`, `18-release/`, `19-devex-review/`.
 
 ## Alternatives considered
@@ -93,3 +93,4 @@ This ADR should be reopened if any of:
 
 - 2026-05-18 — Initial ADR, status Proposed
 - 2026-05-18 — Status → Accepted; implementation started with v1.13.0 Slice 1 (`security-audit` skill)
+- 2026-05-18 — All 3 slices shipped together as a single v1.14.0 release (the D6 stagger was collapsed when implementation ran all slices in one pass); v1.13.0 intentionally skipped

@@ -147,12 +147,15 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 | `vertical-slice` | Decomposes work into tracer-bullet vertical slices with the 3-label vocab (`AFK:full-auto` / `HITL:inline` / `HITL:approval-gate`) | mattpocock + humanlayer |
 | `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; teardown via finishing-a-development-branch | Superpowers |
 | `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem | Superpowers + OMC trace |
+| `security-audit` | Static security audit invoked on demand — attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings | gstack `/cso` (v1.13.0) |
+| `release` | Terminal chain link after tdd-loop — version bump, CHANGELOG entry, clean history, PR body, doc-sync audit, tag-push. No deploy/canary/benchmark. | gstack `/ship` (v1.14.0) |
 
 ### Conditional extensions
 
 | Skill | What it does | When it fires |
 |---|---|---|
 | `agent-factors-check` | Pressure-tests an agent / copilot / LLM-workflow spec against the 12 factors from humanlayer/12-factor-agents. Surfaces the 6 gaps the standard 7 axes miss (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch). Returns 6–13 Socratic questions interleaved into the active `socratic-grill` agenda. | Invoked from `socratic-grill` when the spec is an agent product; or directly via `/factor-check` (v1.4.0) |
+| `devex-review` | Surfaces developer-experience gaps (onboarding friction, API/CLI ergonomics, error-message quality, docs-as-experienced, upgrade friction) as Socratic questions for the grilling agenda. | Invoked from `socratic-grill` when the spec is a developer-facing product (CLI/SDK/library/plugin); or via `/devex-review` (v1.14.0) |
 
 ### Meta
 

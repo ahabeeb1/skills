@@ -52,6 +52,55 @@ case "$command_text" in
 esac
 
 # ────────────────────────────────────────────────────────────────────────────
+# Tag-only push carve-out (ADR-0015)
+#
+# A release tag pushed on the default branch is NOT a branch-commit push.
+# The following unambiguous tag-only forms are ALLOWED on the default branch:
+#
+#   git push --tags                        (all local tags)
+#   git push <remote> --tags               (all local tags to named remote)
+#   git push <remote> tag <name>           (explicit single tag)
+#   git push <remote> refs/tags/<name>     (unambiguous refspec — preferred)
+#
+# STILL BLOCKED:
+#   git push <remote> <name>               (ambiguous: could be branch or tag)
+#   git push                               (bare push advances the branch)
+#   git commit                             (unchanged)
+#
+# The carve-out is intentionally conservative: the preferred form is
+# `git push origin refs/tags/<version>` (what the `release` skill uses).
+# The `--tags` and `tag <name>` forms are also recognized as unambiguous
+# enough that blocking them serves no policy purpose.
+#
+# Residual limitation: this is glob matching on a command string, not a
+# shell parser. A command that pushes a branch AND tags in one invocation
+# (`git push origin main --tags`) can evade the carve-out's intent. The
+# first case arm below declines the carve-out for any command that also
+# contains `git commit` (the likely accidental case). The branch+tags
+# combination is an accepted residual — this hook is a guardrail against
+# accidental default-branch commits, not an adversary boundary
+# (HABEEBS_DISABLE_HOOKS=1 and the per-repo allowlist remain the escapes).
+# ────────────────────────────────────────────────────────────────────────────
+case "$command_text" in
+  # A command that also runs `git commit` is never a pure tag-push —
+  # decline the carve-out so the commit half is still blocked on default.
+  *"git commit"*)
+    ;;
+  # `git push --tags` or `git push <remote> --tags`
+  *"git push"*"--tags"*)
+    exit 0
+    ;;
+  # `git push <remote> tag <name>` (explicit "tag" keyword)
+  *"git push"*" tag "*)
+    exit 0
+    ;;
+  # `git push <remote> refs/tags/<name>` (unambiguous refspec)
+  *"git push"*"refs/tags/"*)
+    exit 0
+    ;;
+esac
+
+# ────────────────────────────────────────────────────────────────────────────
 # Are we in a git working tree?
 # ────────────────────────────────────────────────────────────────────────────
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then

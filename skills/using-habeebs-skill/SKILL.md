@@ -26,6 +26,8 @@ write-plan            → phased delivery doc with acceptance gates + rollback h
 tdd-loop              → implements with red-green-refactor over vertical slices
          ↓
 deep-modules          → refactor pass to deepen modules and remove shallow layers
+         ↓
+release               → version bump, CHANGELOG, PR body, tag-push — terminal chain link
 ```
 
 ## HANDOFF lines — navigation, not state transfer
@@ -46,6 +48,10 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 - **using-worktrees** — isolates each non-trivial slice in its own branch + worktree with a verified-clean test baseline. Invoked from `tdd-loop` Phase 0 and `parallel-dev` Phase 4.
 - **systematic-debugging** — reproduce → minimize → probe → fix → regression-test. Invoked when a bug surfaces during or after a slice.
 
+## Standalone skills (invoked on demand, outside the chain)
+
+- **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`. Ported from gstack `/cso` per [ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md).
+
 ## When chain runs go wrong — postmortem cadence
 
 Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.
@@ -63,9 +69,14 @@ Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain
 
 **v1.11.0 promotion criterion** (per ADR-0011): if 10+ real postmortems land in 90 days OR the user explicitly requests a `/postmortem` slash-command → promote this section to a standalone `chain-postmortem` skill with description tuned to failure-shaped trigger phrases.
 
+## Cross-session learnings — no separate ledger (by design)
+
+habeebs-skill deliberately has no learnings ledger or memory file. Cross-session knowledge lives in three existing artifacts: **ADRs** capture decisions and their rationale, **`docs/agents/postmortems/`** captures incident and error analysis, and **`SYSTEM_CONTEXT.md`'s "Last reconciliation outcome"** log captures research learnings. A separate curated ledger was evaluated and rejected ([ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md) grill, 2026-05-18): it duplicates these artifacts, decays without the automated pruning ADR-0002 forbids, and reverses ADR-0010's doc-weight reduction. If you want a "learnings file", write an ADR or a postmortem instead.
+
 ## Conditional extensions
 
 - **agent-factors-check** — invoked *from* `socratic-grill` Phase 1 when the spec is for an agent product. Runs the 13 factors from humanlayer/12-factor-agents and adds 6–13 Socratic questions to the active grilling agenda. Skipped for non-agent specs (CRUD, web, mobile, infra).
+- **devex-review** — invoked *from* `socratic-grill` Phase 1 when the spec is a developer-facing product (CLI, SDK, library API, plugin, framework). Surfaces 6 developer-experience gap dimensions as Socratic questions for the grilling agenda. Skipped for non-developer-facing specs. Both conditional extensions can fire on the same spec.
 
 ## Why this methodology
 

@@ -55,6 +55,8 @@ Show the user the list and ask if you missed anything. The list IS the grilling 
 
 If the spec is a generic CRUD / web / mobile app with no LLM orchestration, skip the factor check.
 
+**Domain extension — developer-facing products:** If the spec describes a developer-facing product — a CLI, SDK, library API, plugin, or developer framework — invoke `devex-review` before Phase 2. It returns one Socratic question per developer-experience gap (onboarding friction, first-time-developer roleplay, API/CLI ergonomics, error-message quality, docs-as-experienced, upgrade friction) — gaps the standard 7 axes don't cover. Interleave those into the agenda. Both domain extensions can fire on the same spec (e.g. a developer-facing SDK that also orchestrates LLM calls). Skip `devex-review` for non-developer-facing specs (internal CRUD, end-user web/mobile apps).
+
 ### Phase 2 — Grill each item against the ambiguity axes
 
 For each item, work through the dimensions in `references/ambiguity-axes.md`. Not all axes apply to every decision — pick the relevant 2-4 per item and dig in.

@@ -13,6 +13,29 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.14.0] — 2026-05-18
+
+gstack capability adoption. A `prior-art-research` run evaluated [garrytan/gstack](https://github.com/garrytan/gstack) — a 31-skill Claude Code "software factory" — and selectively adopted three substrate-free capabilities, re-implemented as pure-markdown skills (Pattern A: idea-port, not skill-port). gstack's runtime-coupled half (browser engine, GBrain memory, `/qa`, `/canary`, `/codex`) was rejected; ADR-0002 stands unamended, recorded as an explicit finding. The spec's D6 decision staggered this into a v1.13.0 + v1.14.0 plan; implementation ran all three slices together, so the bundle ships once as v1.14.0 — **v1.13.0 is intentionally skipped.**
+
+### Added
+
+- **`skills/security-audit/`** — a standalone `/security-audit` skill: static OWASP Top 10 + STRIDE-per-component audit, secrets archaeology over git history, confidence-gated findings, markdown report. Idea-ported from gstack `/cso`.
+  - **Why:** habeebs-skill had no security review — `verify-output` explicitly disclaims it. This closes the single clearest capability gap the gstack evaluation surfaced.
+- **`skills/release/`** — a terminal chain link after `tdd-loop`: version bump, CHANGELOG entry, clean-history review, PR body, doc-sync coverage audit, tag-push. Idea-ported from gstack `/ship` + `/document-release`. No deploy/canary/benchmark.
+  - **Why:** the chain ended at `tdd-loop`; release was fully manual. This closes the chain at the shipping end.
+- **`skills/devex-review/`** — a conditional `socratic-grill` extension for developer-facing specs (CLI/SDK/library/plugin/framework): surfaces 6 developer-experience gap dimensions as Socratic questions. Idea-ported from gstack `/plan-devex-review`; mirrors `agent-factors-check`.
+  - **Why:** habeebs-skill is itself a developer-facing product but had no DX review lens.
+- **`docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md`** — ADR-0014: adopt the three capabilities; reject the runtime-coupled half; ADR-0002 stands as an explicit finding.
+- **`docs/agents/adrs/0015-hook-allow-tag-pushes-on-default.md`** — ADR-0015: amend the commit-block hook to allow tag-only pushes on the default branch.
+  - **Why:** the hook blocked release tag-pushes on `main` — a documented recurring pain. The carve-out resolves it permanently.
+
+### Changed
+
+- **`hooks/preventing-commits-to-default.sh`** — the PreToolUse block predicate is narrowed: unambiguous tag-only pushes (`git push origin refs/tags/<tag>`, `git push --tags`, `git push <remote> tag <name>`) are now allowed on the default branch; bare branch pushes and `git commit` stay blocked, with a guard arm that declines the carve-out for any command also containing `git commit`.
+  - **Why:** a release tag-push is an append-only pointer, not a branch commit; blocking it was an over-broad matcher. See ADR-0015.
+- **`docs/agents/adrs/0003-hooks-scope.md`** — amended in place to document the tag-push carve-out.
+  - **Why:** ADR-0003 is the canonical hook-scope record; the narrowed block predicate must be traceable from it.
+
 ## [1.12.0] — 2026-05-17
 
 Context-gate adaptivity release. A review of the `/research` command surfaced a contradiction between `commands/research.md` (hard-blocked on 5 context questions — "Do not proceed without them") and `prior-art-research/SKILL.md` Phase 1 (accepts partial answers, proceeds with unknowns flagged). v1.12.0 resolves it in favor of the skill: the Phase 1 gate stays questions-first but scales the asking to the anticipated mode and never hard-blocks. The decision is recorded as ADR-0013.

@@ -1,6 +1,6 @@
 # ADR-0003: habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state
 
-**Status:** Accepted
+**Status:** Accepted — amended in place 2026-05-18 (v1.14.0): the PreToolUse block predicate is narrowed to allow unambiguous tag-only pushes on the default branch; see Amendment below and ADR-0015.
 **Date:** 2026-05-12
 **Deciders:** Modie (Habeeb)
 
@@ -102,6 +102,41 @@ This ADR should be reopened if any of:
 
 ---
 
+## Amendment — 2026-05-18 (v1.14.0): tag-push carve-out
+
+**Cross-reference:** [ADR-0015](./0015-hook-allow-tag-pushes-on-default.md)
+
+The three rules above are unchanged. Only the **block predicate** in `hooks/preventing-commits-to-default.sh` is narrowed.
+
+### What changed
+
+The PreToolUse hook previously matched `*"git push"*` without distinction — it blocked all `git push` invocations on the default branch, including release tag-pushes. A release tag-push (`git push origin refs/tags/v1.14.0`) does not advance a branch ref; it creates an append-only pointer to an already-merged commit. Blocking it was always an over-broad matcher, not an intended policy. ADR-0001's rule is "no direct branch commits on the default branch" — tags are not branch commits.
+
+The following unambiguous tag-only push forms are now **allowed** on the default branch:
+
+| Form | Allowed |
+|---|---|
+| `git push origin refs/tags/<name>` (preferred — used by `release` skill) | Yes |
+| `git push origin tag <name>` | Yes |
+| `git push --tags` | Yes |
+| `git push origin --tags` | Yes |
+| `git push origin <name>` (ambiguous — could be branch or tag) | **No** — still blocked |
+| `git push` (bare — advances branch) | **No** — still blocked |
+| `git commit` | **No** — still blocked |
+
+The carve-out is implemented as an added case clause in the existing `case "$command_text" in` block, before the default-branch check. It exits 0 (allow) for the recognized unambiguous forms and falls through to the existing block logic for everything else. The three ADR-0003 rules are fully honored:
+
+- **Rule 1 (block-only, never auto-fix):** the carve-out allows; it does not fix or modify anything.
+- **Rule 2 (multi-harness aware):** no change — the carve-out is a case clause in the same bash script.
+- **Rule 3 (stateless):** no change — the carve-out reads `command_text` only; writes nothing.
+
+### Why this amendment
+
+The `release` skill (ADR-0014 Slice 2) automates release tagging on the default branch and would hit the block on every single run. The recurring workaround (chore-branch for tag-push, documented in the `feedback_release_tag_hook_misfire` memory) is eliminated permanently. The full decision record is in ADR-0015.
+
+---
+
 ## Changelog
 
 - 2026-05-12 — Initial ADR, status Accepted (implementation lands in v1.6.0 per plan 0003).
+- 2026-05-18 — Amended in place: block predicate narrowed to allow unambiguous tag-only pushes on the default branch (v1.14.0, ADR-0015).

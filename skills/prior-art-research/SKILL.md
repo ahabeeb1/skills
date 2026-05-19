@@ -55,7 +55,7 @@ Phase 0 populated most of the structural context. Now ask only what couldn't be 
 
 Don't drown the user in five questions at once — stage them. If the cache already answered a question below, skip it.
 
-**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes, where the run is expensive enough to justify two round-trips. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0014).
+**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes, where the run is expensive enough to justify two round-trips. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0016).
 
 **First message (2 questions, asked together):**
 

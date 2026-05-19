@@ -3,7 +3,7 @@
 Canonical reference for the **tier** that governs how much of the chain
 (`prior-art-research → draft-spec → socratic-grill → decision-record →
 write-plan → tdd-loop`) runs for a given feature. Established by
-[ADR-0014](../adrs/0014-chain-wide-depth-tier.md). Chain skills link here
+[ADR-0016](../adrs/0016-chain-wide-depth-tier.md). Chain skills link here
 instead of restating the scale.
 
 ## The two invariants

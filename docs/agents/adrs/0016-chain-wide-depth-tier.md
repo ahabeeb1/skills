@@ -1,4 +1,4 @@
-# ADR-0014: The chain runs at a depth tier — Quick, Balanced, or Deep — carried in artifact headers
+# ADR-0016: The chain runs at a depth tier — Quick, Balanced, or Deep — carried in artifact headers
 
 **Status:** Accepted
 **Date:** 2026-05-18
@@ -81,7 +81,7 @@ tier. `/research` accepts `--quick | --balanced | --deep` to override.
   user can override, and the ambiguity floor protects the high-risk direction.
 - Three tiers are harder to dogfood-test than a binary. Accepted — mitigated
   by a tier-detection eval over a labelled calibration set
-  (`tests/dogfood/17-depth-tier/`).
+  (`tests/dogfood/20-depth-tier/`).
 
 ## Alternatives considered
 
@@ -109,7 +109,7 @@ tier. `/research` accepts `--quick | --balanced | --deep` to override.
   table, auto-detect rule, invariants
 - Skill: [`prior-art-research/SKILL.md`](../../../skills/prior-art-research/SKILL.md) § Phase 3
 - Extends: [`adrs/0013-research-context-gate.md`](./0013-research-context-gate.md) —
-  adaptive Phase 1 gate; ADR-0014 generalizes the same adaptivity chain-wide
+  adaptive Phase 1 gate; ADR-0016 generalizes the same adaptivity chain-wide
 - Sister ADRs: [`adrs/0002-habeebs-skill-standalone.md`](./0002-habeebs-skill-standalone.md)
   (no runtime substrate), [`adrs/0005-lifecycle-split-glossary-and-system-context.md`](./0005-lifecycle-split-glossary-and-system-context.md)
   (single-writer SYSTEM_CONTEXT)

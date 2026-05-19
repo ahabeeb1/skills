@@ -20,7 +20,7 @@ The ordered sequence of skills that compose into a methodology run: `prior-art-r
 **Sub-concepts:**
 - **Phase 0** — `prior-art-research`'s pre-Phase-1 reconnaissance pass; the single writer of `SYSTEM_CONTEXT.md` per ADR-0001.
 - **Phase 2.5** — the category-completeness critic pass in `prior-art-research`, dispatched by `parallel-dev` (added in v1.7.0).
-- **Phase 3** — `prior-art-research`'s tier-selection phase; sets the **tier** the whole chain run inherits (per ADR-0014).
+- **Phase 3** — `prior-art-research`'s tier-selection phase; sets the **tier** the whole chain run inherits (per ADR-0016).
 - **Phase 7** — terminal phase of `prior-art-research` (steering flush) and of `setup-habeebs-skill` (Phase 0 trigger, added in v1.8.0 per ADR-0005).
 
 Every chain run executes at one **tier** (see below), decided once in Phase 3.
@@ -118,7 +118,7 @@ A binary classification habeebs-skill uses to shape research and spec depth. **B
 
 ### Tier
 
-The chain-wide effort scale: **Quick**, **Balanced**, or **Deep**. It governs how much of every chain step runs — research depth, whether the Phase 2.5 critic runs, spec verbosity, whether `socratic-grill` and `write-plan` run, ADR depth. `tdd-loop` always runs in full; the tier scales *design*, not implementation. Decided once by `prior-art-research` Phase 3 (auto-detect from ambiguity + sub-problem count + constraints, or a `--quick`/`--balanced`/`--deep` override), written into the research report header as `**Tier:**`, and inherited by every downstream skill. Two invariants hold: tiers scale effort and never decision quality, and tier-related user-facing output stays task-focused (no token/cost rationale). Established by [ADR-0014](./adrs/0014-chain-wide-depth-tier.md); full table and auto-detect rule in [`references/tier-scale.md`](./references/tier-scale.md).
+The chain-wide effort scale: **Quick**, **Balanced**, or **Deep**. It governs how much of every chain step runs — research depth, whether the Phase 2.5 critic runs, spec verbosity, whether `socratic-grill` and `write-plan` run, ADR depth. `tdd-loop` always runs in full; the tier scales *design*, not implementation. Decided once by `prior-art-research` Phase 3 (auto-detect from ambiguity + sub-problem count + constraints, or a `--quick`/`--balanced`/`--deep` override), written into the research report header as `**Tier:**`, and inherited by every downstream skill. Two invariants hold: tiers scale effort and never decision quality, and tier-related user-facing output stays task-focused (no token/cost rationale). Established by [ADR-0016](./adrs/0016-chain-wide-depth-tier.md); full table and auto-detect rule in [`references/tier-scale.md`](./references/tier-scale.md).
 
 **Sub-concepts:**
 - **Quick** — single sub-problem, low ambiguity; terse spec, optional ceremony skipped.
@@ -127,7 +127,7 @@ The chain-wide effort scale: **Quick**, **Balanced**, or **Deep**. It governs ho
 
 Not to be confused with `prior-art-research`'s **source tiers** (the numbered T1-T5 ranking of engineering-blog / GitHub / RFC sources in Phase 4) — depth tiers are always named (Quick / Balanced / Deep), source tiers are always numbered.
 
-**Synonyms to AVOID:** "mode" (the pre-ADR-0014 binary was "Quick/Deep mode" and was research-only; "tier" is chain-wide and graded — never call it a mode), "level" (collides with the load-bearing/severity vocabulary).
+**Synonyms to AVOID:** "mode" (the pre-ADR-0016 binary was "Quick/Deep mode" and was research-only; "tier" is chain-wide and graded — never call it a mode), "level" (collides with the load-bearing/severity vocabulary).
 
 ## Aggregates and bounded contexts
 
@@ -150,4 +150,4 @@ The contexts share `setup-habeebs-skill` as the bootstrap (which lives in method
 
 - `CONTEXT.md` → **`GLOSSARY.md`** (v1.8.0 per ADR-0005). The old name lives on in CHANGELOG.md historical entries; everywhere else, GLOSSARY.md is canonical.
 - "Composes with OMC / Superpowers / claude-mem" → **standalone, no composition** (v1.5.2 per ADR-0002). Earlier README/AGENTS prose using "composes with" language is stale; ADR-0002 is the authority.
-- `prior-art-research` "Quick / Deep **mode**" (research-only binary) → chain-wide "Quick / Balanced / Deep **tier**" (v1.12.0 per ADR-0014). The old "mode" word and the two-value binary are retired; "tier" is canonical and graded. CHANGELOG entries before v1.12.0 retain the historical "mode" wording.
+- `prior-art-research` "Quick / Deep **mode**" (research-only binary) → chain-wide "Quick / Balanced / Deep **tier**" (v1.15.0 per ADR-0016). The old "mode" word and the two-value binary are retired; "tier" is canonical and graded. CHANGELOG entries before v1.15.0 retain the historical "mode" wording.

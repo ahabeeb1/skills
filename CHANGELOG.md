@@ -13,17 +13,17 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
-## [1.12.0] — 2026-05-18
+## [1.15.0] — 2026-05-19
 
-Chain-wide depth tiers. `prior-art-research` had a binary Quick/Deep *mode* that governed only its own research depth — the rest of the chain applied uniform spec / grill / ADR / plan ceremony regardless of how much the feature warranted. v1.12.0 generalizes that binary into a graded, chain-wide **tier** (Quick / Balanced / Deep), decided once by `prior-art-research` Phase 3 and inherited by every downstream skill via a `Tier:` artifact-header field. ADR-0014 records the decision; it extends ADR-0013's adaptive-gate reasoning from one phase to the whole chain. Two invariants are load-bearing: the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR — even under a `--quick` override), and tier-related user-facing output stays task-focused (no token/cost/time rationale).
+Chain-wide depth tiers. `prior-art-research` had a binary Quick/Deep *mode* that governed only its own research depth — the rest of the chain applied uniform spec / grill / ADR / plan ceremony regardless of how much the feature warranted. v1.15.0 generalizes that binary into a graded, chain-wide **tier** (Quick / Balanced / Deep), decided once by `prior-art-research` Phase 3 and inherited by every downstream skill via a `Tier:` artifact-header field. ADR-0016 records the decision; it extends ADR-0013's adaptive-gate reasoning from one phase to the whole chain. Two invariants are load-bearing: the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR — even under a `--quick` override), and tier-related user-facing output stays task-focused (no token/cost/time rationale).
 
 ### Added
 
-- **`docs/agents/adrs/0014-chain-wide-depth-tier.md`** — the decision: the chain runs at a tier, carried in artifact headers (not runtime state, not the HANDOFF string). Extends ADR-0013.
+- **`docs/agents/adrs/0016-chain-wide-depth-tier.md`** — the decision: the chain runs at a tier, carried in artifact headers (not runtime state, not the HANDOFF string). Extends ADR-0013.
   - **Why:** the binary mode was research-only; trivial features still paid full downstream ceremony. A graded chain-wide scale lets simple work reach a plan fast while ambitious work keeps the full treatment.
 - **`docs/agents/references/tier-scale.md`** — canonical tier table, the three-signal auto-detect rule (residual ambiguity + sub-problem count + constraint complexity), and the two invariants. All six chain skills link here per ADR-0009.
   - **Why:** single source of truth — skills reference the scale instead of each restating it and drifting.
-- **`tests/dogfood/17-depth-tier/`** — tier-detection eval: a labelled calibration set of borderline task prompts, scored on whether Phase 3 auto-routes the expected tier, plus the invariant checks. Methodology follows Anthropic's skill-creator eval guidance (baseline-style, grade the outcome not the path).
+- **`tests/dogfood/20-depth-tier/`** — tier-detection eval: a labelled calibration set of borderline task prompts, scored on whether Phase 3 auto-routes the expected tier, plus the invariant checks. Methodology follows Anthropic's skill-creator eval guidance (baseline-style, grade the outcome not the path).
   - **Why:** the feature's core risk is mis-tiering; an eval over borderline cases is the primary regression signal.
 
 ### Changed
@@ -40,7 +40,47 @@ Chain-wide depth tiers. `prior-art-research` had a binary Quick/Deep *mode* that
 ### Notes
 
 - **No frontmatter or handoff-contract change.** Quick and Deep keep their existing meaning, so no existing `/research` invocation breaks; Balanced is purely additive. The only format change is the `Mode:`→`Tier:` template-header rename, applied in lockstep across all chain templates and their consuming skills in this release.
-- **The v1.11.0 trigger-precision corpus-growth item is not in this release.** That remains open; v1.12.0's new corpus is the tier-detection calibration set, a separate eval surface.
+- **The v1.11.0 trigger-precision corpus-growth item is not in this release.** That remains open; v1.15.0's new corpus is the tier-detection calibration set, a separate eval surface.
+
+## [1.14.0] — 2026-05-18
+
+gstack capability adoption. A `prior-art-research` run evaluated [garrytan/gstack](https://github.com/garrytan/gstack) — a 31-skill Claude Code "software factory" — and selectively adopted three substrate-free capabilities, re-implemented as pure-markdown skills (Pattern A: idea-port, not skill-port). gstack's runtime-coupled half (browser engine, GBrain memory, `/qa`, `/canary`, `/codex`) was rejected; ADR-0002 stands unamended, recorded as an explicit finding. The spec's D6 decision staggered this into a v1.13.0 + v1.14.0 plan; implementation ran all three slices together, so the bundle ships once as v1.14.0 — **v1.13.0 is intentionally skipped.**
+
+### Added
+
+- **`skills/security-audit/`** — a standalone `/security-audit` skill: static OWASP Top 10 + STRIDE-per-component audit, secrets archaeology over git history, confidence-gated findings, markdown report. Idea-ported from gstack `/cso`.
+  - **Why:** habeebs-skill had no security review — `verify-output` explicitly disclaims it. This closes the single clearest capability gap the gstack evaluation surfaced.
+- **`skills/release/`** — a terminal chain link after `tdd-loop`: version bump, CHANGELOG entry, clean-history review, PR body, doc-sync coverage audit, tag-push. Idea-ported from gstack `/ship` + `/document-release`. No deploy/canary/benchmark.
+  - **Why:** the chain ended at `tdd-loop`; release was fully manual. This closes the chain at the shipping end.
+- **`skills/devex-review/`** — a conditional `socratic-grill` extension for developer-facing specs (CLI/SDK/library/plugin/framework): surfaces 6 developer-experience gap dimensions as Socratic questions. Idea-ported from gstack `/plan-devex-review`; mirrors `agent-factors-check`.
+  - **Why:** habeebs-skill is itself a developer-facing product but had no DX review lens.
+- **`docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md`** — ADR-0014: adopt the three capabilities; reject the runtime-coupled half; ADR-0002 stands as an explicit finding.
+- **`docs/agents/adrs/0015-hook-allow-tag-pushes-on-default.md`** — ADR-0015: amend the commit-block hook to allow tag-only pushes on the default branch.
+  - **Why:** the hook blocked release tag-pushes on `main` — a documented recurring pain. The carve-out resolves it permanently.
+
+### Changed
+
+- **`hooks/preventing-commits-to-default.sh`** — the PreToolUse block predicate is narrowed: unambiguous tag-only pushes (`git push origin refs/tags/<tag>`, `git push --tags`, `git push <remote> tag <name>`) are now allowed on the default branch; bare branch pushes and `git commit` stay blocked, with a guard arm that declines the carve-out for any command also containing `git commit`.
+  - **Why:** a release tag-push is an append-only pointer, not a branch commit; blocking it was an over-broad matcher. See ADR-0015.
+- **`docs/agents/adrs/0003-hooks-scope.md`** — amended in place to document the tag-push carve-out.
+  - **Why:** ADR-0003 is the canonical hook-scope record; the narrowed block predicate must be traceable from it.
+
+## [1.12.0] — 2026-05-17
+
+Context-gate adaptivity release. A review of the `/research` command surfaced a contradiction between `commands/research.md` (hard-blocked on 5 context questions — "Do not proceed without them") and `prior-art-research/SKILL.md` Phase 1 (accepts partial answers, proceeds with unknowns flagged). v1.12.0 resolves it in favor of the skill: the Phase 1 gate stays questions-first but scales the asking to the anticipated mode and never hard-blocks. The decision is recorded as ADR-0013.
+
+### Changed
+
+- **`skills/prior-art-research/SKILL.md`** — Phase 1 gains a "Scale the asking to the anticipated mode" paragraph: an obviously-Quick scope collapses to the 2 foundational questions (or a single confirmation line when Phase 0 + the prompt already cover them); the full staged 2-then-3 is reserved for Deep-mode scopes.
+  - **Why:** the gate was binary — full 5 questions regardless of scope. For an obviously-Quick run the two question round-trips can cost more than the research itself. Adaptive asking removes that fixed tax while keeping questions-first as the canonical gate.
+
+- **`commands/research.md`** — the Phase 1 instruction is rewritten from "Ask the user the 5 context questions. Wait for answers. Do not proceed without them." to match SKILL.md Phase 1: staged questions, skip anything Phase 0 or the prompt already answered, accept partial / "I don't know" answers (flagged `[assumed]`/`[unknown]`), and block only the Phase 4 search — not the whole run — until context is captured or explicitly waived.
+  - **Why:** the command is read after the skill, so its absolute hard block silently overrode the skill's accept-partial rule. The skill is the single source of truth for gate behavior; the command must not contradict it.
+
+### Added
+
+- **`docs/agents/adrs/0013-research-context-gate.md`** — ADR-0013: the `prior-art-research` Phase 1 context gate is adaptive, not a hard block. Records why questions-first is kept (research is convergent and expensive; context weights Phase 4 source tiering and is the only thing preventing the skill's own "FAANG-scale solutions for non-FAANG-scale problems" anti-pattern).
+  - **Why:** the review was a question about whether the *existing* gate is shaped right, not a proposal to add one — capturing the answer as Tier-0 prior art stops the same review recurring.
 
 ## [1.11.0] — 2026-05-14
 

@@ -14,7 +14,7 @@ Each skill produces output that the next skill consumes. The handoff lines at th
 
 `write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` is a conditional extension of `socratic-grill` — it only fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product.
 
-**Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0014; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
+**Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
 
 ## Triggering principles
 
@@ -60,7 +60,7 @@ This repo is configured for habeebs-skill v1.8+ (self-dogfood). The methodology 
 - **System context:** `docs/agents/SYSTEM_CONTEXT.md` — stack, scale envelope, deployment shape, recent hot files, last reconciliation outcomes. Written exclusively by `prior-art-research` Phase 0 (load-bearing per ADR-0001; single-writer invariant per ADR-0005).
 - **Issue tracker:** `docs/agents/issue-tracker.md` (GitHub for this repo).
 - **Triage labels:** `docs/agents/triage-labels.md` (canonical 5).
-- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 14 ADRs as of 2026-05-18).
+- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 16 ADRs as of 2026-05-19).
 - **Chain-shared references:** `docs/agents/references/` (cross-cutting helpers per ADR-0009 — e.g. `tier-scale.md`, `system-context-staleness-check.md`).
 - **Specs:** `docs/agents/specs/` (one per release).
 - **Plans:** `docs/agents/plans/` (one per release that warranted phased delivery).

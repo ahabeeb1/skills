@@ -2,7 +2,7 @@
 
 Measures whether `prior-art-research` Phase 3 routes a feature to the **correct
 depth tier** (Quick / Balanced / Deep), and whether the two tier invariants
-hold. Introduced with [ADR-0014](../../../docs/agents/adrs/0014-chain-wide-depth-tier.md);
+hold. Introduced with [ADR-0016](../../../docs/agents/adrs/0016-chain-wide-depth-tier.md);
 the tier mechanism is documented in
 [`docs/agents/references/tier-scale.md`](../../../docs/agents/references/tier-scale.md).
 
@@ -54,7 +54,7 @@ Beyond routing accuracy, `calibration-set.md` § Invariant checks covers:
 ## Running
 
 ```bash
-cat tests/dogfood/17-depth-tier/calibration-set.md
+cat tests/dogfood/20-depth-tier/calibration-set.md
 ```
 
 The audit is a human-graded reading exercise — there is no automated script
@@ -63,7 +63,7 @@ observed is premature). Future re-audits append a dated audit-report file.
 
 ## Cadence
 
-Revisit triggers (from [ADR-0014](../../../docs/agents/adrs/0014-chain-wide-depth-tier.md) § Revisit triggers):
+Revisit triggers (from [ADR-0016](../../../docs/agents/adrs/0016-chain-wide-depth-tier.md) § Revisit triggers):
 
 - Routing accuracy drops below 90% → re-weight the three signals or the
   thresholds.

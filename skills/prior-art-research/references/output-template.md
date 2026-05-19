@@ -7,7 +7,7 @@
 # Prior-Art Research: [Feature Name]
 
 **Researched on:** [Date]
-**Mode:** Quick | Deep
+**Tier:** Quick | Balanced | Deep [— `(user override)` if set by flag]
 **Sources consulted:** [N]
 
 ## TL;DR

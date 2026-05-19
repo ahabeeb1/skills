@@ -12,6 +12,7 @@ Copy from here. Replace bracketed placeholders. Delete sections that genuinely d
 |---------------|-----------------------------------------------------------|
 | Plan ID       | `plans/<NNNN-slug>`                                       |
 | ADR           | [`adrs/<NNNN-slug>`](../adrs/<NNNN-slug>.md)              |
+| Tier          | Quick \| Balanced \| Deep (inherited from the spec)       |
 | Status        | Proposed \| Active \| Done \| Superseded by plans/<slug>  |
 | Last updated  | YYYY-MM-DD                                                |
 | Owner         | [name / team / "AFK fleet"]                               |

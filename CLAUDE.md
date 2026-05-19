@@ -14,12 +14,14 @@ Each skill produces output that the next skill consumes. The handoff lines at th
 
 `write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` is a conditional extension of `socratic-grill` — it only fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product.
 
+**Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
+
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** The user almost never says "research." They say "I want to build X." Read between the lines.
-- **Don't skip phases for speed.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding.
+- **Don't skip phases for speed — pick a lighter tier instead.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding. On genuinely simple work the Quick tier already trims the ceremony; the tier scale, not impatience, decides depth.
 - **Internal precedent first.** For Modie's repos (BeanBot, salahi.app, BOL automation), check local repos before going external. The user's own prior art is Tier 0.
-- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in Deep mode AND consumes `write-plan`'s parallelization groups. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes. `using-worktrees` isolates non-trivial slices. `systematic-debugging` handles bugs that surface during or after a slice.
+- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in the Deep tier AND consumes `write-plan`'s parallelization groups. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes. `using-worktrees` isolates non-trivial slices. `systematic-debugging` handles bugs that surface during or after a slice.
 
 ## What this plugin is NOT
 
@@ -39,6 +41,8 @@ If you find yourself doing any of these, stop and re-read the relevant skill:
 - Researching after deciding (research is upstream of decisions, not downstream)
 - Recommending FAANG-scale solutions to non-FAANG-scale problems
 - Letting the chain stall in research without producing a spec
+- Letting a lighter tier skip a triggered quality gate (open questions still grill; one-way doors still get an ADR)
+- Justifying the chosen tier to the user with token, cost, or time-budget language instead of task-based reasons
 
 ## Quote and copyright discipline
 
@@ -56,7 +60,8 @@ This repo is configured for habeebs-skill v1.8+ (self-dogfood). The methodology 
 - **System context:** `docs/agents/SYSTEM_CONTEXT.md` — stack, scale envelope, deployment shape, recent hot files, last reconciliation outcomes. Written exclusively by `prior-art-research` Phase 0 (load-bearing per ADR-0001; single-writer invariant per ADR-0005).
 - **Issue tracker:** `docs/agents/issue-tracker.md` (GitHub for this repo).
 - **Triage labels:** `docs/agents/triage-labels.md` (canonical 5).
-- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 13 ADRs as of 2026-05-15).
+- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 16 ADRs as of 2026-05-19).
+- **Chain-shared references:** `docs/agents/references/` (cross-cutting helpers per ADR-0009 — e.g. `tier-scale.md`, `system-context-staleness-check.md`).
 - **Specs:** `docs/agents/specs/` (one per release).
 - **Plans:** `docs/agents/plans/` (one per release that warranted phased delivery).
 - **Dispatches:** `docs/agents/dispatches/` (parallel-dev audit records).

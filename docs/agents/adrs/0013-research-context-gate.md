@@ -1,6 +1,6 @@
 # ADR-0013: The `prior-art-research` Phase 1 context gate is adaptive, not a hard block
 
-**Status:** Accepted
+**Status:** Accepted (extended by ADR-0016 — adaptive depth generalized from the Phase 1 gate to the whole chain)
 **Date:** 2026-05-15
 **Deciders:** Modie (Habeeb)
 

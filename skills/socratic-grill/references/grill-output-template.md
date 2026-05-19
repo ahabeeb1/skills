@@ -1,6 +1,7 @@
 # Grill Record: [Feature Name]
 
 **Spec:** [Link to spec]
+**Tier:** Quick | Balanced | Deep (inherited from the spec)
 **Grilled on:** [Date]
 **Items resolved:** [N decided] / [M deferred] / [K out-of-scope]
 

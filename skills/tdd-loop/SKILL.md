@@ -75,6 +75,8 @@ If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in t
 
 (Introduced in v1.7.0 per ADR-0004 and plan 0004. Runs only when an active plan exists at `docs/agents/plans/<slug>.md`. Skipped when there's no active plan or the plan has been flagged Done.)
 
+**No plan is an expected state, not a degraded one.** A **Quick**-tier chain (see the `**Tier:**` field on the spec — [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)) deliberately skips `write-plan`; `tdd-loop` then runs the spec's slice order directly, sequentially. Do not emit a setup warning or hunt for a missing plan — fall through to Phase 1. `tdd-loop` itself always runs in full at every tier; the tier scales the *design* that precedes implementation, never the TDD rigor.
+
 **Step 1 — Inspect the active plan.** Read the slice table and parallelization map. Identify the next unfinished pgroup in dependency order. Determine its size.
 
 **Step 2 — Idempotent re-invocation check (the resume mechanic).** Before dispatching anything, inspect the dispatch history:

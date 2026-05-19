@@ -65,8 +65,15 @@ Pull from upstream skill outputs:
 - **Research recommendation** — for Context and Alternatives sections
 - **Spec** — for the actual chosen architecture
 - **Grill record** — for accepted trade-offs and revisit triggers
+- **Tier** — the `**Tier:**` field from the spec / grill record header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)).
 
 If any upstream artifact is missing, halt and ask the user to provide it (or run the upstream skill first).
+
+**The tier sets whether an ADR is written and how deep — never its correctness.**
+
+- **Quick** — write an ADR *only* when the decision is a one-way door or high-blast-radius (the same bar as the "Documenting reversible decisions" anti-pattern below). If every decision in the spec is reversible and low-blast-radius, there is nothing to record — note "no one-way-door decision — ADR skipped" and hand off. A genuine one-way-door decision is *always* recorded, even at Quick, and even under a `--quick` override — that is `tier-scale.md` invariant 1.
+- **Balanced** — write the ADR using the standard template.
+- **Deep** — write the ADR in full, with ≥3 alternatives in the Alternatives section.
 
 ### Phase 5 — Write the ADR
 
@@ -77,9 +84,11 @@ Follow `references/adr-template.md` exactly. Sections:
 3. **Context** — the problem, the constraints, the scale. From research Context section.
 4. **Decision** — what we chose, in ACTIVE voice. "We will use Yjs..." not "It was decided that Yjs would be used..."
 5. **Consequences** — positive, negative, accepted trade-offs. From research + grill.
-6. **Alternatives considered** — 2-4 alternatives with one-line rejections. From research Patterns section.
+6. **Alternatives considered** — alternatives with one-line rejections, from the research Patterns section. 2-4 at Balanced; ≥3 at Deep.
 7. **Revisit triggers** — scale milestones, capability gaps, market changes. From research + grill.
 8. **References** — links to research output, spec, grill record, external sources.
+
+Echo the inherited tier into the ADR header's `**Tier:**` field.
 
 ### Phase 6 — Update the ADR index
 
@@ -120,3 +129,4 @@ Move from Proposed → Accepted on the same commit that starts the implementatio
 - `socratic-grill` — upstream; provides accepted trade-offs and revisit triggers
 - `tdd-loop` — downstream; implements against the locked ADR
 - `references/adr-template.md` — strict ADR format
+- `docs/agents/references/tier-scale.md` — the tier that gates whether an ADR is written and how deep

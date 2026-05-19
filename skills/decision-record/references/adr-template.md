@@ -3,6 +3,7 @@
 **Status:** Proposed | Accepted | Deprecated | Superseded by ADR-NNNN
 **Date:** YYYY-MM-DD
 **Deciders:** [Names or roles]
+**Tier:** Quick | Balanced | Deep (when produced by a chain run; omit for stand-alone ADRs)
 
 ## Context
 

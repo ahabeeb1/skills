@@ -37,8 +37,11 @@ The plan is NOT:
 - **Sliced spec** from `vertical-slice` / `draft-spec` — the decomposition
 - **Grill record** from `socratic-grill` — accepted trade-offs and revisit triggers
 - **SYSTEM_CONTEXT.md** from `prior-art-research` Phase 0 — scale envelope, observability, deployment shape
+- **Tier** — the `**Tier:**` field from the ADR / spec header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)). Echo it into the plan header's `Tier` row.
 
 If any upstream artifact is missing, halt and surface the gap. Don't fabricate a plan on top of unknowns.
+
+**Where the tier puts this skill.** At the **Quick** tier `write-plan` is normally skipped — `tdd-loop` runs the spec's slice order directly. At **Balanced** it runs when there are 3+ slices or ordering isn't obvious. At **Deep** it always runs. If the user invokes `/plan` explicitly on a Quick chain, honor it — the tier sets the default, the user overrides it.
 
 ## Core workflow
 
@@ -131,7 +134,7 @@ If a trigger fires mid-execution, halt at the current phase gate and re-run `soc
 
 Follow `references/plan-template.md` exactly. Required sections in order:
 
-1. **Header** — slug, ADR link, status (Proposed / Active / Done / Superseded), last updated, owner
+1. **Header** — slug, ADR link, tier (inherited), status (Proposed / Active / Done / Superseded), last updated, owner
 2. **Goal & success measure** — one sentence each, copied from spec; success measure must be observable in production
 3. **Phases** — each phase has: name, slices contained, acceptance gate, top-3 risks, rollback hook
 4. **Slice table** — one row per slice: id, name, label (HITL:inline / HITL:approval-gate / AFK:full-auto), phase, pgroup, blocked-by, est duration, rollback hook
@@ -215,6 +218,7 @@ When called on an existing plan:
 - `systematic-debugging` — consulted when a bug crosses phase boundaries
 - `references/plan-template.md` — strict plan format
 - `references/phase-gate-examples.md` — good vs. bad acceptance gates
+- `docs/agents/references/tier-scale.md` — the tier that decides whether this skill runs
 - oh-my-claudecode `ralplan` — convergent phased planning (the pattern this adapts)
 - Superpowers `writing-plans` — commit-able plan docs (the format this adapts)
 

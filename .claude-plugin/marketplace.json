@@ -9,7 +9,7 @@
     {
       "name": "habeebs-skill",
       "source": "./",
-      "version": "1.14.0",
+      "version": "1.15.0",
       "description": "prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → verify-output → release, with parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging, agent-factors-check, devex-review, security-audit, and setup-habeebs-skill as supporting primitives.",
       "category": "development",
       "keywords": [

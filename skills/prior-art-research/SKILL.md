@@ -29,7 +29,7 @@ This is convergent research. Generic brainstorming generates novel options; this
 
 ## Core workflow
 
-The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phases 3-5 scale with mode (Quick vs Deep). Phases 6-7 always run.
+The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
 
 ### Phase 0 — Reconnaissance (look before you ask)
 
@@ -55,7 +55,7 @@ Phase 0 populated most of the structural context. Now ask only what couldn't be 
 
 Don't drown the user in five questions at once — stage them. If the cache already answered a question below, skip it.
 
-**Scale the asking to the anticipated mode.** Phase 1 precedes the formal mode choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-mode scopes, where the run is expensive enough to justify two round-trips. This gate is adaptive, never a hard block (see ADR-0013).
+**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes, where the run is expensive enough to justify two round-trips. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0016).
 
 **First message (2 questions, asked together):**
 
@@ -135,7 +135,7 @@ For each proposed addition, the lead does exactly one of:
 
 **When this phase is skipped:**
 
-- Quick mode with 1 sub-problem AND the user picked "shipping speed" as top priority — the coverage critic adds overhead worth more than the catch rate at trivial scope. Note the skip in the report's Phase 2.5 outcome section.
+- Quick tier — the coverage critic adds overhead worth more than the catch rate at trivial scope (Quick is already gated to a single sub-problem and low ambiguity). Note the skip in the report's Phase 2.5 outcome section.
 - The user explicitly invokes `/research --skip-coverage-critic` (documented escape valve; intended only when the user has already done their own coverage audit).
 
 **Acceptance bar (dogfood-tested):**
@@ -147,23 +147,51 @@ The critic must pass the four-scenario adversarial suite at `tests/dogfood/09-ca
 
 If the critic fails any scenario, the Phase 2.5 prompt requires tuning before the chain ships. Failure-loud is the design intent — silent rubber-stamping is the failure mode this whole phase exists to prevent.
 
-### Phase 3 — Choose mode
+### Phase 3 — Choose tier
 
-**Quick mode** (default for tight scopes, ~5 min):
-- Single agent (this one)
-- ~5 sources total across all sub-problems
-- Skim engineering blogs, light GitHub spot-checks
-- Best for: well-trodden problems, single-sub-problem features, time-boxed exploration
+This phase picks the **tier** the *whole chain run* inherits — not just this
+skill's research depth. The canonical tier table, the two invariants, and the
+propagation contract live in [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md);
+read it. The three tiers, as they shape *this skill's* Phases 4-5:
 
-**Deep mode** (use for ambitious or unfamiliar scopes, ~15-20 min):
-- Dispatch one subagent per sub-problem (see `parallel-dev` skill for orchestration)
-- Each subagent fetches 3-5 sources for its sub-problem
-- 10-20 sources total
-- Best for: greenfield architecture, ambitious scale, unfamiliar domains, multi-sub-problem features
+- **Quick** — single agent, ~5 sources, skim engineering blogs + light GitHub
+  spot-checks. Phase 2.5 critic skipped. Best for well-trodden,
+  single-sub-problem features.
+- **Balanced** — single agent, ~8-10 sources, fuller fetch. Phase 2.5 runs.
+  Best for moderate-complexity features with a few sub-problems.
+- **Deep** — one subagent per sub-problem (see `parallel-dev` for
+  orchestration), 3-5 sources each, 10-20 total. Phase 2.5 runs. Best for
+  greenfield architecture, ambitious scale, unfamiliar or ambiguous domains.
 
-**Auto-select:** if Phase 2 produced 1-2 sub-problems and the user picked "shipping speed" as a top priority, default to Quick. Otherwise Deep. The user can override with `--quick` or `--deep`.
+**Auto-detect.** Score three signals {low 0, medium 1, high 2}:
 
-State the chosen mode and reason in one line before proceeding.
+1. **Residual ambiguity after Phase 1** — count partial / `[assumed]` /
+   `[unknown]` answers: 0-1 low, 2-3 medium, 4+ high.
+2. **Sub-problem count** (from Phase 2) — 1 low, 2-3 medium, 4+ high.
+3. **Constraint count / complexity** — hard constraints from Phase 1 Q2; a
+   constraint that rules out a common architecture counts double: 0-1 low,
+   2-3 medium, 4+ high.
+
+Sum (0-6): **0-1 → Quick**, **2-4 → Balanced**, **5-6 → Deep**. Then apply the
+guards:
+
+- **Ambiguity floor:** if signal 1 is high, the tier is at least Balanced
+  regardless of the sum — a genuinely unclear task never auto-routes to Quick.
+- If "shipping speed" is a top-2 priority and the computed tier is Balanced,
+  drop to Quick. Never drops Deep.
+- If "correctness" is a top-2 priority and the project is greenfield and the
+  computed tier is Balanced, bump to Deep.
+
+This is a heuristic, not a hard gate (consistent with ADR-0013). The user can
+override with `--quick`, `--balanced`, or `--deep`; the override wins and is
+recorded with a `(user override)` annotation in the `Tier:` header.
+
+**State the tier and a task-based reason in one line** before proceeding —
+e.g. `Tier: Quick — 1 sub-problem, low ambiguity, no hard constraints.` Cite
+the signals only; never justify the tier with token, cost, or time language
+(see `tier-scale.md` invariant 2). Write the chosen tier into the report
+header's `**Tier:**` field (Phase 6) — every downstream chain skill reads it
+from there.
 
 ### Phase 4 — Search by source tier
 
@@ -243,7 +271,7 @@ Always follow the template in `references/output-template.md`. The downstream sk
 
 ## Examples
 
-**Example 1 — Quick mode, well-trodden problem:**
+**Example 1 — Quick tier, well-trodden problem:**
 
 User: "I want to add background job processing to my Django app."
 
@@ -251,7 +279,7 @@ Phase 1: Asks scale (low — single server, <100 jobs/sec), stack (Django + Post
 
 Phase 2: One sub-problem — "background job runner for low-volume Python/Postgres."
 
-Phase 3: Quick mode. Single sub-problem, simplicity priority.
+Phase 3: signals score 0 (1 sub-problem, low ambiguity, soft constraints) → Quick. `Tier: Quick — 1 sub-problem, low ambiguity, no hard constraints.`
 
 Phase 4-5: Searches T1 for "django background jobs without redis" + T2 for `django-q2`, `procrastinate`, `dramatiq`. Fetches procrastinate's README + a 2023 blog post comparing options.
 
@@ -259,7 +287,7 @@ Phase 6: Recommends `procrastinate` (Postgres-backed, no Redis, mature). Alterna
 
 Phase 7: Hands off to `draft-spec`.
 
-**Example 2 — Deep mode, ambitious scope:**
+**Example 2 — Deep tier, ambitious scope:**
 
 User: "I want to build a real-time collaborative document editor."
 
@@ -267,7 +295,7 @@ Phase 1: Scale (target: 1k concurrent docs, 5-10 users per doc), stack (Node + P
 
 Phase 2: Four sub-problems: conflict resolution, presence, persistence, transport.
 
-Phase 3: Deep mode. Multiple sub-problems, correctness priority, offline constraint adds depth.
+Phase 3: 4 sub-problems + the offline constraint score Balanced; the correctness-priority greenfield guard bumps it to Deep. `Tier: Deep — 4 sub-problems, offline constraint, greenfield correctness priority.`
 
 Phase 4-5: Dispatches 4 subagents in parallel. Each fetches 3-5 sources. CRDT subagent fetches Figma's Yjs writeup, Linear's sync engine post, Automerge docs. Presence subagent fetches Liveblocks and Convex posts. Etc.
 
@@ -284,7 +312,8 @@ For Modie specifically: BeanBot, salahi.app, and the AEGIS/BOL automation projec
 - `draft-spec` — turns the recommendation into an implementation spec
 - `socratic-grill` — drives ambiguity out of decisions and open questions
 - `decision-record` — captures the chosen architecture as an ADR
-- `parallel-dev` — orchestration primitive used in Deep mode
+- `parallel-dev` — orchestration primitive used in the Deep tier
+- `docs/agents/references/tier-scale.md` — canonical tier table, auto-detect rule, invariants
 - `references/source-tiers.md` — curated engineering blogs by domain
 - `references/output-template.md` — strict output format
 - `references/extraction-checklist.md` — what to pull from each source

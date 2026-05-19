@@ -7,7 +7,7 @@ This file is the canonical contract reference for `parallel-dev` (ADR-0004). It 
 3. The **dispatch record** file shape written at `docs/agents/dispatches/<dispatch-id>.json` after the pgroup completes
 4. The **BLOCKED structured message** shape surfaced to the user when a subagent halts a pgroup
 
-Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep mode synthesis) MUST honor these schemas. Free-form text returns are non-compliant — the contract is machine-readable.
+Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep tier synthesis) MUST honor these schemas. Free-form text returns are non-compliant — the contract is machine-readable.
 
 ---
 
@@ -159,7 +159,7 @@ The pre-v1.7.0 markdown dispatch summary remains useful for human-readable audit
 # Parallel Dispatch: [Batch name]
 
 **Date:** YYYY-MM-DD
-**Invoker:** [`prior-art-research` Deep mode | `vertical-slice` AFK group | `tdd-loop` Phase 0.5 | user `/parallel`]
+**Invoker:** [`prior-art-research` Deep tier | `vertical-slice` AFK group | `tdd-loop` Phase 0.5 | user `/parallel`]
 **Units dispatched:** [N]
 **Outcome:** [SUCCESS | PARTIAL | FAILED]
 **Authoritative record:** [`docs/agents/dispatches/<dispatch-id>.json`](../../docs/agents/dispatches/<dispatch-id>.json)

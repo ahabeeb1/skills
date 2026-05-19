@@ -21,7 +21,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0011 | [Adopt error-analysis-first evals cadence — chain-postmortem section + verify-output classified as complementary](./0011-error-analysis-cadence.md) | Accepted | 2026-05-13 |
 | 0012 | [Adopt the Compress-at-overflow protocol — markdown-only summary-and-flush, 7-section template, passive doc for v1.10.0](./0012-compress-at-overflow-protocol.md) | Accepted | 2026-05-13 |
 | 0013 | [The `prior-art-research` Phase 1 context gate is adaptive, not a hard block](./0013-research-context-gate.md) | Accepted | 2026-05-15 |
-| 0014 | [Adopt three gstack capabilities as markdown idea-ports; reject the runtime-coupled half](./0014-adopt-gstack-capabilities-markdown-idea-port.md) | Proposed | 2026-05-18 |
+| 0014 | [Adopt three gstack capabilities as markdown idea-ports; reject the runtime-coupled half](./0014-adopt-gstack-capabilities-markdown-idea-port.md) | Accepted | 2026-05-18 |
 | 0015 | [Amend the commit-block hook to allow tag-only pushes on the default branch](./0015-hook-allow-tag-pushes-on-default.md) | Proposed | 2026-05-18 |
 
 ## Conventions

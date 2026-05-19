@@ -1,6 +1,6 @@
 # ADR-0014: Adopt three gstack capabilities as markdown idea-ports; reject the runtime-coupled half
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-18
 **Deciders:** Modie (via the habeebs-skill chain: prior-art-research → draft-spec → socratic-grill → decision-record)
 
@@ -92,3 +92,4 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-05-18 — Initial ADR, status Proposed
+- 2026-05-18 — Status → Accepted; implementation started with v1.13.0 Slice 1 (`security-audit` skill)

@@ -147,6 +147,7 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 | `vertical-slice` | Decomposes work into tracer-bullet vertical slices with the 3-label vocab (`AFK:full-auto` / `HITL:inline` / `HITL:approval-gate`) | mattpocock + humanlayer |
 | `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; teardown via finishing-a-development-branch | Superpowers |
 | `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem | Superpowers + OMC trace |
+| `security-audit` | Static security audit invoked on demand — attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings | gstack `/cso` (v1.13.0) |
 
 ### Conditional extensions
 

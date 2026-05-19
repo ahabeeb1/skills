@@ -46,6 +46,10 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 - **using-worktrees** — isolates each non-trivial slice in its own branch + worktree with a verified-clean test baseline. Invoked from `tdd-loop` Phase 0 and `parallel-dev` Phase 4.
 - **systematic-debugging** — reproduce → minimize → probe → fix → regression-test. Invoked when a bug surfaces during or after a slice.
 
+## Standalone skills (invoked on demand, outside the chain)
+
+- **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`. Ported from gstack `/cso` per [ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md).
+
 ## When chain runs go wrong — postmortem cadence
 
 Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.

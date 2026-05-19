@@ -1,6 +1,6 @@
 # ADR-0015: Amend the commit-block hook to allow tag-only pushes on the default branch
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-18
 **Deciders:** Modie (via the habeebs-skill chain: prior-art-research → draft-spec → socratic-grill → decision-record)
 
@@ -18,13 +18,23 @@ A grill investigation (2026-05-18) confirmed the precise mechanism: it is not `g
 
 We will refine `hooks/preventing-commits-to-default.sh` so a **tag-only push is distinguished from a branch-commit push** and allowed on the default branch. Specifically:
 
-- A `git push` whose refspec resolves only to tags (`git push origin <tagname>`, `git push --tags`, `git push origin refs/tags/...`) is permitted on the default branch.
-- A `git push` that would advance a branch ref on the default branch remains blocked, unchanged.
-- `git commit` on the default branch remains blocked, unchanged.
+The following **unambiguous** tag-only push forms are permitted on the default branch:
+
+- `git push origin refs/tags/<name>` — unambiguous refspec; **preferred form** (used by the `release` skill)
+- `git push <remote> tag <name>` — explicit `tag` keyword
+- `git push --tags` / `git push <remote> --tags` — all local tags
+
+The following forms **remain blocked** on the default branch:
+
+- `git push origin <name>` — ambiguous; git resolves this to a branch or a tag depending on what exists locally; the hook cannot safely distinguish without running `git show-ref`, so it is kept blocked. Callers should use the unambiguous `refs/tags/` form.
+- `git push` (bare) — advances the branch ref
+- `git commit` — unchanged
 
 The hook stays warn/block-only, multi-harness aware, and stateless — ADR-0003's three rules are untouched; only the block predicate is narrowed. The PreToolUse hook dogfood scenario is updated to cover both the now-allowed tag-push and the still-blocked branch-commit-push.
 
 This is correct because ADR-0001's rule is "no direct *branch commits* on the default branch." An annotated tag is an append-only pointer to an already-pushed commit; it modifies no branch. Blocking it was always an over-broad matcher, not an intended policy.
+
+**Implementation note:** the carve-out is a `case "$command_text" in` block inserted immediately after the initial `git commit | git push` filter, before any branch-resolution logic. Its first arm declines the carve-out for any command that also contains `git commit`; the remaining arms match the three allowed tag-only patterns and exit 0. Unmatched push commands fall through to the existing default-branch block logic unchanged. A command that pushes a branch and tags in one invocation (`git push origin main --tags`) is an accepted residual — this hook is a guardrail against accidental default-branch commits, not an adversary boundary.
 
 ## Consequences
 
@@ -78,3 +88,4 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-05-18 — Initial ADR, status Proposed
+- 2026-05-18 — Status → Accepted; Decision block tightened to match implemented predicate: `git push origin <tagname>` (ambiguous) remains blocked; unambiguous forms (`refs/tags/`, `tag <name>`, `--tags`) are the approved carve-out. Implementation lands in v1.14.0 Slice 2.

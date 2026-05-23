@@ -62,6 +62,8 @@ Then the choices:
 
 > Press Enter (or say `y` / `accept`) to take the GitHub default.
 
+**When the default isn't right:** if the team already tracks work in Linear/Jira across multiple repos, the GitHub default fragments your backlog — pick Linear. If this repo is solo or pre-product (no shared backlog, no API tokens you want to manage), local markdown beats both — no external dependency, no auth.
+
 Wait for answer. Read the corresponding reference file (`issue-tracker-github.md` / `issue-tracker-linear.md` / `issue-tracker-local.md`) and copy its template into `docs/agents/issue-tracker.md`, customized with the user's answer.
 
 ### Phase 3 — Section B: Triage label vocabulary
@@ -82,6 +84,8 @@ Present:
 
 > Press Enter (or say `y` / `accept`) to take the canonical 5 as-is.
 
+**When the default isn't right:** if the team already enforces a label vocabulary via PR templates, CI checks, or org-level conventions, map the canonical 5 to those strings — fighting an enforced vocab causes drift between what skills publish and what humans triage. Customize only the labels that conflict; keep the rest as-is.
+
 Wait for answer. Write `docs/agents/triage-labels.md` mapping the canonical 5 to the user's chosen strings.
 
 ### Phase 4 — Section C: Domain doc layout
@@ -98,6 +102,8 @@ Present:
 > Default location is `docs/agents/`. Customize if your team has another convention (`docs/architecture/`, `adr/`, `.adr/`).
 
 > Press Enter (or say `y` / `accept`) to take the `docs/agents/` default.
+
+**When the default isn't right:** if the repo already has `docs/architecture/decisions/` or `docs/adr/` populated, point the methodology at the existing directory instead of creating a parallel one — fragmenting ADRs across two locations defeats Tier 0 prior-art lookups. Migrate later if needed; don't create a second canon now.
 
 Wait for answer. Create the directory if needed.
 

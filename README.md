@@ -88,8 +88,19 @@ habeebs-skill/
 │   ├── session-start.sh     # Warns on local-default-branch divergence from origin
 │   └── preventing-commits-to-default.sh   # Blocks git commit/push on default branch
 │
-├── docs/
-│   └── BUILD-PLAN.md        # Methodology / build history
+├── docs/agents/             # Per-repo methodology artifacts (read by chain skills; ADR-0001 / ADR-0005)
+│   ├── SYSTEM_CONTEXT.md            # Environment-binding cache (single-writer: prior-art-research Phase 0)
+│   ├── GLOSSARY.md                  # Domain vocabulary (human-authored)
+│   ├── adrs/                        # Architectural Decision Records (Nygard format)
+│   ├── specs/                       # Implementation specs + grill records (one set per release)
+│   ├── plans/                       # Phased delivery plans (non-trivial releases)
+│   ├── references/                  # Chain-shared cross-cutting protocols (ADR-0009)
+│   ├── postmortems/                 # Chain error-analysis (ADR-0011)
+│   ├── dispatches/                  # parallel-dev audit log (ADR-0004 Part 2)
+│   ├── research/                    # Archived prior-art-research reports
+│   ├── templates/                   # Scaffolds (e.g. session-summary per ADR-0012)
+│   ├── issue-tracker.md             # Per-repo tracker config (setup-habeebs-skill)
+│   └── triage-labels.md             # Per-repo label vocabulary (setup-habeebs-skill)
 │
 ├── tests/
 │   └── evals/               # JSON eval suites covering each phase

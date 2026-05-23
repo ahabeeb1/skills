@@ -111,10 +111,10 @@ The subagent returns its commit SHA(s) to the dispatcher. The dispatch record (P
 
 Before Phase 4, re-read each subagent spec and answer two yes/no questions:
 
-1. **Is success unambiguous?** Could a fresh subagent — reading only this spec plus the context preamble — name the artifact or claim that proves the task is done? If the answer is "depends what they decide," the decision belongs in the spec, not the subagent. Make the decision now and write it in.
-2. **Is verification one-turn resolvable?** Can the dispatcher confirm success from a single artifact (file diff, named output path, structured return field)? If verification requires reading three files and comparing against an unwritten rubric, the spec failed to define success — rewrite `verification`, don't rely on the dispatcher to invent it later.
+1. **Is success unambiguous?** Name the deliverable concretely — an exact file path, a named return field, or a one-sentence claim. If you can only restate the task ("the auth code is improved"), the spec failed Q1. Put the concrete name into the spec, then re-answer.
+2. **Is verification one-turn resolvable?** Name the single inspection step that confirms success — `git diff <path>`, the value at `result.commit_sha`, the existence of a file at the output path. If verification needs three reads against an unwritten rubric, rewrite `verification` until it names one.
 
-A `NEEDS_CONTEXT` return is a missed gate here, not a subagent failure. Rewrite the spec until both answers are honest yeses; don't dispatch a "we'll figure it out" task.
+Both questions must produce a concrete name, not a yes/no. A `NEEDS_CONTEXT` return is a missed gate here, not a subagent failure — don't dispatch until both names exist in the spec.
 
 ### Phase 4 — Dispatch
 

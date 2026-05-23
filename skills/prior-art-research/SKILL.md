@@ -238,12 +238,40 @@ Produce the output using the template in `references/output-template.md`. The st
 
 **Template applies when research actually runs.** If you declined the request (anti-trigger fired) or halted at Phase 1 (insufficient context), produce a much shorter output: a one-line status, what you need from the user, and a path forward. Don't pad with empty template sections.
 
-### Phase 7 — Hand off and flush steering
+### Phase 6.5 — Archive the report
 
-End the response with explicit handoff lines. The downstream skills look for these. **Note:** these HANDOFF lines are navigation pointers, not state payloads — downstream skills MUST read the full Phase 6 output document (the case studies, recommendations, decisions-to-make-next, open questions, sources) to do their work. See [`using-habeebs-skill` § "HANDOFF lines — navigation, not state transfer"](../using-habeebs-skill/SKILL.md) for the full-doc-read contract that governs every HANDOFF in the chain.
+Per [ADR-0018](../../docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md) Part B. After Phase 6 composes the report, write it verbatim to:
 
 ```
-HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec.
+docs/agents/research/<slug>-research.md
+```
+
+The `<slug>` is the same feature slug the user (or you) will use for the downstream spec — typically a `vX.Y.Z-<feature-name>` shape (e.g., `v1.10.0-context-engineering-alignment-research.md`). Derive from the Phase 1 problem statement if the user hasn't named it yet; confirm before writing if ambiguous.
+
+The archive's content is the full Phase 6 output — every numbered section above (Executive summary through Sources) plus the Steering reconciliation block when applicable. Phase 7's HANDOFF lines should name the archive file path so downstream skills (`draft-spec`, `socratic-grill`) can read the durable archive instead of relying on in-conversation context.
+
+**Tier-conditional** per [ADR-0016](../../docs/agents/adrs/0016-chain-wide-depth-tier.md). The tier is in this report's header (`**Tier:**`); fire by tier:
+
+- **Deep:** **REQUIRED.** Multi-source synthesis (10-20 sources, subagent fan-out) is worth preserving as the evidence base for future "why did we pick X?" audits.
+- **Balanced:** **OPTIONAL.** Default-off. Write only if the synthesis contains decisions or evidence you expect the user to revisit; otherwise the spec's "Concrete picks" table preserves what's load-bearing.
+- **Quick:** **SKIPPED.** A ~5-source Quick synthesis is terse enough that the spec carries everything that matters.
+
+**Failure mode.** If the write fails (filesystem full, permission denied, path missing), emit one line and proceed to Phase 7:
+
+```
+⚠ Could not write research archive at <path>: <error>. Proceeding to HANDOFF.
+```
+
+Research success is not held hostage to archival failure — same shape as the dispatch-record fallback in `parallel-dev` Phase 7.5.
+
+**Post-write edits are file edits.** Once Phase 6.5 commits the file, the file is the source of truth. Any edit to the report (clarifying a Recommendation, adding a Source, fixing a typo surfaced in Phase 7) MUST update the on-disk archive too — don't let the conversation transcript and the archive diverge.
+
+### Phase 7 — Hand off and flush steering
+
+End the response with explicit handoff lines. The downstream skills look for these. **Note:** these HANDOFF lines are navigation pointers, not state payloads — downstream skills MUST read the full Phase 6 output document (the case studies, recommendations, decisions-to-make-next, open questions, sources) to do their work. When Phase 6.5 fired, the "full Phase 6 output document" IS the archive file at `docs/agents/research/<slug>-research.md` — name the path in the HANDOFF so downstream skills know what to read. See [`using-habeebs-skill` § "HANDOFF lines — navigation, not state transfer"](../using-habeebs-skill/SKILL.md) for the full-doc-read contract that governs every HANDOFF in the chain.
+
+```
+HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec. Source: docs/agents/research/<slug>-research.md (when Phase 6.5 archived).
 HANDOFF: grill ready — invoke `socratic-grill` to drive ambiguity out of the open questions and decisions above.
 HANDOFF: record ready — once spec + grill complete, invoke `decision-record` to capture the chosen architecture as an ADR.
 ```

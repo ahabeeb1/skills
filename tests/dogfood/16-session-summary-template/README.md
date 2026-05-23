@@ -1,10 +1,10 @@
 # Dogfood scenario 16 — session-summary template (ADR-0012)
 
-Enforces the 7-section session-summary template from [ADR-0012](../../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), committed at [`docs/agents/templates/session-summary-template.md`](../../../docs/agents/templates/session-summary-template.md).
+Enforces the 7-section session-summary template from [ADR-0012](../../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), committed at [`skills/using-habeebs-skill/references/session-summary-template.md`](../../../skills/using-habeebs-skill/references/session-summary-template.md) (relocated 2026-05-22 from `docs/agents/templates/`).
 
 ## Files
 
-- `check-session-summary-template.sh` — asserts the template file exists at `docs/agents/templates/session-summary-template.md` and contains the 7 required sections (Active artifacts / Current slice / Last successful action / What's blocking / Open grill Qs / Recent test state / Branch / worktree pointer) plus the "Fresh sub-session resume protocol" tail section.
+- `check-session-summary-template.sh` — asserts the template file exists at `skills/using-habeebs-skill/references/session-summary-template.md` and contains the 7 required sections (Active artifacts / Current slice / Last successful action / What's blocking / Open grill Qs / Recent test state / Branch / worktree pointer) plus the "Fresh sub-session resume protocol" tail section.
 
 - `check-using-habeebs-section.sh` — asserts `skills/using-habeebs-skill/SKILL.md` contains the "## When sessions grow long" section and references ADR-0012 + the template path.
 

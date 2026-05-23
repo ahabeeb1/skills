@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Dogfood scenario 16 — asserts the session-summary template at
-# docs/agents/templates/session-summary-template.md exists and contains
-# the 7 required sections per ADR-0012. Run from repo root.
+# skills/using-habeebs-skill/references/session-summary-template.md exists
+# and contains the 7 required sections per ADR-0012. Run from repo root.
 set -euo pipefail
 
-FILE="docs/agents/templates/session-summary-template.md"
+FILE="skills/using-habeebs-skill/references/session-summary-template.md"
 FAILED=0
 
 if [[ ! -f "$FILE" ]]; then

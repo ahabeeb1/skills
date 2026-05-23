@@ -111,7 +111,8 @@ Always check these first when relevant. Your own ADRs and architecture writeups 
 
 ## Tier 2 — GitHub repos to read code from
 
-When researching, find 2-3 active OSS repos doing approximately-X. Read their:
+When researching, find 2-3 active OSS repos doing approximately-X. For natural-language feature descriptions ("local AI assistant that remembers screen activity"), run the **semantic-repo-discovery loop** in [`semantic-repo-discovery.md`](semantic-repo-discovery.md) (fire-rule-gated per [ADR-0017](../../../docs/agents/adrs/0017-semantic-repo-discovery-port.md); skipped under Quick tier). For precise-tech queries, use `gh search repos` or WebSearch directly. Either way, then read:
+
 - Top-level README architecture section
 - `docs/architecture.md` or equivalent
 - The actual module structure

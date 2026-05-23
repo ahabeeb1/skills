@@ -24,7 +24,7 @@ if ! grep -qE "ADR-0012" "$FILE"; then
 fi
 
 # Template path reference
-if ! grep -qF "docs/agents/templates/session-summary-template.md" "$FILE"; then
+if ! grep -qF "references/session-summary-template.md" "$FILE"; then
   echo "FAIL: section does not reference the template path"
   FAILED=1
 fi

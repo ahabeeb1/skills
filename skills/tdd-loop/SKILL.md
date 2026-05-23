@@ -263,6 +263,6 @@ These are signs the slice is wrong, not that TDD is wrong:
 - `deep-modules` — invoked at the refactor step
 - `verify-output` — invoked at Pass 5c between two-stage review and commit; anti-slop pass
 - `parallel-dev` — dispatches parallel TDD loops on independent slices
-- [`using-habeebs-skill` § "When sessions grow long — summary-and-flush"](../using-habeebs-skill/SKILL.md) — long tdd-loop runs (20+ slices in one conversation) are the most likely Compress-at-overflow site per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md); flush via the 7-section summary template at [`docs/agents/templates/session-summary-template.md`](../../docs/agents/templates/session-summary-template.md)
+- [`using-habeebs-skill` § "When sessions grow long — summary-and-flush"](../using-habeebs-skill/SKILL.md) — long tdd-loop runs (20+ slices in one conversation) are the most likely Compress-at-overflow site per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md); flush via the 7-section summary template at [`../using-habeebs-skill/references/session-summary-template.md`](../using-habeebs-skill/references/session-summary-template.md)
 - `vertical-slice` — defines what makes a slice implementable
 - `references/test-seam-guide.md` — choosing unit vs integration vs e2e

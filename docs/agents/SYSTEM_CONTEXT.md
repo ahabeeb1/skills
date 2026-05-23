@@ -19,7 +19,7 @@
 - **Domain glossary:** Populated — 13 concepts (`docs/agents/GLOSSARY.md`). Methodology-specific vocabulary.
 - **Latest ADR:** ADR-0016 (`chain-wide-depth-tier`, Accepted 2026-05-19, shipped v1.15.0). Recent batch — ADR-0014 (gstack capability adoption) + ADR-0015 (hook tag-push carve-out) Accepted 2026-05-18, shipped v1.14.0.
 - **Postmortem directory:** `docs/agents/postmortems/` (new in v1.10.0 per ADR-0011). One retrospective entry to date (2026-05-12 missed-architectural-categories).
-- **Session-summary template:** `docs/agents/templates/session-summary-template.md` (new in v1.10.0 per ADR-0012). Used by the Compress-at-overflow protocol documented in `using-habeebs-skill` § "When sessions grow long".
+- **Session-summary template:** `skills/using-habeebs-skill/references/session-summary-template.md` (introduced in v1.10.0 per ADR-0012; relocated 2026-05-22 from `docs/agents/templates/` per ADR-0009's 3-consumer threshold). Used by the Compress-at-overflow protocol documented in `using-habeebs-skill` § "When sessions grow long".
 
 ## Notable absences
 

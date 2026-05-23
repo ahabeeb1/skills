@@ -98,7 +98,6 @@ habeebs-skill/
 │   ├── postmortems/                 # Chain error-analysis (ADR-0011)
 │   ├── dispatches/                  # parallel-dev audit log (ADR-0004 Part 2)
 │   ├── research/                    # Archived prior-art-research reports
-│   ├── templates/                   # Scaffolds (e.g. session-summary per ADR-0012)
 │   ├── issue-tracker.md             # Per-repo tracker config (setup-habeebs-skill)
 │   └── triage-labels.md             # Per-repo label vocabulary (setup-habeebs-skill)
 │

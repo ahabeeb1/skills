@@ -8,7 +8,6 @@ Copy from here. Replace bracketed placeholders. Delete factors that are N/A (sta
 
 # Factor Check — [feature slug]
 
-**Source:** humanlayer/12-factor-agents (https://github.com/humanlayer/12-factor-agents)
 **Run by:** agent-factors-check, [YYYY-MM-DD]
 **Invoked from:** socratic-grill on [grill record path]
 

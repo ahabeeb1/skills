@@ -55,7 +55,7 @@ You have a minimized reproduction. Now find which assumption was wrong.
 
 For each plausible hypothesis:
 
-1. State it explicitly: "I believe the failure is caused by X."
+1. State it explicitly: "Hypothesis: the failure is caused by X."
 2. Predict what probe output would confirm or refute it.
 3. Run the probe (logging, debugger, git bisect, isolated test, etc.).
 4. Compare output to prediction. **Update hypothesis based on evidence, not vibes.**
@@ -130,10 +130,3 @@ If the root cause exposes an architectural problem (not just a code bug), the po
 - `tdd-loop` — implements the fix as a slice; the regression test from Phase 5 is the slice's RED phase
 - `decision-record` — captures architectural-level preventions
 - `socratic-grill` — use first when the bug is actually a spec ambiguity
-- Superpowers' `systematic-debugging` — pattern source
-- OMC `trace` — adjacent (causal investigation with competing hypotheses)
-
-## Origins
-
-- Inspired by Superpowers' [`systematic-debugging`](https://github.com/obra/superpowers) — four-phase root-cause discipline (Investigate → Pattern → Hypothesize → Implement)
-- Inspired by oh-my-claudecode's `trace` lane — causal investigation framing with hypothesis competition

@@ -9,7 +9,7 @@ A static, substrate-free security audit. Reads source and git history, models th
 
 This is a standalone skill, invoked on demand via `/security-audit`. It is not a chain phase. It runs on any repo — it does not require habeebs-skill setup or `docs/agents/SYSTEM_CONTEXT.md`.
 
-It is a markdown-only port of gstack's `/cso`, trimmed to a substrate-free core (see [Origins](#origins)). It is **not** a penetration test, **not** a live/dynamic scan, and **not** a dependency-CVE scanner — see [Scope boundary](#scope-boundary).
+It is **not** a penetration test, **not** a live/dynamic scan, and **not** a dependency-CVE scanner — see [Scope boundary](#scope-boundary).
 
 ## When to use this skill
 
@@ -80,7 +80,7 @@ Write the markdown report per [`references/report-template.md`](references/repor
 This trimmed port deliberately does NOT cover:
 
 - **Dynamic / live testing** — no requests against a running system; static analysis only.
-- **Denial-of-service, race conditions, memory-safety** — excluded to keep the signal high (consistent with gstack `/cso`'s exclusion list).
+- **Denial-of-service, race conditions, memory-safety** — excluded to keep the signal high.
 - **Dependency CVE scanning** — that is `npm audit` / `pip-audit` / Dependabot's job; mention it, don't reproduce it.
 - **CI/CD and cloud-infra configuration** — out of the substrate-free core.
 - **Cross-run trend tracking** — each audit is self-contained; no persisted baseline.
@@ -102,8 +102,3 @@ State this boundary in the report. The audit is not a substitute for a professio
 - [`systematic-debugging`](../systematic-debugging/SKILL.md) — if the audit surfaces a finding that needs a reproduction to confirm
 - [`references/audit-methodology.md`](references/audit-methodology.md) — full per-phase procedure
 - [`references/report-template.md`](references/report-template.md) — the markdown report format
-- [ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md) — the decision to adopt this capability from gstack
-
-## Origins
-
-Idea-ported from [gstack](https://github.com/garrytan/gstack)'s `/cso` skill (MIT) — the OWASP Top 10 + STRIDE-per-component static-audit methodology and the confidence-gated, zero-noise findings discipline. Per ADR-0014, the methodology is portable; this skill's text is written independently. Trimmed to a substrate-free core: gstack `/cso`'s JSON artifacts, `.gstack/` telemetry, cross-run fingerprint trend-tracking, and CI/CD/infra scans are dropped — they need persisted state or substrate this plugin forbids (ADR-0002).

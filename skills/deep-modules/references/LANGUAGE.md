@@ -1,6 +1,6 @@
 # LANGUAGE.md — Architectural Vocabulary
 
-Terms from John Ousterhout's *A Philosophy of Software Design* (2018), the source of the "deep modules" principle. Use this vocabulary consistently in proposals and ADRs.
+Architectural vocabulary built around the deep-modules principle. Use these terms consistently in proposals and ADRs.
 
 ## Core duality: depth vs shallowness
 
@@ -64,7 +64,7 @@ An abstraction with two or more callers/implementations that genuinely differ. W
 - **Tactical:** ship the feature; deal with cleanup later. Optimizes for short-term velocity.
 - **Strategic:** invest in clean design; ship slightly slower but cumulatively faster. Compounds over time.
 
-Ousterhout's claim: a small investment (5-10% time) in strategic design pays back many-fold over the life of the codebase. The agentic age accelerates code generation, which makes strategic discipline MORE important, not less — entropy is now also accelerated.
+The claim: a small investment (5-10% time) in strategic design pays back many-fold over the life of the codebase. The agentic age accelerates code generation, which makes strategic discipline MORE important, not less — entropy is now also accelerated.
 
 ### Different layer, different abstraction
 
@@ -83,7 +83,7 @@ Each layer has the same shape. The chain provides one abstraction; the rest are 
 
 ## Process vocabulary
 
-### Complexity (Ousterhout's three symptoms)
+### Complexity (three symptoms)
 
 A codebase is complex when changes are hard. Three signs:
 

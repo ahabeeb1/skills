@@ -1,5 +1,5 @@
 ---
-description: Find shallow modules and propose deepenings. Uses Ousterhout's deletion test. Run periodically or at the refactor step of tdd-loop.
+description: Find shallow modules and propose deepenings using the deletion test. Run periodically or at the refactor step of tdd-loop.
 ---
 
 You are running the `deep-modules` skill from habeebs-skill.

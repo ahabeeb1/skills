@@ -21,7 +21,7 @@ Each skill produces output the next skill consumes. The handoff lines at the bot
 
 ## What this is NOT
 
-- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on oh-my-claudecode, claude-mem, Superpowers, vector stores, MCP servers, or session-state directories. Users who *also* run those tools can — they're orthogonal, not coupled.
+- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on any external substrate — no shared memory store, vector store, MCP server, or session-state directory.
 - Not an automatic code writer — implementation still happens through TDD
 - Not a survey tool — the research phase makes opinionated recommendations
 - Not for trivial CRUD — let trivial things stay trivial

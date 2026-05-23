@@ -1,13 +1,13 @@
 ---
 name: deep-modules
-description: Ousterhout-style deep-module checker and improver. Identifies shallow modules — interfaces nearly as complex as their implementations — and pass-through layers that earn nothing. Applies the deletion test (remove the module; if complexity vanishes, it was pass-through). Proposes deepenings that combine shallow seams. Make sure to use this skill at the REFACTOR step of every tdd-loop cycle, periodically as a standalone codebase-health pass, or when the user says "this code feels off" or "too many small files". Do NOT use to rewrite already-deep modules or to add abstractions that aren't yet earned.
+description: Deep-module checker and improver. Identifies shallow modules — interfaces nearly as complex as their implementations — and pass-through layers that earn nothing. Applies the deletion test (remove the module; if complexity vanishes, it was pass-through). Proposes deepenings that combine shallow seams. Make sure to use this skill at the REFACTOR step of every tdd-loop cycle, periodically as a standalone codebase-health pass, or when the user says "this code feels off" or "too many small files". Do NOT use to rewrite already-deep modules or to add abstractions that aren't yet earned.
 ---
 
 # Deep Modules
 
 The codebase's architectural conscience. Identifies shallowness and proposes deepening — but only when the deepening is earned by real friction, not by aesthetic preference.
 
-The core principle (Ousterhout, *A Philosophy of Software Design*): **the best modules are deep — they let a lot of functionality be accessed through a simple interface.** Shallow modules — where the interface is nearly as complex as the implementation — pay the cost of an abstraction without delivering the value.
+The core principle: **the best modules are deep — they let a lot of functionality be accessed through a simple interface.** Shallow modules — where the interface is nearly as complex as the implementation — pay the cost of an abstraction without delivering the value.
 
 This skill is informed by the project's domain model. The domain language gives names to good seams; ADRs record decisions the skill should not re-litigate.
 
@@ -154,7 +154,7 @@ provider.send(...)
 
 One adapter = hypothetical seam. Just use SendGrid directly. Add the abstraction when a SECOND provider arrives.
 
-## Architectural vocabulary (Ousterhout)
+## Architectural vocabulary
 
 See `references/LANGUAGE.md` for the full vocabulary. Key terms used throughout the skill:
 
@@ -194,10 +194,5 @@ Capturing this is valuable — it confirms the check ran, which prevents the "no
 - `tdd-loop` — invokes this skill at the REFACTOR step
 - `decision-record` — captures significant deepenings as ADRs
 - `setup-habeebs-skill` — sets up GLOSSARY.md and ADR directory this skill reads
-- `references/LANGUAGE.md` — Ousterhout architectural vocabulary
+- `references/LANGUAGE.md` — architectural vocabulary
 - `references/deletion-test-examples.md` — worked examples of the deletion test
-
-## Origins
-
-- Lifted from John Ousterhout's *A Philosophy of Software Design* — the deep/shallow module concept, the deletion test, and the "complexity should be inside, not at the interface" principle
-- Inspired by mattpocock's [`improve-codebase-architecture`](https://github.com/mattpocock/skills) — recurring refactor-cadence framing (run this skill every few days, not just at end-of-feature)

@@ -49,13 +49,11 @@ Phase 0 NEVER runs when no repo is open (chat-only mode); Phase 1 absorbs full r
 
 ### Phase 1 — Fill the gaps
 
-Phase 0 populated most of the structural context. Now ask only what couldn't be inferred — and frame asks as *gap-filling*, not cold interrogation:
+Phase 0 populated most of the structural context. Ask only what couldn't be inferred. Don't re-ask what the cache already answered.
 
-> "I see Node 20 + Express + Postgres 16, single VM via Fly.io, no Redis. Two open questions: target scale and whether this is greenfield."
+Ask questions plainly. Do not preface them with explanations of why you're asking, why there are this many, or what you already know. State the questions and stop. Stage them in two messages (2 then 3) — never dump all five at once.
 
-Don't drown the user in five questions at once — stage them. If the cache already answered a question below, skip it.
-
-**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes, where the run is expensive enough to justify two round-trips. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0016).
+**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0016).
 
 **First message (2 questions, asked together):**
 
@@ -109,11 +107,11 @@ Break the feature into 2-4 searchable sub-problems. Each sub-problem should be a
 
 Present the decomposition to the user before searching. They'll often add or remove sub-problems based on what they actually care about.
 
-**If steering hints were captured in Phase 1, echo them back here** in a single line above the decomposition so the user sees what was registered before search burns budget:
+**If steering hints were captured in Phase 1, echo them back here** in a single line above the decomposition:
 
-> `Steering received — Anchor: <terms>; Look at: <sources>; Avoid: <terms>. (Echo for confirmation; will weight Phase 4 queries.)`
+> `Steering — Anchor: <terms>; Look at: <sources>; Avoid: <terms>.`
 
-If any slot was empty, omit it from the echo. If no steering was provided, skip the line entirely — silence is the default.
+If any slot was empty, omit it from the echo. If no steering was provided, skip the line entirely.
 
 ### Phase 2.5 — Category-completeness critic (coverage gate)
 
@@ -200,7 +198,7 @@ Search in priority order. **Always start with T1 and T2.** Drop to lower tiers o
 See `references/source-tiers.md` for the curated list of high-signal engineering blogs by domain.
 
 - **Tier 1 — Engineering blogs from teams that actually shipped it.** Uber, Stripe, Discord, Figma, Cloudflare, LinkedIn, Notion, Shopify, Airbnb, Slack, Pinterest, Dropbox, GitHub, Vercel, Anthropic, OpenAI, Databricks, Snowflake, Netflix, Amazon (Builders' Library). These post-mortems describe what they actually did at scale.
-- **Tier 2 — GitHub repos shipping similar features.** Read the actual code, not just READMEs. Look at the directory structure, the abstractions, the migration history.
+- **Tier 2 — GitHub repos shipping similar features.** Read the actual code, not just READMEs. Look at the directory structure, the abstractions, the migration history. For NL-framed feature descriptions on Balanced/Deep tiers, run the **semantic-repo-discovery loop** in [`references/semantic-repo-discovery.md`](references/semantic-repo-discovery.md) — fire-rule-gated per [ADR-0017](../../docs/agents/adrs/0017-semantic-repo-discovery-port.md) — to surface candidates that don't compress to keyword queries. Quick skips the loop unconditionally; precise-tech queries fall through to plain `gh search repos` or WebSearch.
 - **Tier 3 — Conference talks, RFCs, ADRs in OSS projects.** QCon, Strange Loop, PWLConf, RailsConf. ADRs from Kubernetes, Rust, etc.
 - **Tier 4 — HackerNews/Reddit practitioner threads.** Where engineers argue trade-offs with real numbers.
 - **Tier 5 — Official docs / tutorials.** Lowest signal. Usually theoretical, not battle-tested.

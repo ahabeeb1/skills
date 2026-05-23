@@ -77,10 +77,9 @@ This ADR should be reopened if any of:
 
 ### Reference implementations cited
 
-(Only when the ADR relies on a specific external reference impl. Examples below; delete this subsection if not applicable.)
+(Only when the ADR relies on a specific external reference impl. Delete this subsection if not applicable.)
 
-- **HITL:approval-gate mechanism:** [humanlayer](https://github.com/humanlayer/humanlayer) — `@require_approval()` decorators + Slack/email routing. Cited because this ADR's approval-gate slices need an out-of-band suspend/resume API.
-- **12-factor-agents:** [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) — referenced for [factor N]: [why].
+- **[Capability name]:** [link or repo] — [why this implementation is cited].
 
 ---
 

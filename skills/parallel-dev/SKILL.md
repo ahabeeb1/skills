@@ -152,7 +152,7 @@ If verification fails, the parallel dispatch saved nothing — and may have cost
 
 ## Return contract
 
-Every subagent dispatched via `parallel-dev` returns exactly one of four statuses (verbatim from Superpowers' `subagent-driven-development/implementer-prompt.md`, snapshot locked by ADR-0004). The full input + return JSON schemas live in `references/dispatch-record-template.md`; semantics below.
+Every subagent dispatched via `parallel-dev` returns exactly one of four statuses (snapshot locked by ADR-0004). The full input + return JSON schemas live in `references/dispatch-record-template.md`; semantics below.
 
 ### `DONE`
 
@@ -247,9 +247,3 @@ These signs say "parallel isn't right here, run sequentially":
 - `../../agents/pattern-extractor.md` — subagent prompt for research extraction
 - `../../agents/synthesizer.md` — subagent prompt for aggregating parallel results
 - `references/dispatch-record-template.md` — template for capturing a parallel dispatch
-
-## Origins
-
-- Inspired by Superpowers' [`subagent-driven-development`](https://github.com/obra/superpowers) — fresh-subagent-per-task pattern + independence check
-- Inspired by oh-my-claudecode's `ralph` / `team` / `ultrawork` — burst-parallel dispatch with on-demand worker lifecycle
-- Inspired by Anthropic's multi-agent research system — lead + N-subagent fan-out with role specs and citation aggregation

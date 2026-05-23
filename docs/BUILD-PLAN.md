@@ -34,7 +34,7 @@ Tracking the multi-phase build. Each phase is a chunk that should fit in one foc
 
 - [x] `skills/tdd-loop/SKILL.md` — full content (red-green-refactor with vertical-slice integration)
 - [x] `skills/tdd-loop/references/test-seam-guide.md`
-- [x] `skills/deep-modules/SKILL.md` — full content (Ousterhout principles + deletion test)
+- [x] `skills/deep-modules/SKILL.md` — full content (deep-module principles + deletion test)
 - [x] `skills/deep-modules/references/LANGUAGE.md` — architectural vocabulary
 - [x] `skills/parallel-dev/SKILL.md` — full content (independence verification + dispatch)
 - [x] `skills/parallel-dev/references/dispatch-record-template.md`
@@ -94,7 +94,7 @@ Tracking the multi-phase build. Each phase is a chunk that should fit in one foc
 
 ## Decisions deferred
 
-- Whether `parallel-dev` should integrate with OMC's `/team` or Superpowers' `subagent-driven-development` natively, vs. just dispatch independently
+- Whether `parallel-dev` should integrate with external multi-agent orchestrators natively, vs. just dispatch independently
 - Whether `decision-record` writes to a fixed path or asks the user where ADRs live (probably the latter — handled by `setup-habeebs-skill`)
 - Whether to support `--quick` and `--deep` flags on the command interface, or only via natural-language hints
 - Whether `setup-habeebs-skill` should attempt to auto-detect existing CONTEXT.md or always re-bootstrap

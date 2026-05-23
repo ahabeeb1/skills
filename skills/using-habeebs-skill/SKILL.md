@@ -50,7 +50,7 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 
 ## Standalone skills (invoked on demand, outside the chain)
 
-- **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`. Ported from gstack `/cso` per [ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md).
+- **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`.
 
 ## When chain runs go wrong — postmortem cadence
 
@@ -71,11 +71,11 @@ Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain
 
 ## Cross-session learnings — no separate ledger (by design)
 
-habeebs-skill deliberately has no learnings ledger or memory file. Cross-session knowledge lives in three existing artifacts: **ADRs** capture decisions and their rationale, **`docs/agents/postmortems/`** captures incident and error analysis, and **`SYSTEM_CONTEXT.md`'s "Last reconciliation outcome"** log captures research learnings. A separate curated ledger was evaluated and rejected ([ADR-0014](../../docs/agents/adrs/0014-adopt-gstack-capabilities-markdown-idea-port.md) grill, 2026-05-18): it duplicates these artifacts, decays without the automated pruning ADR-0002 forbids, and reverses ADR-0010's doc-weight reduction. If you want a "learnings file", write an ADR or a postmortem instead.
+habeebs-skill deliberately has no learnings ledger or memory file. Cross-session knowledge lives in three existing artifacts: **ADRs** capture decisions and their rationale, **`docs/agents/postmortems/`** captures incident and error analysis, and **`SYSTEM_CONTEXT.md`'s "Last reconciliation outcome"** log captures research learnings. A separate curated ledger was evaluated and rejected (see ADR-0014 grill, 2026-05-18): it duplicates these artifacts, decays without the automated pruning ADR-0002 forbids, and reverses ADR-0010's doc-weight reduction. If you want a "learnings file", write an ADR or a postmortem instead.
 
 ## Conditional extensions
 
-- **agent-factors-check** — invoked *from* `socratic-grill` Phase 1 when the spec is for an agent product. Runs the 13 factors from humanlayer/12-factor-agents and adds 6–13 Socratic questions to the active grilling agenda. Skipped for non-agent specs (CRUD, web, mobile, infra).
+- **agent-factors-check** — invoked *from* `socratic-grill` Phase 1 when the spec is for an agent product. Runs the 13 agent quality factors and adds 6–13 Socratic questions to the active grilling agenda. Skipped for non-agent specs (CRUD, web, mobile, infra).
 - **devex-review** — invoked *from* `socratic-grill` Phase 1 when the spec is a developer-facing product (CLI, SDK, library API, plugin, framework). Surfaces 6 developer-experience gap dimensions as Socratic questions for the grilling agenda. Skipped for non-developer-facing specs. Both conditional extensions can fire on the same spec.
 
 ## Why this methodology
@@ -94,11 +94,9 @@ habeebs-skill addresses each:
 
 ## Standalone by design (ADR-0002)
 
-habeebs-skill is **one-time-use per feature, with no runtime dependencies.** The chain runs once for a given feature, produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code, tests), and ends. It does not depend on oh-my-claudecode, claude-mem, memsearch, vector stores, MCP servers, or any external runtime substrate. `parallel-dev` is the only in-chain parallelism primitive — it dispatches sub-agents within a single chain run via git worktrees, not a persistent worker pool.
+habeebs-skill is **one-time-use per feature, with no runtime dependencies.** The chain runs once for a given feature, produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code, tests), and ends. It does not depend on any external runtime substrate — no shared memory store, vector store, MCP server, or session-state directory. `parallel-dev` is the only in-chain parallelism primitive — it dispatches sub-agents within a single chain run via git worktrees, not a persistent worker pool.
 
 If a feature being built by the chain has long-running runtime concerns (queues, workers, sessions, dispatch), those are properties of the product spec — the chain captures them in the spec / ADR / plan and hands off to whatever production runtime the product chooses. They are NOT properties of habeebs-skill itself.
-
-Users who also run OMC, claude-mem, Superpowers, etc. can do so. Those tools are orthogonal — they don't coordinate with habeebs-skill and habeebs-skill doesn't read or write their state.
 
 See [`docs/agents/adrs/0002-habeebs-skill-standalone.md`](../../docs/agents/adrs/0002-habeebs-skill-standalone.md).
 

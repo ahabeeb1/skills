@@ -1,15 +1,15 @@
 ---
 name: agent-factors-check
-description: Domain extension of socratic-grill for LLM/agent specs. Runs the spec against the 12 factors from humanlayer/12-factor-agents and surfaces 6 gaps habeebs-skill's main chain misses (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch context). Returns one Socratic question per gap for the grilling agenda. Make sure to use this skill whenever the spec is for an agent, assistant, copilot, chatbot, LLM workflow, RAG, or function-calling product. Do NOT use for generic CRUD/web/mobile apps without LLM orchestration.
+description: Domain extension of socratic-grill for LLM/agent specs. Runs the spec against the 13 agent quality factors and surfaces 6 gaps habeebs-skill's main chain misses (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch context). Returns one Socratic question per gap for the grilling agenda. Make sure to use this skill whenever the spec is for an agent, assistant, copilot, chatbot, LLM workflow, RAG, or function-calling product. Do NOT use for generic CRUD/web/mobile apps without LLM orchestration.
 ---
 
 # Agent Factors Check
 
-Pressure-test an LLM/agent product spec against the 12-factor-agents manifesto. The job is not to grade — it's to surface the questions habeebs-skill's main chain (research → spec → grill → ADR) otherwise leaves implicit when the product *is* an agent.
+Pressure-test an LLM/agent product spec against the 13 agent quality factors. The job is not to grade — it's to surface the questions habeebs-skill's main chain (research → spec → grill → ADR) otherwise leaves implicit when the product *is* an agent.
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds 6–13 Socratic questions to the grilling agenda. After grilling resolves them, control returns to the main chain.
 
-Why a separate skill instead of folding into `socratic-grill`'s axes? `socratic-grill`'s seven axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic. The 12 factors are specific to agent products and don't apply to 80% of specs. Forcing them on every spec is overkill. A separate skill keeps the main chain lean and lets this trigger only when relevant.
+Why a separate skill instead of folding into `socratic-grill`'s axes? `socratic-grill`'s seven axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic. The agent factors are specific to agent products and don't apply to 80% of specs. Forcing them on every spec is overkill. A separate skill keeps the main chain lean and lets this trigger only when relevant.
 
 ## When to use this skill
 
@@ -31,9 +31,7 @@ If unclear whether it's an agent product, ask one question: **"Does this product
 
 The "OR tool calls" branch catches single-turn workflows that *do* use tools (e.g., a one-shot "summarize and tag this ticket using a `tag_ticket` tool"). Even one tool call makes the product agent-shaped — F1, F4, F7 all become relevant.
 
-## The 12 factors (canonical reference)
-
-From [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents). Cite the source in any output that references a factor.
+## The 13 factors (canonical reference)
 
 1. **Natural Language to Tool Calls** — Intent → structured function call.
 2. **Own Your Prompts** — Prompts as first-class versioned artifacts.
@@ -147,7 +145,7 @@ HANDOFF: grilling agenda updated — <N> new questions added from agent-factors-
 - **Running on non-agent specs.** Wastes tokens, pollutes the grill record. Honor the trigger test.
 - **Surveying instead of grilling.** The output is concrete questions, not a factor-by-factor essay. If a factor is fine, skip it — don't write a paragraph defending the skip.
 - **Treating the factors as a scoring rubric.** This isn't a grade; it's a gap-finder. A spec with 7 Missings isn't "bad" — it's an early-stage spec with 7 things worth grilling.
-- **Inventing factors not in the source.** Cite humanlayer/12-factor-agents. If you find yourself adding F14, that's a new skill or a new ADR — don't smuggle it in.
+- **Inventing factors not in the list.** The 13 factors above are the closed set. If you find yourself adding F14, that's a new skill or a new ADR — don't smuggle it in.
 - **Doing the grilling here.** This skill *generates questions*. `socratic-grill` *runs* the grilling. Don't try to resolve questions in this skill.
 - **Folding all gaps into one mega-question.** Each gap gets one question. Composability matters — the user might answer F5 in turn 1 and F7 in turn 5.
 
@@ -162,7 +160,5 @@ HANDOFF: grilling agenda updated — <N> new questions added from agent-factors-
 - `socratic-grill` — the skill that invokes this one
 - `draft-spec` — fallback if the spec needs re-drafting (too many Missings)
 - `decision-record` — captures resolved factor decisions in the ADR
-- humanlayer/12-factor-agents — canonical source for the factors (https://github.com/humanlayer/12-factor-agents)
-- humanlayer/humanlayer — reference implementation for F7 (human-as-tool) via approval gates (https://github.com/humanlayer/humanlayer)
 - `references/factor-check-template.md` — output format
 - `references/factor-questions-bank.md` — example questions per factor

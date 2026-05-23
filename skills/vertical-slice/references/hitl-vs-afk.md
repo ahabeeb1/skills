@@ -48,8 +48,6 @@ The slice cannot proceed without an explicit approval from a person who is **not
 
 **When to use:** the approver is offline, busy, or in a different org. The gate is asynchronous. The agent must be able to wait without burning context.
 
-**Canonical reference implementation:** [humanlayer](https://github.com/humanlayer/humanlayer) — `@hl.require_approval()` decorators that route to Slack/email and resume cleanly when approval arrives. Cite humanlayer in the ADR when an approval-gate slice's mechanism needs to be locked.
-
 **Format:**
 
 ```
@@ -149,7 +147,7 @@ This is not a failure of labeling — it's the runtime catching what static labe
 
 1. Agent reads the slice spec
 2. Agent reaches the approval step
-3. Agent emits a request via the configured channel (Slack message / email / humanlayer `require_approval` call)
+3. Agent emits a request via the configured channel (Slack message / email / queue message)
 4. Agent suspends — pause state captured per F6 of agent-factors-check (where applicable)
 5. Approver acts out-of-band; the response flows back through the same channel
 6. Agent resumes and completes the slice

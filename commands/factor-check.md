@@ -1,6 +1,6 @@
 ---
 name: factor-check
-description: Pressure-test an agent/copilot/LLM-workflow spec against the 12 factors from humanlayer/12-factor-agents. Delegates to the agent-factors-check skill.
+description: Pressure-test an agent/copilot/LLM-workflow spec against the 13 agent quality factors. Delegates to the agent-factors-check skill.
 ---
 
 Invoke the `agent-factors-check` skill from `skills/agent-factors-check/SKILL.md`.

@@ -44,7 +44,7 @@ The gap catalog is documented in full in [`references/dx-gap-catalog.md`](refere
 
 | DX Dimension | Already covered by | Status |
 |---|---|---|
-| Ergonomics / surface size | `deep-modules` (Ousterhout's deletion test) | Partial — shape only, not naming or defaults |
+| Ergonomics / surface size | `deep-modules` (deletion test) | Partial — shape only, not naming or defaults |
 | API contracts | `draft-spec`, `vertical-slice` | Partial — functionality, not consumer experience |
 | Breaking changes | `socratic-grill` reversibility axis | Partial — rollback, not developer migration friction |
 
@@ -165,7 +165,3 @@ This skill produces one of four statuses at the end of every run (consistent wit
 - `deep-modules` — adjacent; module-shape review at the refactor step (not DX)
 - [`references/dx-gap-catalog.md`](references/dx-gap-catalog.md) — the 6 DX gap dimensions with question templates
 - [`references/devex-review-template.md`](references/devex-review-template.md) — output format
-
-## Origins
-
-Idea-ported from [gstack](https://github.com/garrytan/gstack)'s `/plan-devex-review` skill (MIT) — the DX gap-catalog methodology covering onboarding friction, first-time-developer roleplay, API/CLI ergonomics, error-message quality, docs-as-experienced, and upgrade/migration friction. Per ADR-0014, the methodology is portable; this skill's text is written independently. The conditional-grill-extension structure (trigger predicate → score → generate questions → triage → handoff) mirrors `agent-factors-check`, which is the proven pattern for this class of domain extension in habeebs-skill.

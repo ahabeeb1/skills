@@ -24,6 +24,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0014 | [Adopt three gstack capabilities as markdown idea-ports; reject the runtime-coupled half](./0014-adopt-gstack-capabilities-markdown-idea-port.md) | Accepted | 2026-05-18 |
 | 0015 | [Amend the commit-block hook to allow tag-only pushes on the default branch](./0015-hook-allow-tag-pushes-on-default.md) | Accepted | 2026-05-18 |
 | 0016 | [The chain runs at a depth tier — Quick, Balanced, or Deep — carried in artifact headers](./0016-chain-wide-depth-tier.md) | Accepted | 2026-05-19 |
+| 0017 | [Port reposeek.ai's NL→repo idea as a conditional Tier 2 technique](./0017-semantic-repo-discovery-port.md) | Accepted | 2026-05-22 |
 
 ## Conventions
 

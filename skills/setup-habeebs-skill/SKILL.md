@@ -5,7 +5,7 @@ description: One-time per-repo bootstrap. Configures the issue tracker (GitHub /
 
 # Setup habeebs-skill
 
-Configures a single repository so the other habeebs-skills know how to behave. Run once per new repo. Inspired by mattpocock's `setup-matt-pocock-skills`.
+Configures a single repository so the other habeebs-skills know how to behave. Run once per new repo.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you find, confirm with the user, then write.
 

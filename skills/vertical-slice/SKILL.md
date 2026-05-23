@@ -53,7 +53,7 @@ Each slice is labeled with exactly one of:
 
 - **`AFK:full-auto`** — no human in the loop. Agent implements, tests, commits autonomously. Dispatchable to `parallel-dev`.
 - **`HITL:inline`** — human in the *active chat session* answers a question mid-slice (e.g., domain naming, deferred architectural choice). Cheap, conversational pause.
-- **`HITL:approval-gate`** — human approves *out-of-band* before the slice may proceed (Slack/email/queue). Use when the approver is offline, when a paper trail is required (compliance, billing), or when the approver is named by org chart. Canonical reference impl: [humanlayer](https://github.com/humanlayer/humanlayer).
+- **`HITL:approval-gate`** — human approves *out-of-band* before the slice may proceed (Slack/email/queue). Use when the approver is offline, when a paper trail is required (compliance, billing), or when the approver is named by org chart.
 
 Default to `AFK:full-auto` unless something specific requires human attention. The full decision tree (when to pick which, borderline cases, runtime semantics) lives in `references/hitl-vs-afk.md`.
 
@@ -194,7 +194,7 @@ For each slice, verify:
 - [ ] Has a test strategy (Unit / Integration / E2E / Manual)
 - [ ] Has a `Blocked by:` field (even if "None")
 - [ ] Is labeled `AFK:full-auto`, `HITL:inline`, or `HITL:approval-gate`
-- [ ] For `HITL:*` slices: gate detail names a SPECIFIC role (e.g., "on-call DBA", "eng-manager + PM quorum") and a SPECIFIC channel (Slack channel, email alias, humanlayer route). Reject vague approvers: "the team", "anyone", "whoever's around", "engineering" without a named role.
+- [ ] For `HITL:*` slices: gate detail names a SPECIFIC role (e.g., "on-call DBA", "eng-manager + PM quorum") and a SPECIFIC channel (Slack channel, email alias, queue name). Reject vague approvers: "the team", "anyone", "whoever's around", "engineering" without a named role.
 - [ ] Doesn't secretly depend on a later slice
 
 If any item fails, refine the slice before publishing.
@@ -205,7 +205,7 @@ If any item fails, refine the slice before publishing.
 - **Optionally publishes to** the issue tracker configured by `setup-habeebs-skill`
 - **`AFK:full-auto` slices flow into** `tdd-loop` (potentially via `parallel-dev`)
 - **`HITL:inline` slices flow into** `socratic-grill` to resolve the human-input question, then to `tdd-loop`
-- **`HITL:approval-gate` slices flow into** an approval channel (Slack/email/humanlayer); the slice is blocked in `tdd-loop` until approval returns
+- **`HITL:approval-gate` slices flow into** an approval channel (Slack/email/queue); the slice is blocked in `tdd-loop` until approval returns
 
 ## See also
 
@@ -216,8 +216,3 @@ If any item fails, refine the slice before publishing.
 - `setup-habeebs-skill` — configures the issue tracker and triage labels this skill uses
 - `references/slice-checklist.md` — quality bar for each slice
 - `references/hitl-vs-afk.md` — when to label which
-
-## Origins
-
-- Lifted from mattpocock's [`to-issues`](https://github.com/mattpocock/skills) — tracer-bullet vertical slicing terminology + the "each slice delivers a narrow but COMPLETE path through every layer" framing
-- HITL / AFK tagging axis is original to habeebs-skill (adds an autonomy-readiness dimension that mattpocock's pattern doesn't address)

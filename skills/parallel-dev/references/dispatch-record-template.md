@@ -205,4 +205,3 @@ The pre-v1.7.0 markdown dispatch summary remains useful for human-readable audit
 - `skills/parallel-dev/SKILL.md` § Sub-patterns — hypothesis-probe variant
 - `docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md` — the binding ADR
 - `skills/parallel-dev/agents/source-fetcher.md` / `pattern-extractor.md` / `synthesizer.md` — agent prompts that honor this contract
-- [Superpowers `implementer-prompt.md`](https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/implementer-prompt.md) — the snapshot source for the 4-status contract

@@ -61,7 +61,7 @@ Copy from here. Replace bracketed placeholders. Delete sections that genuinely d
 **Label legend:**
 - `AFK:full-auto` — no human in the loop; safe for `parallel-dev` autonomous dispatch
 - `HITL:inline` — human reviews/decides in the chat session mid-slice
-- `HITL:approval-gate` — human approves out-of-band (Slack/email; see humanlayer reference impl)
+- `HITL:approval-gate` — human approves out-of-band (Slack/email)
 
 **Estimate convention:** **d** = ideal engineer-days. Estimates are illustrative for sequencing; gates are contractual.
 

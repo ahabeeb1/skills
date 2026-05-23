@@ -10,8 +10,6 @@ Works as:
 
 Relationship to adjacent projects:
 - **Uses** [Context7](https://github.com/upstash/context7) for library docs during `prior-art-research`.
-- **Composes with** [oh-my-claudecode](https://github.com/yeachan-heo/oh-my-claudecode) for agent orchestration — different domain, no overlap.
-- **Consolidates and re-sequences** patterns from [Superpowers](https://github.com/obra/superpowers) and [mattpocock/skills](https://github.com/mattpocock/skills) into a single methodology chain. You don't need them installed alongside — habeebs-skill absorbs their TDD, deep-module, vertical-slice, parallel-dev, worktree, and systematic-debugging patterns directly.
 
 ---
 
@@ -60,7 +58,7 @@ habeebs-skill/
 │   ├── vertical-slice/      # → references/hitl-vs-afk.md (extended 3-label vocab in v1.4.0)
 │   ├── using-worktrees/     # v1.2.0 — isolation primitive for parallel/multi-commit work
 │   ├── systematic-debugging/ # v1.2.0 — reproduce → minimize → probe → fix → regression test
-│   ├── agent-factors-check/ # v1.4.0 — 12-factor-agents gap-finder for agent product specs
+│   ├── agent-factors-check/ # v1.4.0 — agent quality factors gap-finder for agent product specs
 │   ├── setup-habeebs-skill/ # → references/issue-tracker-*.md, triage-labels.md, domain.md
 │   └── using-habeebs-skill/
 │
@@ -139,22 +137,22 @@ Files under `agents/<role>.md` are subagent prompts with their own frontmatter (
 
 ### Engineering primitives
 
-| Skill | What it does | Inspired by |
-|---|---|---|
-| `tdd-loop` | Red-green-refactor TDD with vertical slices + two-stage review (spec compliance + code quality) | Superpowers + mattpocock |
-| `deep-modules` | Ousterhout deep module check — find shallow modules, propose deepenings | mattpocock |
-| `parallel-dev` | Dispatches parallel subagents into isolated worktrees, with per-subagent commit discipline. **v1.7.0:** 4-status return contract (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) + mandatory `SYSTEM_CONTEXT` preamble + dispatch records at `docs/agents/dispatches/` (audit log). Auto-dispatched by `tdd-loop` Phase 0.5 when an active plan has a pgroup of size ≥2. | Superpowers + OMC + Anthropic multi-agent research |
-| `vertical-slice` | Decomposes work into tracer-bullet vertical slices with the 3-label vocab (`AFK:full-auto` / `HITL:inline` / `HITL:approval-gate`) | mattpocock + humanlayer |
-| `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; teardown via finishing-a-development-branch | Superpowers |
-| `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem | Superpowers + OMC trace |
-| `security-audit` | Static security audit invoked on demand — attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings | gstack `/cso` (v1.13.0) |
-| `release` | Terminal chain link after tdd-loop — version bump, CHANGELOG entry, clean history, PR body, doc-sync audit, tag-push. No deploy/canary/benchmark. | gstack `/ship` (v1.14.0) |
+| Skill | What it does |
+|---|---|
+| `tdd-loop` | Red-green-refactor TDD with vertical slices + two-stage review (spec compliance + code quality) |
+| `deep-modules` | Deep module check — find shallow modules, propose deepenings |
+| `parallel-dev` | Dispatches parallel subagents into isolated worktrees, with per-subagent commit discipline. **v1.7.0:** 4-status return contract (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) + mandatory `SYSTEM_CONTEXT` preamble + dispatch records at `docs/agents/dispatches/` (audit log). Auto-dispatched by `tdd-loop` Phase 0.5 when an active plan has a pgroup of size ≥2. |
+| `vertical-slice` | Decomposes work into tracer-bullet vertical slices with the 3-label vocab (`AFK:full-auto` / `HITL:inline` / `HITL:approval-gate`) |
+| `using-worktrees` | Isolates each feature/AFK slice in its own git worktree with verified-clean baseline; clean teardown when work ends |
+| `systematic-debugging` | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem |
+| `security-audit` | Static security audit invoked on demand — attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings |
+| `release` | Terminal chain link after tdd-loop — version bump, CHANGELOG entry, clean history, PR body, doc-sync audit, tag-push. No deploy/canary/benchmark. |
 
 ### Conditional extensions
 
 | Skill | What it does | When it fires |
 |---|---|---|
-| `agent-factors-check` | Pressure-tests an agent / copilot / LLM-workflow spec against the 12 factors from humanlayer/12-factor-agents. Surfaces the 6 gaps the standard 7 axes miss (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch). Returns 6–13 Socratic questions interleaved into the active `socratic-grill` agenda. | Invoked from `socratic-grill` when the spec is an agent product; or directly via `/factor-check` (v1.4.0) |
+| `agent-factors-check` | Pressure-tests an agent / copilot / LLM-workflow spec against the 13 agent quality factors. Surfaces the 6 gaps the standard 7 axes miss (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch). Returns 6–13 Socratic questions interleaved into the active `socratic-grill` agenda. | Invoked from `socratic-grill` when the spec is an agent product; or directly via `/factor-check` (v1.4.0) |
 | `devex-review` | Surfaces developer-experience gaps (onboarding friction, API/CLI ergonomics, error-message quality, docs-as-experienced, upgrade friction) as Socratic questions for the grilling agenda. | Invoked from `socratic-grill` when the spec is a developer-facing product (CLI/SDK/library/plugin); or via `/devex-review` (v1.14.0) |
 
 ### Meta
@@ -248,11 +246,11 @@ Two Claude Code hooks ship with the plugin, both governed by [ADR-0003](./docs/a
 | `session-start.sh` | `SessionStart` | Silent `git fetch` + ahead/behind check on the default branch; surfaces a one-line warning if local main is behind origin (likely squash-merge ghost commits) | No — warn-only |
 | `preventing-commits-to-default.sh` | `PreToolUse` (`Bash` matcher) | Blocks `git commit` and `git push` when the current branch IS the default branch (enforces ADR-0001's never-commit-to-default rule) | No — block-only |
 
-Both hooks follow three rules: **warn-only or block-only** (never auto-reset, auto-delete, auto-modify), **multi-harness aware** (env-var detection per Superpowers), and **stateless** (read git + repo state; write nothing).
+Both hooks follow three rules: **warn-only or block-only** (never auto-reset, auto-delete, auto-modify), **multi-harness aware** (env-var detection), and **stateless** (read git + repo state; write nothing).
 
 ### Verify hooks are loaded
 
-After `/plugin install habeebs-skill@habeebs-skill`, run `/hooks` — both hooks should appear in the list. If they don't (per [Superpowers issue #773](https://github.com/obra/superpowers/issues/773), auto-discovery is fragile in some Claude Code versions), use the manual-install fallback below.
+After `/plugin install habeebs-skill@habeebs-skill`, run `/hooks` — both hooks should appear in the list. If they don't (hook auto-discovery has been fragile in some Claude Code versions), use the manual-install fallback below.
 
 ### Manual install (fallback for issue-#773-class bugs)
 

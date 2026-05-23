@@ -67,8 +67,6 @@ Concrete question templates per factor. Use these as starting points; customize 
 - "What's the timeout on a human approval? What happens if it expires?"
 - "If multiple humans can approve, how is the race resolved — first wins, quorum, designated approver?"
 
-(For F7 specifically, humanlayer is the canonical reference implementation. Cite it if the spec is silent on the approval mechanism.)
-
 ## F8 — Own your control flow
 
 **What's at stake:** framework-managed loops hide control-flow decisions and complicate debugging.

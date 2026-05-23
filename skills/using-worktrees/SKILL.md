@@ -53,7 +53,7 @@ Default to **prefix + slug**:
 Slug rules:
 - lowercase, hyphen-separated, ≤6 words
 - no issue numbers in the slug (they belong in the PR description)
-- no usernames unless the team explicitly wants `<user>/<slug>` (Superpowers does this for solo work)
+- no usernames unless the team explicitly wants `<user>/<slug>` for solo work
 
 The skill checks the repo's existing branch names and adapts: if 80%+ of existing branches use a different convention (e.g., `<initials>/<slug>`), match the local convention rather than imposing the default.
 
@@ -375,9 +375,4 @@ On any halt, print the diagnosis + the local-only commit list + instructions on 
 - `parallel-dev` — primary consumer; dispatches AFK slices into worktrees
 - `tdd-loop` — consumer; runs RED/GREEN/REFACTOR inside a worktree
 - `decision-record` — produces ADRs that may live on `main` regardless of the feature worktree (write directly to source checkout, not the worktree)
-- Superpowers' `using-git-worktrees` + `finishing-a-development-branch` — the proven pattern this skill adapts
 - [`using-habeebs-skill` § Aborting the chain](../using-habeebs-skill/SKILL.md) — when a chain abort triggers worktree teardown, follow Phase 6 from this skill (no destructive ops beyond user-confirmed `git worktree remove`)
-
-## Origins
-
-- Inspired by Superpowers' [`using-git-worktrees`](https://github.com/obra/superpowers) (setup) + [`finishing-a-development-branch`](https://github.com/obra/superpowers) (teardown) — this skill consolidates both into a single lifecycle with explicit Phase 6.5 squash-merge ghost-commit reconciliation that Superpowers does not cover

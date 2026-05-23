@@ -8,7 +8,7 @@ Copy from here. Replace bracketed placeholders. Delete dimensions that are N/A (
 
 # DX Review — [feature slug]
 
-**Source:** gstack `/plan-devex-review` (idea-port, not text copy); dimensions in `skills/devex-review/references/dx-gap-catalog.md`
+**Dimensions:** `skills/devex-review/references/dx-gap-catalog.md`
 **Run by:** devex-review, [YYYY-MM-DD]
 **Invoked from:** socratic-grill on [grill record path]
 

@@ -157,7 +157,35 @@ After aggregation, run the full verification:
 - Synthesis is coherent? (For research dispatches)
 - No subagent's output contradicts another's?
 
-If verification fails, the parallel dispatch saved nothing — and may have cost extra in tokens and complexity. Note this in the dispatch record for future calibration.
+If verification fails, the parallel dispatch saved nothing — and may have cost extra in tokens and complexity. Phase 7.5 captures that outcome in the dispatch record for future calibration.
+
+### Phase 7.5 — Write the dispatch record
+
+Per [ADR-0004](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md) Part 2 — implemented by [ADR-0018](../../docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md) Part A. After Phase 7 verifies, write **one JSON file** at:
+
+```
+docs/agents/dispatches/<dispatch-id>.json
+```
+
+The `<dispatch-id>` is the same ulid or short hash generated in Phase 4 (carried in every subagent's commit-message `Dispatch-id:` trailer). Match the schema in [`references/dispatch-record-template.md`](./references/dispatch-record-template.md) § Section 4 exactly:
+
+- Top-level fields — `dispatch_id`, `invoker`, `started_at` / `completed_at` (ISO-8601), `parent_task`, `plan_ref` (if any), `concurrency_used`.
+- `independence_verification` block — copy the 5 checks from Phase 2.
+- `subagents` array — one entry per subagent with `status`, `commit_shas`, `duration_ms`, `total_tokens`, `notes` / `blocker` / `context_request`, `worktree_path`, `branch`.
+- `aggregate` block — `total_wall_ms = max(durations)`, `sequential_equivalent_ms = sum(durations)`, `parallelism_gain = sequential / wall`, `outcome ∈ {SUCCESS, PARTIAL, FAILED}` from Phase 7's verdict.
+- `re_dispatches` array — empty if no re-dispatch fired.
+
+**Always-on.** No tier conditionality. ADR-0004 Part 2 mandates every dispatch produces a record; this phase honors that mandate. (Tier governs whether a chain *uses* parallel-dev at all — see ADR-0016 — but once a dispatch happens, recording is unconditional.)
+
+**Failure mode.** If the write fails (filesystem full, permission denied, path missing), emit one line and proceed:
+
+```
+⚠ Could not write dispatch record at <path>: <error>. Audit trail incomplete.
+```
+
+The parallel work already succeeded; losing the audit log MUST NOT poison successful results. This matches the graceful-degradation pattern in [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md) § Case A.
+
+**Single-writer invariant.** The dispatcher is the sole writer of dispatch records. No downstream skill reads dispatch records during chain execution; the directory is an audit-only log per ADR-0004 Part 2. Forensic readers (`socratic-grill` re-grilling a past failed slice, future calibration scripts) grep across the directory after the fact.
 
 ## Return contract
 

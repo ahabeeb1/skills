@@ -107,6 +107,15 @@ The subagent returns its commit SHA(s) to the dispatcher. The dispatch record (P
 
 **Research subagents** (those producing structured records to be aggregated into the parent's synthesis, not files in the repo) are exempt — the parent commits the final synthesized output once aggregation completes.
 
+#### Pre-dispatch goal-clarity gate
+
+Before Phase 4, re-read each subagent spec and answer two yes/no questions:
+
+1. **Is success unambiguous?** Name the deliverable concretely — an exact file path, a named return field, or a one-sentence claim. If you can only restate the task ("the auth code is improved"), the spec failed Q1. Put the concrete name into the spec, then re-answer.
+2. **Is verification one-turn resolvable?** Name the single inspection step that confirms success — `git diff <path>`, the value at `result.commit_sha`, the existence of a file at the output path. If verification needs three reads against an unwritten rubric, rewrite `verification` until it names one.
+
+Both questions must produce a concrete name, not a yes/no. A `NEEDS_CONTEXT` return is a missed gate here, not a subagent failure — don't dispatch until both names exist in the spec.
+
 ### Phase 4 — Dispatch
 
 For **artifact-producing subagents** (those that will commit to the repo), invoke the `using-worktrees` skill ONCE per subagent BEFORE dispatch. Each subagent gets its own worktree path + branch and is invoked with `cwd=<worktree-path>`. Concurrent subagents must never share a working tree — that is the most common silent failure of parallel dispatch.

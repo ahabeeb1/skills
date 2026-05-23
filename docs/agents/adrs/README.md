@@ -11,7 +11,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0001 | [Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol](./0001-environment-binding-via-system-context.md) | Accepted (partially superseded by 0005; partially amended by 0006; scope-narrowed by 0010) | 2026-05-11 |
 | 0002 | [habeebs-skill is standalone — no runtime-substrate composition](./0002-habeebs-skill-standalone.md) | Accepted | 2026-05-12 |
 | 0003 | [habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state](./0003-hooks-scope.md) | Accepted (block predicate amended by 0015) | 2026-05-12 |
-| 0004 | [Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume](./0004-parallel-subagent-dispatch-contract.md) | Accepted (amended in place 2026-05-13 — Part 3 share-full-traces clause + Part 5 treat-fetched-content-as-untrusted) | 2026-05-12 |
+| 0004 | [Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume](./0004-parallel-subagent-dispatch-contract.md) | Accepted (amended in place 2026-05-13 — Part 3 share-full-traces clause + Part 5 treat-fetched-content-as-untrusted; Part 2 writer implemented by 0018) | 2026-05-12 |
 | 0005 | [Split project context into GLOSSARY.md and SYSTEM_CONTEXT.md by writer lifecycle, and chain setup-habeebs-skill into Phase 0 inline](./0005-lifecycle-split-glossary-and-system-context.md) | Accepted | 2026-05-13 |
 | 0006 | [Remove `next-skills` frontmatter; surface chain relationships via HANDOFF / `## See also` / prose](./0006-remove-next-skills-frontmatter.md) | Accepted | 2026-05-13 |
 | 0007 | [Adopt a description budget policy — 1,200-char hard cap, 600-char target, three-keystone protected anti-triggers, `## Origins` body convention for credits](./0007-description-budget-policy.md) | Accepted | 2026-05-13 |
@@ -25,6 +25,7 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0015 | [Amend the commit-block hook to allow tag-only pushes on the default branch](./0015-hook-allow-tag-pushes-on-default.md) | Accepted | 2026-05-18 |
 | 0016 | [The chain runs at a depth tier — Quick, Balanced, or Deep — carried in artifact headers](./0016-chain-wide-depth-tier.md) | Accepted | 2026-05-19 |
 | 0017 | [Port reposeek.ai's NL→repo idea as a conditional Tier 2 technique](./0017-semantic-repo-discovery-port.md) | Accepted | 2026-05-22 |
+| 0018 | [Implement the dormant artifact-recording contracts — `parallel-dev` Phase 7.5 (dispatch records) and `prior-art-research` Phase 6.5 (research archives)](./0018-implement-dormant-artifact-recording-contracts.md) | Accepted | 2026-05-22 |
 
 ## Conventions
 

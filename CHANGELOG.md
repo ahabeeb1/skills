@@ -13,6 +13,49 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.17.0] — 2026-05-23
+
+Dormant artifact-recording contracts go live (ADR-0018). Two declared-but-unused docs directories — `docs/agents/dispatches/` (declared by ADR-0004 Part 2 in v1.7.0) and `docs/agents/research/` (informally used once in v1.10.0) — both finally have writer skills. `parallel-dev` gains Phase 7.5 (always-on: writes a JSON dispatch record after every verified parallel run). `prior-art-research` gains Phase 6.5 (tier-conditional per ADR-0016: required on Deep, optional on Balanced, skipped on Quick — archives the Phase 6 synthesis to `<slug>-research.md`). Both writes degrade gracefully on failure (one-line warn, work proceeds) — audit/archive cost must never poison successful chain results. Ships alongside a mechanical docs-folder cleanup that removes the v1.0-era `docs/BUILD-PLAN.md` (6+ months stale; "Decisions deferred" questions all resolved by ADR-0007/0009/0014/0016) and collapses the single-file `docs/agents/templates/` directory into the consuming skill's `references/` per ADR-0009's 3-consumer threshold.
+
+### Added
+
+- **`docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md`** — ADR-0018: Part A commits `parallel-dev` Phase 7.5 (writes `docs/agents/dispatches/<id>.json` per the schema in `dispatch-record-template.md` § Section 4 — independence verification, per-subagent records, aggregate timing, re-dispatches; always-on). Part B commits `prior-art-research` Phase 6.5 (archives the Phase 6 report verbatim to `docs/agents/research/<slug>-research.md`; tier-conditional). Both markdown/JSON only; ADR-0002 unaffected. ADR-0004 status field extended with "Part 2 writer implemented by 0018."
+  - **Why:** every Deep-tier research run since v1.7.0 discarded its evidence base after synthesis; every parallel dispatch since v1.7.0 ran with no audit log. The contracts were declared but never honored. Future research and parallel runs now have durable artifacts for the chain-postmortem skill (ADR-0011) to grade against.
+- **`skills/parallel-dev/SKILL.md`** Phase 7.5 — pre-existing Phase 7 sentence "Note this in the dispatch record for future calibration" now actually points at a write step instead of a missing convention. Dispatcher (single-writer) writes the record after verification verdict is known. Single-writer invariant preserved; forensic readers grep after the fact.
+  - **Why:** without Phase 7.5, ADR-0004 Part 2's audit contract had no implementation surface. Calibration-via-postmortem cannot grade a directory that's been empty for 6 months.
+- **`skills/prior-art-research/SKILL.md`** Phase 6.5 — tier-conditional archive between Phase 6 Synthesize and Phase 7 Hand off. Slug follows the downstream spec convention (`vX.Y.Z-<feature-name>`). HANDOFF lines in Phase 7 name the archive path so downstream skills read the durable file instead of relying on conversation context (honors `using-habeebs-skill`'s full-doc-read contract).
+  - **Why:** Deep-tier research had no durable surface — only the spec's "Concrete picks" table and SYSTEM_CONTEXT's "Last reconciliation outcome" preserved compressed traces. The full evidence base was lost between releases, making it impossible to grade the chain's research quality cross-cycle.
+
+### Changed
+
+- **`docs/agents/SYSTEM_CONTEXT.md`** — ADR count 16 → 18; latest-ADR + recent-batch lines updated for 0017 + 0018; two new lines under § Methodology / agent setup document the dispatch-record and research-archive directories now that both are write-implemented; session-summary-template path updated to its new home under `using-habeebs-skill/references/`. Last refreshed advanced to 2026-05-22.
+  - **Why:** SYSTEM_CONTEXT is the cross-session ground truth for what's load-bearing in the methodology. Adding two new write-active directories without surfacing them here would defeat the per-ADR-0005 single-writer contract.
+- **`docs/agents/adrs/README.md`** — index rows 17 + 18 added; ADR-0004 status extended.
+  - **Why:** the ADR index is the discovery surface for prior-art-research's Tier 0 internal-precedent lookup.
+- **`skills/using-habeebs-skill/references/session-summary-template.md`** (moved from `docs/agents/templates/`) — same content, new location per ADR-0009's 3-consumer threshold (one consumer = the skill's own `references/`, not top-level).
+  - **Why:** the template was misplaced at top-level since v1.10.0. ADR-0009 was the existing rule; the move closes the inconsistency without adding new convention.
+- **`docs/agents/adrs/0012-compress-at-overflow-protocol.md`** — in-place amendment + changelog entry updating the template path reference.
+- **`skills/tdd-loop/SKILL.md`**, **`skills/using-habeebs-skill/SKILL.md`** — see-also and prose references updated to the new template path.
+- **`README.md`** — `docs/` block rewritten from the misleading single-BUILD-PLAN listing to an accurate 11-item enumeration of `docs/agents/` artifacts.
+  - **Why:** the README's `docs/` block never mentioned `docs/agents/`, the entire methodology substrate. A reader who only read the README would not learn the methodology exists.
+- **`tests/dogfood/16-session-summary-template/`** — both scripts (`check-session-summary-template.sh`, `check-using-habeebs-section.sh`) updated to the new path; README updated.
+  - **Why:** dogfood scripts must reflect current paths, not historical ones.
+
+### Removed
+
+- **`docs/BUILD-PLAN.md`** (100 lines) — the v1.0-era build tracker. Last touched at 6cdec0e (v1.0.0). Phases 1-5 describe completed work; phases 5-7 reference workflows that have since shipped in other forms (`CHANGELOG.md`, marketplace publish via `release` skill). The "Decisions deferred" section asked 4 questions that ADR-0007 / ADR-0009 / ADR-0014 / ADR-0016 have since resolved.
+  - **Why:** zero downstream readers besides the README's directory tree. Stale documentation is worse than missing documentation — it teaches the wrong mental model of where the project is.
+- **`docs/agents/templates/`** directory — collapsed to empty after the session-summary template moved; removed.
+  - **Why:** ADR-0009 governs `references/` placement; a top-level `templates/` directory holding a single-consumer file violated the threshold.
+
+### Notes
+
+- **No frontmatter or handoff-contract change.** Phase 7.5 (parallel-dev) is additive between Phase 7 and the Return contract section; Phase 6.5 (prior-art-research) is additive between Phase 6 and Phase 7. Neither renames an existing phase or alters a HANDOFF line semantically. Existing chain consumers see only new optional outputs.
+- **No retroactive backfill.** Past releases' dispatch records and research archives are not reconstructed — only future runs produce them.
+- **Retention/pruning policy not yet specified.** ADR-0018's revisit triggers fire at 1000 dispatch records and ~50 research files; until then both directories grow unbounded.
+- **`verify-output` archive↔descended-artifact consistency check** is flagged as a future revisit trigger but not implemented in this release.
+- **Hook scope memory amended.** The release-tag-hook-misfire memory was updated post-v1.16.0: ADR-0015 fixed tag-pushes from main but `git branch -D` / `git push origin --delete` remain blocked. The two-step workaround (switch off main first) is documented but no hook change ships in v1.17.0.
+
 ## [1.16.0] — 2026-05-22
 
 Semantic-repo-discovery as a conditional Phase 4 Tier 2 technique. `prior-art-research`'s Phase 4 Tier 2 previously routed every repo-discovery query through `gh search repos` or `WebSearch site:github.com` — both keyword-shaped — which returned tutorials and SEO chum for NL-rich feature descriptions ("local AI assistant that remembers screen activity"). v1.16.0 adds a fire-rule-gated NL→ranked-GitHub-repos loop (query-expand → search → skim → LLM-rerank → return) ported from [reposeek.ai](https://docs.reposeek.ai/)'s idea but native to the chain — no API key, no SaaS, no runtime substrate (ADR-0002 unamended). The fire-rule is load-bearing under ADR-0010's prune test: the loop fires only when at least one of three NL-shape tests trips, biasing toward firing because false-skip is a correctness cost while false-fire is only a token cost. Ships alongside three quality-of-life refinements: a pre-dispatch goal-clarity gate in `parallel-dev`, trade-off-rationale notes in `setup-habeebs-skill`, and a Phase 1 editorial-priming fix that was teaching the LLM to defend its question count before asking it.

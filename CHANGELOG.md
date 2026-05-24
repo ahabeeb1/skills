@@ -13,6 +13,47 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.18.0] — 2026-05-24
+
+Cross-session conflict detection. When two Claude Code sessions work on the same repo simultaneously, they can unknowingly modify the same files and produce conflicting changes that only surface at push time. v1.18.0 adds advisory detection at three trigger points — SessionStart (warn-only peer scan), pre-push (block on overlap), and PreToolUse (opt-in annotate-only) — so sessions discover conflicts early and resolve them interactively. ADR-0019's four-sub-clause guard (advisory not authoritative, defined stale-data contract, per-writer-unique artifact, read-only across writers) carves out in-flight sidecar reads from ADR-0002's standalone constraint.
+
+### Added
+
+- **`skills/cross-session-detect/sidecar.sh`** — per-session JSON sidecar lifecycle (write/read/list/end/prune) in `$(git rev-parse --git-common-dir)/habeebs-sessions/`. PID-based liveness probe with configurable TTL.
+  - **Why:** sessions need a shared discovery mechanism that doesn't require a runtime daemon; per-file sidecars inside `.git/` are invisible to git and auto-cleaned.
+- **`skills/cross-session-detect/policy.sh`** — 4-scope policy resolver (User < Project < Local < Managed) with scalar-override precedence and type validation.
+  - **Why:** different repos and users need different conflict-detection behavior (e.g., PreToolUse opt-in, TTL tuning); a layered policy avoids per-repo forks.
+- **`skills/cross-session-detect/overlap.sh`** — `git merge-tree` overlap probe using the pre-2.38 three-tree form for broad git compatibility.
+  - **Why:** the core detection primitive — determines whether two sessions' changes actually conflict on the same files.
+- **`skills/cross-session-detect/audit.sh`** — single-writer append-once JSON audit log in `docs/agents/conflicts/`.
+  - **Why:** conflict events need a durable, reviewable record for postmortems and methodology improvement.
+- **`skills/cross-session-detect/halt-ux.sh`** — 5-option interactive halt menu (Merge / Sequence / Transfer / Abort / Worktree-out) with SIGINT/EOF→abort default.
+  - **Why:** conflicts need user-driven resolution, not automated guessing; the menu presents all viable options.
+- **`skills/cross-session-detect/actions.sh`** — all 5 action handlers: abort (sidecar cleanup + audit), worktree-out (branch + worktree creation), transfer (`.transfer.md` for peer), sequence (exponential-backoff polling), merge (conflict extraction + `$EDITOR`).
+  - **Why:** each halt-menu option needs a concrete implementation that leaves the repo in a clean, resumable state.
+- **`skills/cross-session-detect/trust.sh`** — opt-in `git verify-commit` wrapper for signed-signal verification of peer sidecars.
+  - **Why:** high-trust environments may want cryptographic proof that a peer sidecar was written by a legitimate session.
+- **`hooks/session-start-peer-scan.sh`** — SessionStart hook: writes own sidecar, scans live peers, emits warn-only JSON.
+  - **Why:** the earliest detection point — warns immediately when a session starts and peers are already active.
+- **`hooks/pre-push.sh`** — pre-push hook: blocks push (exit 1) when any live peer's stash overlaps with the current branch.
+  - **Why:** the highest-stakes trigger — prevents conflicting pushes before they create remote merge conflicts.
+- **`hooks/pretool-use-peer-scan.sh`** — PreToolUse hook (Edit/Write/NotebookEdit only): annotates when peer overlap detected on the target file, gated by `pretool_use: true` in policy.
+  - **Why:** per-edit awareness for teams that want continuous conflict visibility without blocking.
+- **`tests/`** — 11 test suites, 170 assertions across sidecar lifecycle, policy resolver, SessionStart hook, overlap probe, pre-push hook, audit writer, halt UX, action handlers, PreToolUse hook, trust mode, and 6 end-to-end scenarios.
+  - **Why:** TDD — every slice was RED→GREEN before implementation was considered complete.
+
+### Changed
+
+- **`hooks/hooks.json`** — added `session-start-peer-scan.sh` to SessionStart array and `pretool-use-peer-scan.sh` to PreToolUse array with `Edit|Write|NotebookEdit` matcher.
+  - **Why:** hooks must be registered to fire.
+- **`docs/agents/adrs/0002-habeebs-skill-standalone.md`** — status updated to `Accepted (amended by 0018)` with forward link to the carve-out ADR.
+  - **Why:** ADR-0002 is the load-bearing standalone constraint; the amendment must be visible from the original.
+
+### Notes
+
+- **git 2.36.1 compatibility.** The overlap probe uses the pre-2.38 `git merge-tree` three-tree form (base_tree, our_tree, peer_tree) rather than `--write-tree`, ensuring compatibility with git versions shipping on Windows and older Linux.
+- **No runtime daemon.** Despite adding per-session state, the implementation is fully stateless from the hook's perspective — sidecars are plain JSON files inside `.git/`, probed on-demand, never watched. ADR-0002's standalone constraint holds.
+
 ## [1.17.0] — 2026-05-23
 
 Dormant artifact-recording contracts go live (ADR-0018). Two declared-but-unused docs directories — `docs/agents/dispatches/` (declared by ADR-0004 Part 2 in v1.7.0) and `docs/agents/research/` (informally used once in v1.10.0) — both finally have writer skills. `parallel-dev` gains Phase 7.5 (always-on: writes a JSON dispatch record after every verified parallel run). `prior-art-research` gains Phase 6.5 (tier-conditional per ADR-0016: required on Deep, optional on Balanced, skipped on Quick — archives the Phase 6 synthesis to `<slug>-research.md`). Both writes degrade gracefully on failure (one-line warn, work proceeds) — audit/archive cost must never poison successful chain results. Ships alongside a mechanical docs-folder cleanup that removes the v1.0-era `docs/BUILD-PLAN.md` (6+ months stale; "Decisions deferred" questions all resolved by ADR-0007/0009/0014/0016) and collapses the single-file `docs/agents/templates/` directory into the consuming skill's `references/` per ADR-0009's 3-consumer threshold.
@@ -93,6 +134,7 @@ Semantic-repo-discovery as a conditional Phase 4 Tier 2 technique. `prior-art-re
 - **No frontmatter or handoff-contract change.** The new semantic-repo-discovery loop is purely additive within Phase 4 Tier 2; existing `/research` invocations on keyword-rich queries are unaffected. The pre-dispatch gate in `parallel-dev` is additive Phase 3 discipline, not a return-contract change. No skills were renamed, removed, or had their description budgets exceeded.
 - **PR #19 (SYSTEM_CONTEXT.md refresh) and PR #20 (parallel-dev + setup-habeebs-skill principle bake) both landed on main during the v1.15.0 → v1.16.0 window and are included in this release.**
 - **Fire-rule calibration is theoretical until the dogfood scenarios run against labelled cases.** ADR-0017 records the threshold as accepted-with-revisit-trigger; two false-fire postmortems would trigger threshold tuning.
+>>>>>>> origin/main
 
 ## [1.15.0] — 2026-05-19
 

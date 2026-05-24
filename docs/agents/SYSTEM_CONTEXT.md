@@ -1,7 +1,7 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-22
-**Refreshed by:** Manual maintenance refresh after the v1.16.0 release merged and the 2026-05-22 `docs/` audit landed ADR-0018 — ADR count + recent-batch line + new artifact-recording contracts reconciled. (Canonical writer is `prior-art-research` Phase 0 per ADR-0005 single-writer invariant; the next research run supersedes this.)
+**Last refreshed:** 2026-05-24
+**Refreshed by:** Release merge — v1.18.0 cross-session conflict detection merged on top of v1.17.0. Counts reconciled. Canonical writer per ADR-0005 single-writer invariant.
 **Schema:** per ADR-0010 — non-re-derivable cross-session state only. Dropped sections (Stack / Persistence / Deployment shape / External services / Recent hot files / Open / unknown / Tracked manifests) are re-derivable from `package.json`, git, and imports on fresh invocation per Anthropic's Claude Code best-practices ❌ Exclude rule.
 
 ## Scale envelope
@@ -9,7 +9,8 @@
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
 - **Skill count:** 18 in tree (15 pre-v1.14.0; v1.14.0 added `security-audit`, `release`, `devex-review` per ADR-0014).
 - **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill (ADR-0014). 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill). Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `chain-postmortem` is a section in `using-habeebs-skill` (post-incident error-analysis, complementary to verify-output's pre-commit static check, per ADR-0011).
-- **ADR count:** 18 (0001-0018). ADR-0001 amended by 0006 + scope-narrowed by 0010. ADR-0003 amended by 0015 (tag-only-push carve-out). ADR-0004 amended in place 2026-05-13 (Part 3 share-full-traces clause + Part 5 untrusted-content rule); Part 2 writer implemented by ADR-0018. ADR-0013 (research-context-gate) extended by ADR-0016 (chain-wide depth tier). ADR-0012 amended in place 2026-05-22 (template path relocation).
+- **ADR count:** 18 (0001-0018). ADR-0001 amended by 0006 + scope-narrowed by 0010. ADR-0002 amended by 0019 (advisory in-flight reads carve-out for cross-session conflict detection). ADR-0003 amended by 0015 (tag-only-push carve-out). ADR-0004 amended in place 2026-05-13 (Part 3 share-full-traces clause + Part 5 untrusted-content rule); Part 2 writer implemented by ADR-0018. ADR-0013 (research-context-gate) extended by ADR-0016 (chain-wide depth tier). ADR-0012 amended in place 2026-05-22 (template path relocation).
+- **Current release:** v1.18.0 (cross-session conflict detection — 16 slices, 170 test assertions). New tracked directory: `docs/agents/conflicts/` (audit logs). New runtime directory: `$(git rev-parse --git-common-dir)/habeebs-sessions/` (session sidecars, auto-gitignored inside `.git/`).
 
 ## Methodology / agent setup
 

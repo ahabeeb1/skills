@@ -13,9 +13,9 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
-## [1.16.0] — 2026-05-24
+## [1.18.0] — 2026-05-24
 
-Cross-session conflict detection. When two Claude Code sessions work on the same repo simultaneously, they can unknowingly modify the same files and produce conflicting changes that only surface at push time. v1.16.0 adds advisory detection at three trigger points — SessionStart (warn-only peer scan), pre-push (block on overlap), and PreToolUse (opt-in annotate-only) — so sessions discover conflicts early and resolve them interactively. ADR-0018 amends ADR-0002's standalone constraint with a four-sub-clause guard for advisory in-flight reads of per-session sidecar state stored inside `.git/`.
+Cross-session conflict detection. When two Claude Code sessions work on the same repo simultaneously, they can unknowingly modify the same files and produce conflicting changes that only surface at push time. v1.18.0 adds advisory detection at three trigger points — SessionStart (warn-only peer scan), pre-push (block on overlap), and PreToolUse (opt-in annotate-only) — so sessions discover conflicts early and resolve them interactively. ADR-0019's four-sub-clause guard (advisory not authoritative, defined stale-data contract, per-writer-unique artifact, read-only across writers) carves out in-flight sidecar reads from ADR-0002's standalone constraint.
 
 ### Added
 
@@ -39,8 +39,6 @@ Cross-session conflict detection. When two Claude Code sessions work on the same
   - **Why:** the highest-stakes trigger — prevents conflicting pushes before they create remote merge conflicts.
 - **`hooks/pretool-use-peer-scan.sh`** — PreToolUse hook (Edit/Write/NotebookEdit only): annotates when peer overlap detected on the target file, gated by `pretool_use: true` in policy.
   - **Why:** per-edit awareness for teams that want continuous conflict visibility without blocking.
-- **`docs/agents/adrs/0018-amend-adr-0002-for-advisory-in-flight-reads.md`** — ADR-0018: four-sub-clause guard (advisory not authoritative, defined stale-data contract, per-writer-unique artifact, read-only across writers) carving out in-flight sidecar reads from ADR-0002's standalone constraint.
-  - **Why:** cross-session detection requires reading peer state — but only advisorily, never authoritatively. The guard preserves ADR-0002's intent while permitting the minimum viable substrate.
 - **`tests/`** — 11 test suites, 170 assertions across sidecar lifecycle, policy resolver, SessionStart hook, overlap probe, pre-push hook, audit writer, halt UX, action handlers, PreToolUse hook, trust mode, and 6 end-to-end scenarios.
   - **Why:** TDD — every slice was RED→GREEN before implementation was considered complete.
 
@@ -50,13 +48,93 @@ Cross-session conflict detection. When two Claude Code sessions work on the same
   - **Why:** hooks must be registered to fire.
 - **`docs/agents/adrs/0002-habeebs-skill-standalone.md`** — status updated to `Accepted (amended by 0018)` with forward link to the carve-out ADR.
   - **Why:** ADR-0002 is the load-bearing standalone constraint; the amendment must be visible from the original.
-- **`.claude-plugin/plugin.json`** — version bumped to 1.16.0.
-  - **Why:** SemVer MINOR — new skills, hooks, and opt-in behavior added.
 
 ### Notes
 
 - **git 2.36.1 compatibility.** The overlap probe uses the pre-2.38 `git merge-tree` three-tree form (base_tree, our_tree, peer_tree) rather than `--write-tree`, ensuring compatibility with git versions shipping on Windows and older Linux.
 - **No runtime daemon.** Despite adding per-session state, the implementation is fully stateless from the hook's perspective — sidecars are plain JSON files inside `.git/`, probed on-demand, never watched. ADR-0002's standalone constraint holds.
+
+## [1.17.0] — 2026-05-23
+
+Dormant artifact-recording contracts go live (ADR-0018). Two declared-but-unused docs directories — `docs/agents/dispatches/` (declared by ADR-0004 Part 2 in v1.7.0) and `docs/agents/research/` (informally used once in v1.10.0) — both finally have writer skills. `parallel-dev` gains Phase 7.5 (always-on: writes a JSON dispatch record after every verified parallel run). `prior-art-research` gains Phase 6.5 (tier-conditional per ADR-0016: required on Deep, optional on Balanced, skipped on Quick — archives the Phase 6 synthesis to `<slug>-research.md`). Both writes degrade gracefully on failure (one-line warn, work proceeds) — audit/archive cost must never poison successful chain results. Ships alongside a mechanical docs-folder cleanup that removes the v1.0-era `docs/BUILD-PLAN.md` (6+ months stale; "Decisions deferred" questions all resolved by ADR-0007/0009/0014/0016) and collapses the single-file `docs/agents/templates/` directory into the consuming skill's `references/` per ADR-0009's 3-consumer threshold.
+
+### Added
+
+- **`docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md`** — ADR-0018: Part A commits `parallel-dev` Phase 7.5 (writes `docs/agents/dispatches/<id>.json` per the schema in `dispatch-record-template.md` § Section 4 — independence verification, per-subagent records, aggregate timing, re-dispatches; always-on). Part B commits `prior-art-research` Phase 6.5 (archives the Phase 6 report verbatim to `docs/agents/research/<slug>-research.md`; tier-conditional). Both markdown/JSON only; ADR-0002 unaffected. ADR-0004 status field extended with "Part 2 writer implemented by 0018."
+  - **Why:** every Deep-tier research run since v1.7.0 discarded its evidence base after synthesis; every parallel dispatch since v1.7.0 ran with no audit log. The contracts were declared but never honored. Future research and parallel runs now have durable artifacts for the chain-postmortem skill (ADR-0011) to grade against.
+- **`skills/parallel-dev/SKILL.md`** Phase 7.5 — pre-existing Phase 7 sentence "Note this in the dispatch record for future calibration" now actually points at a write step instead of a missing convention. Dispatcher (single-writer) writes the record after verification verdict is known. Single-writer invariant preserved; forensic readers grep after the fact.
+  - **Why:** without Phase 7.5, ADR-0004 Part 2's audit contract had no implementation surface. Calibration-via-postmortem cannot grade a directory that's been empty for 6 months.
+- **`skills/prior-art-research/SKILL.md`** Phase 6.5 — tier-conditional archive between Phase 6 Synthesize and Phase 7 Hand off. Slug follows the downstream spec convention (`vX.Y.Z-<feature-name>`). HANDOFF lines in Phase 7 name the archive path so downstream skills read the durable file instead of relying on conversation context (honors `using-habeebs-skill`'s full-doc-read contract).
+  - **Why:** Deep-tier research had no durable surface — only the spec's "Concrete picks" table and SYSTEM_CONTEXT's "Last reconciliation outcome" preserved compressed traces. The full evidence base was lost between releases, making it impossible to grade the chain's research quality cross-cycle.
+
+### Changed
+
+- **`docs/agents/SYSTEM_CONTEXT.md`** — ADR count 16 → 18; latest-ADR + recent-batch lines updated for 0017 + 0018; two new lines under § Methodology / agent setup document the dispatch-record and research-archive directories now that both are write-implemented; session-summary-template path updated to its new home under `using-habeebs-skill/references/`. Last refreshed advanced to 2026-05-22.
+  - **Why:** SYSTEM_CONTEXT is the cross-session ground truth for what's load-bearing in the methodology. Adding two new write-active directories without surfacing them here would defeat the per-ADR-0005 single-writer contract.
+- **`docs/agents/adrs/README.md`** — index rows 17 + 18 added; ADR-0004 status extended.
+  - **Why:** the ADR index is the discovery surface for prior-art-research's Tier 0 internal-precedent lookup.
+- **`skills/using-habeebs-skill/references/session-summary-template.md`** (moved from `docs/agents/templates/`) — same content, new location per ADR-0009's 3-consumer threshold (one consumer = the skill's own `references/`, not top-level).
+  - **Why:** the template was misplaced at top-level since v1.10.0. ADR-0009 was the existing rule; the move closes the inconsistency without adding new convention.
+- **`docs/agents/adrs/0012-compress-at-overflow-protocol.md`** — in-place amendment + changelog entry updating the template path reference.
+- **`skills/tdd-loop/SKILL.md`**, **`skills/using-habeebs-skill/SKILL.md`** — see-also and prose references updated to the new template path.
+- **`README.md`** — `docs/` block rewritten from the misleading single-BUILD-PLAN listing to an accurate 11-item enumeration of `docs/agents/` artifacts.
+  - **Why:** the README's `docs/` block never mentioned `docs/agents/`, the entire methodology substrate. A reader who only read the README would not learn the methodology exists.
+- **`tests/dogfood/16-session-summary-template/`** — both scripts (`check-session-summary-template.sh`, `check-using-habeebs-section.sh`) updated to the new path; README updated.
+  - **Why:** dogfood scripts must reflect current paths, not historical ones.
+
+### Removed
+
+- **`docs/BUILD-PLAN.md`** (100 lines) — the v1.0-era build tracker. Last touched at 6cdec0e (v1.0.0). Phases 1-5 describe completed work; phases 5-7 reference workflows that have since shipped in other forms (`CHANGELOG.md`, marketplace publish via `release` skill). The "Decisions deferred" section asked 4 questions that ADR-0007 / ADR-0009 / ADR-0014 / ADR-0016 have since resolved.
+  - **Why:** zero downstream readers besides the README's directory tree. Stale documentation is worse than missing documentation — it teaches the wrong mental model of where the project is.
+- **`docs/agents/templates/`** directory — collapsed to empty after the session-summary template moved; removed.
+  - **Why:** ADR-0009 governs `references/` placement; a top-level `templates/` directory holding a single-consumer file violated the threshold.
+
+### Notes
+
+- **No frontmatter or handoff-contract change.** Phase 7.5 (parallel-dev) is additive between Phase 7 and the Return contract section; Phase 6.5 (prior-art-research) is additive between Phase 6 and Phase 7. Neither renames an existing phase or alters a HANDOFF line semantically. Existing chain consumers see only new optional outputs.
+- **No retroactive backfill.** Past releases' dispatch records and research archives are not reconstructed — only future runs produce them.
+- **Retention/pruning policy not yet specified.** ADR-0018's revisit triggers fire at 1000 dispatch records and ~50 research files; until then both directories grow unbounded.
+- **`verify-output` archive↔descended-artifact consistency check** is flagged as a future revisit trigger but not implemented in this release.
+- **Hook scope memory amended.** The release-tag-hook-misfire memory was updated post-v1.16.0: ADR-0015 fixed tag-pushes from main but `git branch -D` / `git push origin --delete` remain blocked. The two-step workaround (switch off main first) is documented but no hook change ships in v1.17.0.
+
+## [1.16.0] — 2026-05-22
+
+Semantic-repo-discovery as a conditional Phase 4 Tier 2 technique. `prior-art-research`'s Phase 4 Tier 2 previously routed every repo-discovery query through `gh search repos` or `WebSearch site:github.com` — both keyword-shaped — which returned tutorials and SEO chum for NL-rich feature descriptions ("local AI assistant that remembers screen activity"). v1.16.0 adds a fire-rule-gated NL→ranked-GitHub-repos loop (query-expand → search → skim → LLM-rerank → return) ported from [reposeek.ai](https://docs.reposeek.ai/)'s idea but native to the chain — no API key, no SaaS, no runtime substrate (ADR-0002 unamended). The fire-rule is load-bearing under ADR-0010's prune test: the loop fires only when at least one of three NL-shape tests trips, biasing toward firing because false-skip is a correctness cost while false-fire is only a token cost. Ships alongside three quality-of-life refinements: a pre-dispatch goal-clarity gate in `parallel-dev`, trade-off-rationale notes in `setup-habeebs-skill`, and a Phase 1 editorial-priming fix that was teaching the LLM to defend its question count before asking it.
+
+### Added
+
+- **`docs/agents/adrs/0017-semantic-repo-discovery-port.md`** — ADR-0017: port reposeek.ai's NL→repo idea as a conditional Tier 2 technique. Three-test fire-rule (skip only when ALL three fail: no recognized tech, no quoted API, ≤6 words). Tier-gated: Quick skipped unconditionally; Balanced fires for NL-framed only; Deep fires per-subagent in Phase 4 fan-out. Degradation ladder: `gh search repos` → `WebSearch site:github.com` → skip-and-report-the-gap. Extends ADR-0014's markdown-idea-port pattern to a 4th capability.
+  - **Why:** without the loop, NL-rich queries silently degrade to keyword noise; without the fire-rule, the loop fails ADR-0010's prune test for keyword-rich queries. The fire-rule is what makes the technique earn its slot.
+- **`skills/prior-art-research/references/semantic-repo-discovery.md`** — the 5-step loop (expand / search / skim / rerank / return), the 0-7 rerank rubric weighting description-match over star count, the degradation ladder, the mandatory fire-decision audit-log lines.
+  - **Why:** the agent is the semantic engine and `gh search repos` + WebSearch are the corpus — Phase 1 already loads the LLM with feature description, stack, scale, constraints, and priorities, which is stronger query context than any hosted service gets cold.
+- **`skills/prior-art-research/references/source-tiers.md`** Tier 2 — pointer to the new technique doc.
+  - **Why:** Tier 2 lookups now have one canonical loop to follow instead of ad-hoc keyword-search-shaped queries.
+- **`tests/dogfood/20-semantic-repo-discovery/`** — 4 calibration scenarios (20a NL-rich fires, 20b keyword-rich skips, 20c gh-unavailable WebSearch fallback, 20d both-unavailable report-the-gap) + README.
+  - **Why:** the fire-rule's three-test threshold is calibrated theoretically until it runs against labelled cases. The 20b SKIP case is load-bearing — without it the loop is always-on and fails the prune test.
+- **`skills/parallel-dev/SKILL.md`** Phase 3 — pre-dispatch goal-clarity gate. Two yes/no checks the dispatcher must answer with a concrete name (not a yes/no): (1) is success unambiguous — what's the deliverable's exact file path or return field; (2) is verification one-turn resolvable — what's the single inspection step. `NEEDS_CONTEXT` returns are now framed as a missed gate, not a subagent failure.
+  - **Why:** vague subagent specs previously surfaced as `NEEDS_CONTEXT` returns in Phase 5 — after dispatch had already burned tokens. Catching them in Phase 3 is cheaper and converts the gate from cosmetic self-evaluation to a mechanical name-the-deliverable check.
+- **`skills/setup-habeebs-skill/SKILL.md`** Phases 2–4 — three "When the default isn't right" trade-off notes, placed inside the user-visible blockquote before the "Press Enter" prompt: Linear/Jira beats GitHub when the backlog spans multiple repos; local markdown beats both when solo or pre-product; mapping a conflicting label vocab beats fighting it; type the existing ADR-directory path because a second canon is harder to retire than to never create.
+  - **Why:** the previous prompts presented a default and asked for accept, but never surfaced the *trade-off that drives a non-default choice* — so a user who pressed Enter took the default without seeing the cases where it's wrong.
+
+### Changed
+
+- **`skills/prior-art-research/SKILL.md`** Phase 4 Tier 2 bullet — conditionally invokes the new semantic-repo-discovery loop on Balanced/Deep tiers when the fire-rule trips; Quick skips it unconditionally.
+  - **Why:** the loop only earns its slot under the fire-rule; the SKILL.md wiring is what makes Tier 2 actually use the new technique.
+- **`skills/prior-art-research/SKILL.md`** Phase 1 — replaced the "frame asks as gap-filling, not cold interrogation" priming + first-person `"I see ... Two open questions:"` example + "before search burns budget" tail + the "(Echo for confirmation; will weight Phase 4 queries.)" parenthetical with: *"Ask questions plainly. Do not preface them with explanations of why you're asking, why there are this many, or what you already know. State the questions and stop."*
+  - **Why:** the prior priming taught the LLM to editorialize about its own questions before asking them — producing output like *"Two questions before I move to Phase 2 — both genuinely ambiguous, not ceremony."* The editorial preamble was a Phase 1 anti-pattern, not a polish layer.
+- **`skills/systematic-debugging/SKILL.md`** — hypothesis-statement template changed from first-person `"I believe the failure is caused by X."` to declarative `"Hypothesis: the failure is caused by X."`.
+  - **Why:** the first-person framing modelled the same editorial pattern Phase 1 had — defending the statement before stating it. Declarative form ties the statement to its falsifiable probe instead of to the agent's confidence.
+- **27 skill / doc / command files** stripped of third-party attribution — Origins sections, "Inspired by" lines, "Source:" headers, "Ported from" credits, author/repo URLs, person-name references all removed from user-facing skill content. Concept names retained (deep modules, 13 factors, deletion test, HITL/AFK, vocabulary). Touched skills: `agent-factors-check`, `deep-modules`, `security-audit`, `devex-review`, `write-plan`, `parallel-dev`, `systematic-debugging`, `using-worktrees`, `vertical-slice`, `setup-habeebs-skill`, `release`, `decision-record`, `prior-art-research`, `using-habeebs-skill`, plus `README.md`, `AGENTS.md`, `CLAUDE.md`, `commands/factor-check.md`, `commands/deepen.md`, `docs/BUILD-PLAN.md`. ADRs, CHANGELOG, specs, plans, postmortems, and dogfood fixtures left intact as historical record.
+  - **Why:** the user-facing prose surface should describe the methodology, not litigate its provenance. Attribution belongs in commit history and ADRs (where it's audit-grade and dated), not at the top of every SKILL.md (where it implies the methodology is a derivative work rather than a thing in its own right).
+- **`docs/agents/adrs/README.md`** — index row 27 added for ADR-0017.
+  - **Why:** the ADR index is the discovery surface for prior-art-research's Tier 0 internal-precedent lookup.
+
+### Notes
+
+- **No frontmatter or handoff-contract change.** The new semantic-repo-discovery loop is purely additive within Phase 4 Tier 2; existing `/research` invocations on keyword-rich queries are unaffected. The pre-dispatch gate in `parallel-dev` is additive Phase 3 discipline, not a return-contract change. No skills were renamed, removed, or had their description budgets exceeded.
+- **PR #19 (SYSTEM_CONTEXT.md refresh) and PR #20 (parallel-dev + setup-habeebs-skill principle bake) both landed on main during the v1.15.0 → v1.16.0 window and are included in this release.**
+- **Fire-rule calibration is theoretical until the dogfood scenarios run against labelled cases.** ADR-0017 records the threshold as accepted-with-revisit-trigger; two false-fire postmortems would trigger threshold tuning.
+>>>>>>> origin/main
 
 ## [1.15.0] — 2026-05-19
 

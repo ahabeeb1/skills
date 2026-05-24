@@ -150,7 +150,7 @@ Per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), th
 - A long `tdd-loop` running 20+ slices in one conversation
 - User explicitly says "this session is getting long" / "context feels heavy"
 
-**Action: summary-and-flush.** Write a markdown summary to `.scratch/session-summary-<timestamp>.md` using the 7-section template at [`docs/agents/templates/session-summary-template.md`](../../docs/agents/templates/session-summary-template.md). Then signal to the user that a fresh sub-session should start loading the summary + the active artifacts (current spec, ADRs in flight, current slice file, recent commits). The fresh sub-session inherits enough context to continue work mid-chain without a Phase 1 cold start.
+**Action: summary-and-flush.** Write a markdown summary to `.scratch/session-summary-<timestamp>.md` using the 7-section template at [`references/session-summary-template.md`](./references/session-summary-template.md). Then signal to the user that a fresh sub-session should start loading the summary + the active artifacts (current spec, ADRs in flight, current slice file, recent commits). The fresh sub-session inherits enough context to continue work mid-chain without a Phase 1 cold start.
 
 **7-section template** (copy from the template file when flushing):
 

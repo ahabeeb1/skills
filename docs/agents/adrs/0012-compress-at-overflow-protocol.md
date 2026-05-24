@@ -1,7 +1,7 @@
 # ADR-0012: Adopt the Compress-at-overflow protocol — markdown-only summary-and-flush, 7-section template, passive doc for v1.10.0
 
-**Status:** Accepted
-**Date:** 2026-05-13 (Proposed and Accepted same day — v1.10.0 release slice)
+**Status:** Accepted — amended in place 2026-05-22: template path moved from `docs/agents/templates/session-summary-template.md` to `skills/using-habeebs-skill/references/session-summary-template.md` (single-consumer skill, per ADR-0009's 3-consumer threshold; `docs/agents/templates/` retired).
+**Date:** 2026-05-13 (Proposed and Accepted same day — v1.10.0 release slice) → 2026-05-22 (Amended — template relocation)
 **Deciders:** Modie (Habeeb)
 
 ## Context
@@ -34,7 +34,7 @@ We will adopt a markdown-only Compress-at-overflow protocol as a passive convent
   6. **Recent test state** — last dogfood / test run outcome (pass/fail/which scenarios), and any red commits since.
   7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time. Lets the fresh session orient itself in the git graph immediately.
 
-- **Template skeleton committed at `docs/agents/templates/session-summary-template.md`** as a copyable scaffold. Users (and agents) populate the 7 sections per flush.
+- **Template skeleton committed at `skills/using-habeebs-skill/references/session-summary-template.md`** as a copyable scaffold. Users (and agents) populate the 7 sections per flush.
 
 - **Section in `using-habeebs-skill/SKILL.md`** titled `## When sessions grow long — summary-and-flush` (4-8 sentences plus a worked example showing the 7-section template populated for a typical mid-tdd-loop flush). The section names the trigger signals, the action, and the template path.
 
@@ -66,7 +66,7 @@ The decision picks the cheapest mechanism that fills LangChain's missing 4th con
 ### Operational impact
 
 - **No new install steps for users.** All artifacts are markdown additions inside the plugin.
-- **`docs/agents/templates/session-summary-template.md`** is added as the canonical template scaffold in Slice 5.
+- **`skills/using-habeebs-skill/references/session-summary-template.md`** is the canonical template scaffold (added in Slice 5; relocated 2026-05-22).
 - **`.scratch/`** convention is documented in `using-habeebs-skill/SKILL.md` (gitignored by user convention, not enforced by ADR-0012).
 - **`tests/dogfood/16-session-summary-template/`** (added in Slice 5) asserts the template file presence and the 7 required sections.
 - **v1.10.0 manifest bump is MINOR.** Additive — no existing behavior changes; new doc convention + new template + cross-reference.
@@ -129,3 +129,4 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-05-13 — Initial ADR, Accepted same day (v1.10.0 release; implementation lands in Slice 5).
+- 2026-05-22 — Amended in place: template path relocated from `docs/agents/templates/session-summary-template.md` to `skills/using-habeebs-skill/references/session-summary-template.md`. Reason: the template is consumed by exactly one skill (`using-habeebs-skill`'s Compress-at-overflow protocol); ADR-0009's 3-consumer threshold says single-skill helpers live inside the skill's own `references/`. The empty `docs/agents/templates/` directory is retired.

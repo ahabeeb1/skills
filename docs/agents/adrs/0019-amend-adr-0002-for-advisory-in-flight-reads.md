@@ -1,4 +1,4 @@
-# ADR-0018: Amend ADR-0002 to permit advisory in-flight reads of in-repo session state
+# ADR-0019: Amend ADR-0002 to permit advisory in-flight reads of in-repo session state
 
 **Status:** Accepted
 **Date:** 2026-05-22

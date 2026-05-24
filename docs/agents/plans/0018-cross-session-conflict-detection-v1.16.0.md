@@ -1,4 +1,4 @@
-# Plan: Ship cross-session conflict detection per ADR-0018
+# Plan: Ship cross-session conflict detection per ADR-0019
 
 | Field         | Value                                                                            |
 |---------------|----------------------------------------------------------------------------------|
@@ -74,7 +74,7 @@ The dogfood test suite (`tests/dogfood/19-cross-session-conflict-detection/`) pa
 
 **Slices:** #38 (Dogfood suite), #39 (Docs + SYSTEM_CONTEXT + CHANGELOG)
 
-**Acceptance gate:** All 6 dogfood scenarios pass on `feat/cross-session-conflict-detection`, `SYSTEM_CONTEXT.md` reflects v1.16.0 + ADR-0018 + new tracked directory `docs/agents/conflicts/`, `CHANGELOG.md` v1.16.0 entry references ADR-0018 + dogfood outcomes, ADR-0002 status updated to "Accepted (amended by 0018)", `docs/agents/adrs/README.md` index lists ADR-0018, AND `v1.16.0` git tag pushed to origin via the `release` skill.
+**Acceptance gate:** All 6 dogfood scenarios pass on `feat/cross-session-conflict-detection`, `SYSTEM_CONTEXT.md` reflects v1.16.0 + ADR-0019 + new tracked directory `docs/agents/conflicts/`, `CHANGELOG.md` v1.16.0 entry references ADR-0019 + dogfood outcomes, ADR-0002 status updated to "Accepted (amended by 0018)", `docs/agents/adrs/README.md` index lists ADR-0019, AND `v1.16.0` git tag pushed to origin via the `release` skill.
 
 **Top risks:**
 1. **Dogfood scenarios miss edge cases discovered during Phase 3** — the 6 listed scenarios may not cover all action-handler edge cases (e.g., binary-file merge from Phase 3 R3). Mitigation: when Phase 3 surfaces an edge case, add a scenario in Phase 3 itself, not as a v1.1 follow-up; Phase 5 only ships if the suite reflects what Phase 3 found.
@@ -209,7 +209,7 @@ Phase 1                Phase 2              Phase 3               Phase 4       
 
 This plan re-opens if any of:
 
-- **Collab usage scales beyond occasional same-checkout sessions** → advisory-only model becomes insufficient; re-evaluate Alternative 4 (server-mediated locking) from ADR-0018. Re-run `socratic-grill` on the trust-mode design.
+- **Collab usage scales beyond occasional same-checkout sessions** → advisory-only model becomes insufficient; re-evaluate Alternative 4 (server-mediated locking) from ADR-0019. Re-run `socratic-grill` on the trust-mode design.
 - **PreToolUse false-positive rate empirically below ~1%** → could flip `pretool_use` default to `true`; would require updating the spec + adding telemetry workaround (likely aggregated user reports).
 - **Windows liveness probe reports surface despite the env-field mitigation** → revisit slice #24 design; possibly add a heartbeat-update field.
 - **`git stash create` profile in slice #24 exceeds 500ms on Modie's repos** → R3 fires; halt phase 1 gate; revisit sidecar schema to make stash_sha optional.
@@ -223,7 +223,7 @@ If any trigger fires mid-execution, halt at the current phase gate. Do NOT push 
 
 (Added on first revision.)
 
-- 2026-05-23 — Initial plan written from ADR-0018 + spec v1.16.0 + grill record (2026-05-22). 16 AFK slices across 5 phases; ~12 agent-days estimated.
+- 2026-05-23 — Initial plan written from ADR-0019 + spec v1.16.0 + grill record (2026-05-22). 16 AFK slices across 5 phases; ~12 agent-days estimated.
 
 ## References
 

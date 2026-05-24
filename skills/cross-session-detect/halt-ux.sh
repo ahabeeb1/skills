@@ -5,7 +5,7 @@
 # input, and returns structured JSON with the chosen action.
 #
 # Spec: docs/agents/specs/v1.16.0-cross-session-conflict-detection.md (Slice 7)
-# ADR-0018: Decision 2 — action menu vocabulary lock-in.
+# ADR-0019: Decision 2 — action menu vocabulary lock-in.
 #
 # Subcommands:
 #   dispatch  --peer-session-id <id> --conflict-files <csv>

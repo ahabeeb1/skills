@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cross-session conflict detection — sidecar lifecycle (slice-24, v1.16.0).
 #
-# Implements the four-sub-clause-guarded session sidecar per ADR-0018:
+# Implements the four-sub-clause-guarded session sidecar per ADR-0019:
 #   (a) advisory, (b) defined stale-data contract, (c) per-writer-unique
 #   artifact, (d) read-only across writers.
 #
@@ -115,7 +115,7 @@ read_sidecar_fields() {
 
 # Probe a peer sidecar. Returns alive | dead | inconclusive.
 # Inconclusive when env or hostname differs from the calling process (we can't
-# trust the PID-namespace), per ADR-0018 sub-clause (b).
+# trust the PID-namespace), per ADR-0019 sub-clause (b).
 probe_sidecar() {
   local path="$1"
   [ -f "$path" ] || { echo dead; return; }

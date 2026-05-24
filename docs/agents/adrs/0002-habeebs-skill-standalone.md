@@ -1,6 +1,6 @@
 # ADR-0002: habeebs-skill is standalone — no runtime-substrate composition
 
-**Status:** Accepted (amended by [ADR-0018](./0018-amend-adr-0002-for-advisory-in-flight-reads.md) — substrate-test 4 carve-out for advisory in-flight reads)
+**Status:** Accepted (amended by [ADR-0019](./0019-amend-adr-0002-for-advisory-in-flight-reads.md) — substrate-test 4 carve-out for advisory in-flight reads)
 **Date:** 2026-05-12
 **Deciders:** Modie (Habeeb)
 

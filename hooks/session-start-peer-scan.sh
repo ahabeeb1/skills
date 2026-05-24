@@ -3,7 +3,7 @@
 #
 # Writes own sidecar, scans for live peers, emits warn-only output if any found.
 # Per ADR-0003: warn-only (never blocks), stateless beyond the sidecar write,
-# multi-harness aware. Per ADR-0018: advisory sidecar under four-sub-clause guard.
+# multi-harness aware. Per ADR-0019: advisory sidecar under four-sub-clause guard.
 #
 # Emergency disable: HABEEBS_DISABLE_HOOKS=1
 # Per-invocation skip: HABEEBS_SKIP=session-start

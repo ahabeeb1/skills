@@ -6,7 +6,7 @@
 # surfaces all conflicting peers + files.
 #
 # Per ADR-0003: block-only (exit non-zero to prevent push; never auto-fix).
-# Per ADR-0018: advisory sidecar reads under four-sub-clause guard.
+# Per ADR-0019: advisory sidecar reads under four-sub-clause guard.
 #
 # Emergency disable: HABEEBS_DISABLE_HOOKS=1
 # Per-invocation skip: HABEEBS_SKIP=pre-push

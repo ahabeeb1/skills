@@ -6,7 +6,7 @@
 # On all-pass, annotates and allows — never denies.
 #
 # Per ADR-0003: annotate-only (never blocks the tool call).
-# Per ADR-0018: advisory sidecar reads under four-sub-clause guard.
+# Per ADR-0019: advisory sidecar reads under four-sub-clause guard.
 #
 # Emergency disable: HABEEBS_DISABLE_HOOKS=1
 # Per-invocation skip: HABEEBS_SKIP=pretool-use

@@ -7,7 +7,7 @@
 
 ## TL;DR
 
-All 7 user-focus items resolved. The ADR-0002 carve-out is shaped as a four-sub-clause guard in a new ADR-0018, the worktree-out resolution flow uses stash-and-pop with auto-derived branch names, PreToolUse ships default-off and annotate-only when enabled, `prefer_worktree` is deferred to v1.1 in favor of the reactive `[w]orktree-out` action alone, the menu accepts letters and numbers (`[1/m] [2/s] [3/t] [4/a] [5/w]`, with `transfer` replacing `handoff` to dodge the help-key shadow), audit logs are tracked forever with revisit at 1000, and Windows liveness uses Node's `process.kill(pid, 0)` with a 24h TTL fallback. No architectural rethink needed — the grill tightened the recommendation rather than overturning it.
+All 7 user-focus items resolved. The ADR-0002 carve-out is shaped as a four-sub-clause guard in a new ADR-0019, the worktree-out resolution flow uses stash-and-pop with auto-derived branch names, PreToolUse ships default-off and annotate-only when enabled, `prefer_worktree` is deferred to v1.1 in favor of the reactive `[w]orktree-out` action alone, the menu accepts letters and numbers (`[1/m] [2/s] [3/t] [4/a] [5/w]`, with `transfer` replacing `handoff` to dodge the help-key shadow), audit logs are tracked forever with revisit at 1000, and Windows liveness uses Node's `process.kill(pid, 0)` with a 24h TTL fallback. No architectural rethink needed — the grill tightened the recommendation rather than overturning it.
 
 ---
 
@@ -43,8 +43,8 @@ Three additional items flagged at agenda time but absorbed without separate gril
 - **Resolution:** DECIDED
 - **Decision:**
   - **Clause shape:** Four-sub-clause guard amending substrate-test 4 — "In-flight reads permitted when (a) advisory not authoritative, (b) reader has defined contract for stale/torn/missing data, (c) per-writer-unique artifact, (d) read-only — peers never modify each other's artifacts."
-  - **Location:** New ADR-0018, cross-referencing ADR-0002 + ADR-0004. ADR-0002 status updated to "Amended by 0018."
-- **Spec update:** Spec should reference ADR-0018 (forthcoming) as the substrate-rule authority.
+  - **Location:** New ADR-0019, cross-referencing ADR-0002 + ADR-0004. ADR-0002 status updated to "Amended by 0018."
+- **Spec update:** Spec should reference ADR-0019 (forthcoming) as the substrate-rule authority.
 
 ### Item 2 — `worktree-out` stash semantics
 
@@ -73,7 +73,7 @@ Three additional items flagged at agenda time but absorbed without separate gril
 - **Resolution:** DECIDED
 - **Decision:**
   - **Default:** `pretool_use: false` in `.claude/habeebs-policy.json`. Opt-in via `pretool_use: true`.
-  - **When enabled:** Annotate-and-allow. Surface overlap warning + diff in agent transcript; Edit proceeds. Matches ADR-0018's "advisory not authoritative" principle.
+  - **When enabled:** Annotate-and-allow. Surface overlap warning + diff in agent transcript; Edit proceeds. Matches ADR-0019's "advisory not authoritative" principle.
   - **Discovery path:** `SessionStart` prints a hint when ≥1 peer detected: "PreToolUse can catch in-session collisions too — enable in `.claude/habeebs-policy.json`."
 - **Spec update:** Add the `pretool_use` flag to the policy schema; add the SessionStart hint text.
 
@@ -118,7 +118,7 @@ Three additional items flagged at agenda time but absorbed without separate gril
 - **Decision:**
   - **Storage:** `docs/agents/conflicts/<id>.json`, tracked, never pruned by default.
   - **Revisit trigger:** 1000 conflict records (matches ADR-0004).
-  - **Collab opt-out:** ADR-0018 notes that collab repos with sensitivity concerns can `.gitignore docs/agents/conflicts/`.
+  - **Collab opt-out:** ADR-0019 notes that collab repos with sensitivity concerns can `.gitignore docs/agents/conflicts/`.
 - **Spec update:** Lock the audit-log location + retention contract.
 
 ### Item 7 — Windows liveness probe portability
@@ -146,7 +146,7 @@ Decisions the research didn't anticipate but the grill revealed:
 2. **Sidecar `env` field** — required by item 7's cross-shell mitigation; adds one field to the sidecar JSON schema.
 3. **`liveness_ttl_seconds: 86400` policy field** — surfaced by item 7's TTL fallback; needs to live in `.claude/habeebs-policy.json`.
 4. **`SessionStart` peer-detected hint text** — surfaced by item 3's discovery-path question; documents the opt-in path in-context.
-5. **Conflict audit `.gitignore` opt-out documented in ADR-0018** — surfaced by item 6's collab-sensitivity probe.
+5. **Conflict audit `.gitignore` opt-out documented in ADR-0019** — surfaced by item 6's collab-sensitivity probe.
 
 ---
 
@@ -154,7 +154,7 @@ Decisions the research didn't anticipate but the grill revealed:
 
 Push these back into the spec when `draft-spec` runs:
 
-- [ ] Replace "ADR-0002 carve-out clause text" decision with the locked four-sub-clause guard + new ADR-0018 location.
+- [ ] Replace "ADR-0002 carve-out clause text" decision with the locked four-sub-clause guard + new ADR-0019 location.
 - [ ] Add `worktree-out` flow case-table (trigger source × tree state).
 - [ ] Add `pretool_use: false` default + annotate-and-allow semantic + SessionStart hint text.
 - [ ] **Remove `prefer_worktree` from v1 policy schema.** Add a `## Deferred to v1.1` section documenting the lever and its revisit trigger.
@@ -168,11 +168,11 @@ Push these back into the spec when `draft-spec` runs:
 
 High-impact decisions that should be captured in `decision-record`:
 
-1. **ADR-0018 — In-repo session state carve-out for cross-session conflict detection.** Four-sub-clause guard (a)-(d) amending ADR-0002 substrate-test 4. Cross-references ADR-0002 + ADR-0004. The load-bearing ADR for the entire feature.
-2. **Halt UX menu vocabulary lock-in** — `transfer` over `handoff`, dual letter+number keystrokes. Likely a section *inside* ADR-0018 rather than its own ADR (it's a corollary of the carve-out, not an independent decision).
-3. **`prefer_worktree` v1.1 deferral with explicit revisit trigger** — captured in ADR-0018's "Deferred" section so future research doesn't re-propose it cold.
+1. **ADR-0019 — In-repo session state carve-out for cross-session conflict detection.** Four-sub-clause guard (a)-(d) amending ADR-0002 substrate-test 4. Cross-references ADR-0002 + ADR-0004. The load-bearing ADR for the entire feature.
+2. **Halt UX menu vocabulary lock-in** — `transfer` over `handoff`, dual letter+number keystrokes. Likely a section *inside* ADR-0019 rather than its own ADR (it's a corollary of the carve-out, not an independent decision).
+3. **`prefer_worktree` v1.1 deferral with explicit revisit trigger** — captured in ADR-0019's "Deferred" section so future research doesn't re-propose it cold.
 
 ---
 
 HANDOFF: spec update ready — apply the updates listed above (or invoke `draft-spec` to produce the v1 implementation spec).
-HANDOFF: record ready — invoke `decision-record` to author ADR-0018 (carve-out clause + menu vocabulary + v1.1 deferral).
+HANDOFF: record ready — invoke `decision-record` to author ADR-0019 (carve-out clause + menu vocabulary + v1.1 deferral).

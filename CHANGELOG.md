@@ -13,6 +13,50 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.16.0] — 2026-05-24
+
+Cross-session conflict detection. When two Claude Code sessions work on the same repo simultaneously, they can unknowingly modify the same files and produce conflicting changes that only surface at push time. v1.16.0 adds advisory detection at three trigger points — SessionStart (warn-only peer scan), pre-push (block on overlap), and PreToolUse (opt-in annotate-only) — so sessions discover conflicts early and resolve them interactively. ADR-0018 amends ADR-0002's standalone constraint with a four-sub-clause guard for advisory in-flight reads of per-session sidecar state stored inside `.git/`.
+
+### Added
+
+- **`skills/cross-session-detect/sidecar.sh`** — per-session JSON sidecar lifecycle (write/read/list/end/prune) in `$(git rev-parse --git-common-dir)/habeebs-sessions/`. PID-based liveness probe with configurable TTL.
+  - **Why:** sessions need a shared discovery mechanism that doesn't require a runtime daemon; per-file sidecars inside `.git/` are invisible to git and auto-cleaned.
+- **`skills/cross-session-detect/policy.sh`** — 4-scope policy resolver (User < Project < Local < Managed) with scalar-override precedence and type validation.
+  - **Why:** different repos and users need different conflict-detection behavior (e.g., PreToolUse opt-in, TTL tuning); a layered policy avoids per-repo forks.
+- **`skills/cross-session-detect/overlap.sh`** — `git merge-tree` overlap probe using the pre-2.38 three-tree form for broad git compatibility.
+  - **Why:** the core detection primitive — determines whether two sessions' changes actually conflict on the same files.
+- **`skills/cross-session-detect/audit.sh`** — single-writer append-once JSON audit log in `docs/agents/conflicts/`.
+  - **Why:** conflict events need a durable, reviewable record for postmortems and methodology improvement.
+- **`skills/cross-session-detect/halt-ux.sh`** — 5-option interactive halt menu (Merge / Sequence / Transfer / Abort / Worktree-out) with SIGINT/EOF→abort default.
+  - **Why:** conflicts need user-driven resolution, not automated guessing; the menu presents all viable options.
+- **`skills/cross-session-detect/actions.sh`** — all 5 action handlers: abort (sidecar cleanup + audit), worktree-out (branch + worktree creation), transfer (`.transfer.md` for peer), sequence (exponential-backoff polling), merge (conflict extraction + `$EDITOR`).
+  - **Why:** each halt-menu option needs a concrete implementation that leaves the repo in a clean, resumable state.
+- **`skills/cross-session-detect/trust.sh`** — opt-in `git verify-commit` wrapper for signed-signal verification of peer sidecars.
+  - **Why:** high-trust environments may want cryptographic proof that a peer sidecar was written by a legitimate session.
+- **`hooks/session-start-peer-scan.sh`** — SessionStart hook: writes own sidecar, scans live peers, emits warn-only JSON.
+  - **Why:** the earliest detection point — warns immediately when a session starts and peers are already active.
+- **`hooks/pre-push.sh`** — pre-push hook: blocks push (exit 1) when any live peer's stash overlaps with the current branch.
+  - **Why:** the highest-stakes trigger — prevents conflicting pushes before they create remote merge conflicts.
+- **`hooks/pretool-use-peer-scan.sh`** — PreToolUse hook (Edit/Write/NotebookEdit only): annotates when peer overlap detected on the target file, gated by `pretool_use: true` in policy.
+  - **Why:** per-edit awareness for teams that want continuous conflict visibility without blocking.
+- **`docs/agents/adrs/0018-amend-adr-0002-for-advisory-in-flight-reads.md`** — ADR-0018: four-sub-clause guard (advisory not authoritative, defined stale-data contract, per-writer-unique artifact, read-only across writers) carving out in-flight sidecar reads from ADR-0002's standalone constraint.
+  - **Why:** cross-session detection requires reading peer state — but only advisorily, never authoritatively. The guard preserves ADR-0002's intent while permitting the minimum viable substrate.
+- **`tests/`** — 11 test suites, 170 assertions across sidecar lifecycle, policy resolver, SessionStart hook, overlap probe, pre-push hook, audit writer, halt UX, action handlers, PreToolUse hook, trust mode, and 6 end-to-end scenarios.
+  - **Why:** TDD — every slice was RED→GREEN before implementation was considered complete.
+
+### Changed
+
+- **`hooks/hooks.json`** — added `session-start-peer-scan.sh` to SessionStart array and `pretool-use-peer-scan.sh` to PreToolUse array with `Edit|Write|NotebookEdit` matcher.
+  - **Why:** hooks must be registered to fire.
+- **`docs/agents/adrs/0002-habeebs-skill-standalone.md`** — status updated to `Accepted (amended by 0018)` with forward link to the carve-out ADR.
+  - **Why:** ADR-0002 is the load-bearing standalone constraint; the amendment must be visible from the original.
+- **`.claude-plugin/plugin.json`** — version bumped to 1.16.0.
+
+### Notes
+
+- **git 2.36.1 compatibility.** The overlap probe uses the pre-2.38 `git merge-tree` three-tree form (base_tree, our_tree, peer_tree) rather than `--write-tree`, ensuring compatibility with git versions shipping on Windows and older Linux.
+- **No runtime daemon.** Despite adding per-session state, the implementation is fully stateless from the hook's perspective — sidecars are plain JSON files inside `.git/`, probed on-demand, never watched. ADR-0002's standalone constraint holds.
+
 ## [1.15.0] — 2026-05-19
 
 Chain-wide depth tiers. `prior-art-research` had a binary Quick/Deep *mode* that governed only its own research depth — the rest of the chain applied uniform spec / grill / ADR / plan ceremony regardless of how much the feature warranted. v1.15.0 generalizes that binary into a graded, chain-wide **tier** (Quick / Balanced / Deep), decided once by `prior-art-research` Phase 3 and inherited by every downstream skill via a `Tier:` artifact-header field. ADR-0016 records the decision; it extends ADR-0013's adaptive-gate reasoning from one phase to the whole chain. Two invariants are load-bearing: the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR — even under a `--quick` override), and tier-related user-facing output stays task-focused (no token/cost/time rationale).

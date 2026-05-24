@@ -233,14 +233,16 @@ assert_eq "inconclusive" "$PROBE_OUT" "hostname mismatch -> inconclusive"
 echo "[7] TTL pruning"
 SESSION_E=01ARZ3NDEKTSV4RRFFQ69G5FAZ
 SIDECAR_E="$SIDECAR_DIR/${SESSION_E}.json"
-# Make a sidecar that is inconclusive (env mismatch) AND well past the TTL
-# Set TTL low (5s) via policy file so we don't have to time-travel by 24h
+# Make a sidecar that is inconclusive (env mismatch) AND well past the TTL.
+# TTL=60s is low enough that the stale sidecar (1h old) gets pruned, but high
+# enough that the "fresh" sidecar created a few seconds later survives even on
+# slow Windows Node cold-start runs (5s was flaky under the 4-scope resolver).
 POLICY_FILE="$TMP/.claude/habeebs-policy.json"
 mkdir -p "$TMP/.claude"
 cat > "$POLICY_FILE" <<'EOF'
 {
   "pretool_use": false,
-  "liveness_ttl_seconds": 5,
+  "liveness_ttl_seconds": 60,
   "require_signed_signals": false
 }
 EOF

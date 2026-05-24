@@ -1,5 +1,5 @@
 {
-  "description": "habeebs-skill v1.6.0 hooks — warn-only SessionStart (ghost-commit detection) and block-only PreToolUse on Bash (commits to default branch). Both follow ADR-0003: warn-or-block only, multi-harness aware via env-var detection, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
+  "description": "habeebs-skill hooks — warn-only SessionStart (ghost-commit detection + peer-scan), block-only PreToolUse on Bash (commits to default branch). All follow ADR-0003: warn-or-block only, multi-harness aware, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
   "hooks": {
     "SessionStart": [
       {
@@ -7,6 +7,15 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start-peer-scan.sh",
             "timeout": 10
           }
         ]

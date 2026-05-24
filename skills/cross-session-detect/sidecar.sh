@@ -67,25 +67,20 @@ worktree_path() {
 sidecar_dir() { echo "$(common_dir)/habeebs-sessions"; }
 now_iso() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
-# Resolve the effective liveness_ttl_seconds from policy file, defaulting to
-# 86400. Looks at the worktree's .claude/habeebs-policy.json first (project
-# scope is the most common). Other scopes are out of slice-24's surface
-# (slice-25 owns the 4-scope resolver).
+# Resolve the effective liveness_ttl_seconds via the 4-scope policy resolver
+# (slice-25). Falls back to 86400 if the resolver errors (e.g. invalid JSON in
+# a policy file — the resolver prints the error to stderr; we degrade silently
+# here so the sidecar lifecycle doesn't crash on a bad policy file).
 liveness_ttl() {
-  local policy="$(worktree_path)/.claude/habeebs-policy.json"
-  if [ -f "$policy" ]; then
-    node -e "
-      try {
-        const fs = require('fs');
-        const p = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
-        const t = p.liveness_ttl_seconds;
-        if (Number.isFinite(t) && t > 0) { process.stdout.write(String(t)); process.exit(0); }
-      } catch (e) {}
-      process.stdout.write('86400');
-    " "$policy"
-  else
-    echo 86400
-  fi
+  local script_dir; script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  local ttl
+  ttl=$(bash "$script_dir/policy.sh" resolve 2>/dev/null | node -e "
+    let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{
+      try{process.stdout.write(String(JSON.parse(d).liveness_ttl_seconds))}
+      catch{process.stdout.write('86400')}
+    });
+  ") || true
+  echo "${ttl:-86400}"
 }
 
 # Liveness probe via Node's process.kill(pid, 0). 0 = alive, 1 = dead.

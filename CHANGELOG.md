@@ -51,6 +51,7 @@ Cross-session conflict detection. When two Claude Code sessions work on the same
 - **`docs/agents/adrs/0002-habeebs-skill-standalone.md`** — status updated to `Accepted (amended by 0018)` with forward link to the carve-out ADR.
   - **Why:** ADR-0002 is the load-bearing standalone constraint; the amendment must be visible from the original.
 - **`.claude-plugin/plugin.json`** — version bumped to 1.16.0.
+  - **Why:** SemVer MINOR — new skills, hooks, and opt-in behavior added.
 
 ### Notes
 

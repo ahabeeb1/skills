@@ -1,6 +1,6 @@
 # ADR-0007: Adopt a description budget policy — 1,200-char hard cap, 600-char target, three-keystone protected anti-triggers, `## Origins` body convention for credits
 
-**Status:** Accepted (amended 2026-05-24 — see "## 2026-05-24 Amendment" below for the v1.18.0 anatomy + auto-invocation-scope rules that supersede specific clauses of the original Decision)
+**Status:** Accepted (amended 2026-05-24 — see "## 2026-05-24 Amendment" below for the v1.19.0 anatomy + auto-invocation-scope rules that supersede specific clauses of the original Decision)
 **Date:** 2026-05-13
 **Deciders:** ahabeeb1
 **Tier:** Balanced (amendment grilled at Balanced; original ADR predates the tier convention)
@@ -100,11 +100,11 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-05-13 — Initial ADR, status Accepted (decision locked by user's v1.9.0 scope approval)
-- 2026-05-24 — Amended in place for v1.18.0 auto-trigger reliability. See "## 2026-05-24 Amendment" section below. Original Decision clauses superseded: (1) the 1,200-char hard cap drops to 1,024 to match Anthropic's actual spec, (2) the 600-char target average drops to 300, (3) the "Make sure to use this skill" canonical phrasing is replaced with the trigger-first / literal-quote / directive-imperative template, (4) chain-internal skills now carry `disable-model-invocation: true` so only 7 skills compete for auto-invocation. The three-keystone-anti-trigger rule and the `## Origins` body convention are unchanged.
+- 2026-05-24 — Amended in place for v1.19.0 auto-trigger reliability. See "## 2026-05-24 Amendment" section below. Original Decision clauses superseded: (1) the 1,200-char hard cap drops to 1,024 to match Anthropic's actual spec, (2) the 600-char target average drops to 300, (3) the "Make sure to use this skill" canonical phrasing is replaced with the trigger-first / literal-quote / directive-imperative template, (4) chain-internal skills now carry `disable-model-invocation: true` so only 7 skills compete for auto-invocation. The three-keystone-anti-trigger rule and the `## Origins` body convention are unchanged.
 
 ---
 
-## 2026-05-24 Amendment — v1.18.0 auto-trigger reliability
+## 2026-05-24 Amendment — v1.19.0 auto-trigger reliability
 
 ### Why this amendment
 
@@ -116,7 +116,7 @@ Empirical signal collected between 2026-05-13 (v1.9.0 ship) and 2026-05-24 contr
 
 Additionally, the original ADR treated all 14 (now 18) skills as equally entitled to auto-invocation. In practice, only the chain *entry points* fire on user language; downstream chain links (`draft-spec`, `socratic-grill`, `decision-record`, etc.) fire on upstream HANDOFF or explicit `/slash`. With 18 skills auto-invocable and 135 SKILL.md files installed system-wide, the fuzzy-match pool dilutes the entry points that should win.
 
-The v1.18.0 audit confirmed the existing trigger-precision dogfood (scenario 13) reports 34/34 (100%) on a synthetic corpus — yet real sessions don't fire. That gap is exactly Hamel Husain's "synthetic prompts approach 100% by construction" red flag (`hamel.dev/blog/posts/evals-faq/`). The amendment fixes the description policy AND the eval methodology.
+The v1.19.0 audit confirmed the existing trigger-precision dogfood (scenario 13) reports 34/34 (100%) on a synthetic corpus — yet real sessions don't fire. That gap is exactly Hamel Husain's "synthetic prompts approach 100% by construction" red flag (`hamel.dev/blog/posts/evals-faq/`). The amendment fixes the description policy AND the eval methodology.
 
 ### Amended Decision
 
@@ -138,7 +138,7 @@ Every description must follow this anatomy, in this exact order:
 Specifically:
 
 - **Capability lead** is a noun-phrase fragment ≤8 words. Title-case skill names already convey capability; this lead is a one-line elaboration, not a paragraph.
-- **Imperative directive** is one of: `ALWAYS use` (highest-leverage entry points only — `prior-art-research`, `systematic-debugging`, `deep-modules`), `You MUST use` (reserved as the v1.19.0 fallback variant if v1.18.0 lift falls short of the success metric), or `Use when` (primitives where judgment-call firing is desired, e.g., `parallel-dev`). The legacy `Make sure to use this skill` phrasing is forbidden going forward.
+- **Imperative directive** is one of: `ALWAYS use` (highest-leverage entry points only — `prior-art-research`, `systematic-debugging`, `deep-modules`), `You MUST use` (reserved as the v1.20.0 fallback variant if v1.19.0 lift falls short of the success metric), or `Use when` (primitives where judgment-call firing is desired, e.g., `parallel-dev`). The legacy `Make sure to use this skill` phrasing is forbidden going forward.
 - **Literal user trigger phrases** must appear in straight quotes (`"..."`), at least 2 per description. Quotes are how the fuzzy-match scorer locates user-language alignment. Paraphrased trigger conditions ("when the user reports a bug") are insufficient — must be `"this is broken"`, `"fix this bug"`, `"the test is failing"`.
 - **Anti-trigger** is one tight, scoped clause. The three-keystone rule below preserves the ≥2-anti-trigger requirement for high-catchment skills; everything else gets one line or zero.
 
@@ -189,14 +189,14 @@ Acknowledgments ("Inspired by X" / "Lifted from X") continue to live in `## Orig
 - Per-skill trigger-keyword density drops sharply. Today's 528-717 char descriptions enumerate 5-10 trigger phrases each; the 150-400 char target preserves only 2-4 literal user-phrases. The bet is that 3 well-chosen literal phrases beat 8 paraphrased ones (consistent with the 650-trials Variant B finding: keyword accumulation alone doesn't fix passive framing).
 - `disable-model-invocation: true` removes 11 skills from any auto-`/help`-style discovery surface. Mitigation: the `using-habeebs-skill` skill (still auto-invocable as context) introduces the full chain on the first relevant trigger.
 - Routing block costs ~250-400 tokens of CLAUDE.md always-loaded budget. Revisit if CLAUDE.md grows past 200 lines.
-- The v1.18.0 rewrite is a soft one-way door: rollback means re-editing 18 SKILL.md descriptions back to v1.17.0 wording. The v1.19.0 fallback path is deliberately *forward* — a third imperative variant (`You MUST use this skill when…`) — not a revert, so we collect a third data point on the imperative gradient instead of losing directionality.
+- The v1.19.0 rewrite is a soft one-way door: rollback means re-editing 18 SKILL.md descriptions back to v1.17.0 wording. The v1.20.0 fallback path is deliberately *forward* — a third imperative variant (`You MUST use this skill when…`) — not a revert, so we collect a third data point on the imperative gradient instead of losing directionality.
 
 #### Operational impact (additive)
 
 - Dogfood scenario 11 (`tests/dogfood/11-description-budget/check-description-budget.sh`) updates: `HARD_CAP=1024`, `TARGET_AVG=300`, expanded trigger regex `(use when|always use|you must use|trigger (on|when))`, new check that every description contains ≥1 straight-quoted literal user phrase, new block-scalar-rejection assertion guarding against the YAML-truncation bug documented in research Case 7.
 - Dogfood scenario 13 (`tests/dogfood/13-trigger-precision/`) — synthetic-corpus precision check — remains alive as a "regression baseline" through v1.20.0. After 2 quarters of dual-tracking against the new real-session transcript eval, sunset if real-eval consistently outperforms.
 - New methodology doc at `docs/agents/references/trigger-firing-eval.md` codifies the real-session transcript eval cadence, scoring rubric, and idempotency rule.
-- **v1.18.0 success metric (load-bearing for v1.19.0 follow-up):** (sessions with `"build"` / `"add"` / `"refactor"` / `"fix this"` / `"design"` / `"implement"` in the user prompt AND the matched entry-point skill fires within 2 turns) / (all sessions with those keywords), measured pre-release and +30 days post-release. **>10 percentage-point lift = success.** If <10pp, file v1.19.0 candidate with the `You MUST use this skill when…` variant.
+- **v1.19.0 success metric (load-bearing for v1.20.0 follow-up):** (sessions with `"build"` / `"add"` / `"refactor"` / `"fix this"` / `"design"` / `"implement"` in the user prompt AND the matched entry-point skill fires within 2 turns) / (all sessions with those keywords), measured pre-release and +30 days post-release. **>10 percentage-point lift = success.** If <10pp, file v1.20.0 candidate with the `You MUST use this skill when…` variant.
 
 ### Amended Alternatives considered
 
@@ -208,7 +208,7 @@ Defer the rewrite. Measure firing-rate on current descriptions first via the new
 
 #### Rewrite to gerund names instead of changing anatomy
 
-Anthropic recommends gerund naming (`processing-pdfs`, `writing-skills`). habeebs uses mostly noun-phrases (`prior-art-research`, `decision-record`). Renaming would force the gerund convention. **Rejected** for v1.18.0 because slash-command surface (`/research`, `/grill`, `/spec`) is load-bearing muscle memory for the maintainer; renaming breaks invocations that exist outside the agent's view (terminal history, scripts, docs). Deferred to v1.19.0 candidate if Layer 1 alone fails to hit the 10pp lift threshold.
+Anthropic recommends gerund naming (`processing-pdfs`, `writing-skills`). habeebs uses mostly noun-phrases (`prior-art-research`, `decision-record`). Renaming would force the gerund convention. **Rejected** for v1.19.0 because slash-command surface (`/research`, `/grill`, `/spec`) is load-bearing muscle memory for the maintainer; renaming breaks invocations that exist outside the agent's view (terminal history, scripts, docs). Deferred to v1.20.0 candidate if Layer 1 alone fails to hit the 10pp lift threshold.
 
 #### Use `keywords` frontmatter field instead of trigger-phrase enumeration in description
 
@@ -231,8 +231,8 @@ Create a separate `0019-trigger-anatomy-and-auto-invocation-scope.md` and mark A
 ### References (amendment)
 
 - Research: `docs/agents/research/2026-05-24-auto-trigger-reliability.md`
-- Spec: `docs/agents/specs/v1.18.0-auto-trigger-reliability.md`
-- Grill: `docs/agents/specs/v1.18.0-auto-trigger-reliability-grill.md`
+- Spec: `docs/agents/specs/v1.19.0-auto-trigger-reliability.md`
+- Grill: `docs/agents/specs/v1.19.0-auto-trigger-reliability-grill.md`
 - External sources:
   - [Anthropic — Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) — canonical 1,024-char cap, third-person rule, evaluation-driven development principle
   - [anthropics/skills repo](https://github.com/anthropics/skills/tree/main/skills) — `pdf`, `docx`, `claude-api`, `skill-creator` description anatomy

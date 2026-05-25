@@ -87,7 +87,7 @@ For brownfield repos with a known skill set, document a routing table in CLAUDE.
 
 ## Recommendation for your context
 
-**Three-layer fix, shipping as v1.18.0.**
+**Three-layer fix, shipping as v1.19.0.**
 
 ### Layer 1 — Description rewrite per the converged template (load-bearing)
 

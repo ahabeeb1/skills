@@ -26,6 +26,27 @@ Orchestration primitive for parallel subagent dispatch. The art is in proving in
 - Tasks where the cost of coordination + verification exceeds the time saved
 - Single-task work (parallelism overhead is wasted)
 
+## Task class — read vs write
+
+Two production literatures disagree on multi-agent fan-out, and the split lines up with the two kinds of work this skill dispatches. Classify the batch before Phase 1; the answer changes which downstream phases are mandatory.
+
+**Read-task dispatch — Anthropic-validated.** Subagents fetch information, extract patterns, audit, or otherwise *read* shared substrate and return structured records the parent aggregates. No subagent writes to the repo. Anthropic's "Built a multi-agent research system" reports ~90% lift on research-shaped tasks at ~15× the token cost of a single-agent equivalent — the cost is real, the gain is real, the merge-conflict surface is zero because nothing is written. Examples: `prior-art-research` Phase 4-5 source-fetchers, `pattern-extractor` runs, audit-style dispatches.
+
+**Write-task dispatch — Cognition-restricted.** Subagents commit artifacts (code, ADRs, slices, docs) to the repo. Cognition's "Don't build multi-agents" essay names this as the canonical failure mode: "actions carry implicit decisions, and conflicting decisions carry bad results." Parallel writers without isolation diverge irrecoverably. This skill makes the failure mode survivable by enforcing three gates simultaneously — none of which are optional for write tasks:
+
+1. **Per-worktree isolation** — every artifact-producing subagent runs in its own `git worktree` on its own branch, via `using-worktrees` invoked once per subagent before dispatch. Phase 4 already requires this; the Cognition essay is the *reason* it is required.
+2. **≤8 concurrent dispatches** — the existing 5-default concurrency cap (Phase 4) and the per-pgroup ceiling of 8 (the empirical maximum across Cursor's parallel-agent mode and the appxlab 5-7 ceiling). Overrides above 8 are forbidden, not just discouraged — past that point reviewer burden has been shown to exceed parallelism gain in every published case.
+3. **Phase 2 independence verification, mandatory** — file overlap, state dependency, ordering semantics. For read tasks Phase 2 is hygiene; for write tasks it is the load-bearing failure-prevention step. Skipping Phase 2 on a write dispatch is the most common silent cause of `parallel-dev` failures.
+
+If a write dispatch cannot honor all three, **fall back to sequential**. The cost of a wrong write dispatch is high and not always recoverable from the dispatch record alone.
+
+**Hybrid dispatches are not a category.** A pgroup either writes to the repo or it doesn't. If some subagents write and some read, treat the entire pgroup as a write dispatch (the stricter rule wins).
+
+**Sources for this section:**
+- [Anthropic — Built a multi-agent research system](https://www.anthropic.com/research/built-a-multi-agent-research-system) — read-task efficacy + 15× token cost
+- [Cognition — Don't build multi-agents](https://cognition.ai/blog/dont-build-multi-agents) — write-task anti-pattern
+- Audit memo: `docs/agents/research/v1.19.0-workflow-audit-research.md` § "parallel-dev + using-worktrees positioning"
+
 ## Core workflow
 
 ### Phase 1 — Decompose
@@ -128,6 +149,8 @@ Launch all subagents in the same turn. (In Claude Code, this is one tool-call me
 Why same turn: dispatching one at a time defeats the purpose. Some agent runtimes treat sequential dispatch as cheating — verify your runtime supports concurrent spawn.
 
 **Concurrency cap:** default 5; per-pgroup override via opt-in `concurrency: <N>` field in the pgroup labeling (see `write-plan` Phase 4). The 5-default comes from appxlab's empirical 5-7 ceiling for concurrent coding agents — past that, review burden offsets parallelism gain. Override sparingly; pgroups that need >5 concurrent subagents often have a Phase 2 independence problem in disguise.
+
+**Hard ceiling for write-task dispatches: 8.** Per the "Task class" section above, write dispatches (artifact-producing subagents) must not exceed 8 concurrent — overrides above 8 are forbidden. Read-task dispatches (research / pattern-extraction / audit) may go higher if independence is provable, but the practical ceiling is the runtime's spawn cap and your tolerance for the ~15× token multiplier Anthropic measured.
 
 ### Single-writer invariant for SYSTEM_CONTEXT.md
 

@@ -1,6 +1,7 @@
 ---
 name: parallel-dev
-description: Dispatches parallel subagents for independent work. User-invokable for parallel refactor passes, codebase exploration, or any batch where pieces don't share state or order. Make sure to use this skill whenever work decomposes into independent units that benefit from concurrent execution — but only after verifying independence (no shared state, no ordering, no file conflicts). Do NOT use for debugging existing parallel dispatches — that's systematic-debugging. Do NOT use for sequential work or tasks touching the same files.
+description: Dispatch parallel subagents for verified-independent work. Use when user says "do these N in parallel", "fan these out", "run these batches concurrently", types "/parallel", or when prior-art-research / tdd-loop has a pgroup of size ≥2. Do not use for sequential work or tasks touching the same files.
+disable-model-invocation: true
 ---
 
 # Parallel Dev

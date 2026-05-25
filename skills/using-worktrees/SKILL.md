@@ -1,6 +1,6 @@
 ---
 name: using-worktrees
-description: Isolate each feature, AFK slice, or experimental refactor in its own git worktree on its own branch, with a verified-clean test baseline before work starts and a clean teardown when work ends. Used by parallel-dev to dispatch AFK slices into separate worktrees so concurrent subagents never conflict. Make sure to use this skill whenever the user says "let's work on a new feature", "start a branch", "let's experiment", before parallel-dev dispatches AFK slices, or whenever tdd-loop begins a multi-commit slice. Do NOT use for trivial one-commit changes or read-only investigation.
+description: Isolate features and AFK slices in their own git worktrees on their own branches. Use when user says "let's work on a new feature", "start a branch", "let's experiment", before parallel-dev AFK dispatch, or when tdd-loop starts a multi-commit slice. Do not use for trivial one-commit changes or read-only investigation.
 ---
 
 # Using Worktrees

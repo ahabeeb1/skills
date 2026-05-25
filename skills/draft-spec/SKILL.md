@@ -1,6 +1,7 @@
 ---
 name: draft-spec
-description: Turns a prior-art-research recommendation into a concrete implementation spec. Decomposes the chosen approach into vertical slices labeled HITL or AFK, with acceptance criteria, test strategy, and dependency ordering per slice. Make sure to use this skill whenever you have a research recommendation and need to convert it into something an engineer or coding agent can start building from. Triggers automatically when prior-art-research emits "HANDOFF: spec ready", or explicitly via /spec. Do NOT use to research alternatives or debug an existing spec.
+description: Turn a research recommendation into a sliced implementation spec. Use when prior-art-research emits "HANDOFF: spec ready", when user types "/spec", or when an ADR is locked and slice decomposition is the next step. Do not use to research alternatives or debug an existing spec.
+disable-model-invocation: true
 ---
 
 # Draft Spec

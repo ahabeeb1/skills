@@ -1,6 +1,6 @@
 ---
 name: deep-modules
-description: Deep-module checker and improver. Identifies shallow modules — interfaces nearly as complex as their implementations — and pass-through layers that earn nothing. Applies the deletion test (remove the module; if complexity vanishes, it was pass-through). Proposes deepenings that combine shallow seams. Make sure to use this skill at the REFACTOR step of every tdd-loop cycle, periodically as a standalone codebase-health pass, or when the user says "this code feels off" or "too many small files". Do NOT use to rewrite already-deep modules or to add abstractions that aren't yet earned.
+description: Find and deepen shallow modules using the deletion test. ALWAYS use when user says "refactor this", "this code feels off", "too many small files", "this abstraction earns nothing", or at the refactor step inside tdd-loop. Do not use to rewrite already-deep modules, or to add abstractions not yet earned.
 ---
 
 # Deep Modules

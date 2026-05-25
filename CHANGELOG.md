@@ -13,6 +13,39 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.19.0] — 2026-05-25
+
+Auto-trigger reliability — habeebs-skill descriptions now actually fire on natural-language dev prompts. The previous "Make sure to use this skill when…" canonical phrasing read as advisory; descriptions never won the fuzzy-match contest against 135 SKILL.md files installed system-wide. v1.19.0 rewrites all 18 descriptions to a trigger-first / literal-quote / directive-imperative anatomy (650-trials empirical pattern), demotes 11 chain-internal skills via `disable-model-invocation: true` so only 7 compete for auto-invocation, and adds an explicit `## Skill routing` table to CLAUDE.md that outranks fuzzy-match. ADR-0007 amended in place (clauses A-F); original 2026-05-13 ADR body preserved for historical record.
+
+### Changed
+
+- **All 18 `skills/*/SKILL.md` descriptions** rewritten to the v1.19.0 anatomy: `[Capability ≤8 words]. [Imperative directive] when [literal user phrase 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].` Average drops from 596 → 298 chars; ~5,400 tokens recovered per turn on the always-loaded skill-listing budget.
+  - **Why:** the Seleznov 2026 650-trials study A/B-tested directive imperatives (`ALWAYS invoke when…`) at 94-100% activation vs passive `Use when…` at 37-87% (Cohen's h = 1.83, p < 0.0001). habeebs's `Make sure to use this skill when…` read as advisory and lost the fuzzy-match contest in real sessions.
+- **11 chain-internal SKILL.md frontmatters** carry `disable-model-invocation: true`: `draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`, `verify-output`, `release`, `vertical-slice`, `parallel-dev`, `agent-factors-check`, `devex-review`. They remain `/slash-invocable` and fire on upstream HANDOFF — only the 7 entry-point / support-meta skills compete for auto-invocation.
+  - **Why:** 18 skills auto-invocable + 135 SKILL.md installed system-wide diluted entry points that should have won. Demoting chain-internals restores entry-point precedence while preserving slash-command muscle memory.
+- **`CLAUDE.md`** — added a `## Skill routing` block between `## The chain` and `## Triggering principles`, mapping natural-language user signals to slash-commands for the 4 entry-point skills + chain handoffs.
+  - **Why:** explicit task-type → skill mapping in always-loaded CLAUDE.md outranks fuzzy-match against 30+ competing descriptions.
+- **`docs/agents/adrs/0007-description-budget-policy.md`** — amended in place with a dated `## 2026-05-24 Amendment` section. Hard cap drops 1,200 → 1,024 (matches Anthropic's actual spec); target avg drops 600 → 300; pushy-trigger preservation rule replaced with the anatomy template above. Three-keystone list updated: `prior-art-research`, `systematic-debugging`, `deep-modules` (was `prior-art-research`, `socratic-grill`, `tdd-loop` — but the latter two are now `disable-model-invocation: true` and cannot over-trigger).
+  - **Why:** ADR-0007's original 1,200-char cap was based on outdated Anthropic doc claiming 1,536; the live spec is 1,024. The pushy-trigger phrasing rule was anchored on theoretical Anthropic guidance, never A/B-tested against directives.
+- **`tests/dogfood/11-description-budget/check-description-budget.sh`** — `HARD_CAP=1024`, `TARGET_AVG=300`, new directive-imperative regex `(use when|always use|you must use|trigger (on|when))`, new forbidden-legacy-phrase check (`Make sure to use this skill`), new literal-quote check (≥1 `"..."` per description), new block-scalar regression guard (rejects `|`/`>` on `description:` line per research Case 7).
+  - **Why:** the dogfood is the only mechanical enforcement of the amended policy; without script updates, future authors would drift back to legacy phrasing.
+- **`tests/dogfood/13-trigger-precision/README.md`** — status changed to "regression baseline." The synthetic-corpus 34/34 precision was Hamel Husain's "synthetic prompts approach 100% by construction" red flag — confirmed empirically by the maintainer's real-session experience. Primary firing-rate signal now lives in `docs/agents/references/trigger-firing-eval.md`.
+  - **Why:** dogfood 13 reported 100% precision while real sessions failed to fire — the synthetic auditor scored prompts it would have written, not prompts the maintainer actually types.
+- **`skills/release/SKILL.md`** — new `## Description-policy audit (v1.19.0+)` section; release checklist gains a dogfood 11 line item.
+- **`skills/using-habeebs-skill/SKILL.md`** — new `## Auto-invocation scope (v1.19.0+ per ADR-0007 § C)` section documenting the 7/11 split.
+
+### Added
+
+- **`tests/dogfood/11-description-budget/check-disabled-list.sh`** — new dogfood assertion that the 11 demoted skills carry `disable-model-invocation: true` and the 7 auto-invocable skills do not. Cross-checks total skill count = 18.
+  - **Why:** without this guard, an author adding a new SKILL.md could silently land in the auto-invocation pool without an explicit decision; the script makes the classification mandatory.
+- **`docs/agents/references/trigger-firing-eval.md`** — new methodology doc for the real-session transcript review that replaces dogfood 13 as the primary firing-rate signal. Cadence (quarterly + 7 days post-release), sample-set sizing, anonymization rubric, scoring (primary/secondary/tertiary signals), failure response, idempotency rule. Cites the 10pp lift threshold that gates v1.20.0.
+  - **Why:** dogfood 13's synthetic corpus reports 100% precision yet real sessions fail — Hamel Husain's red flag. The transcript eval closes the synthetic-vs-real gap by measuring firing-rate on prompts the maintainer actually types.
+- **`docs/agents/research/2026-05-24-auto-trigger-reliability.md`**, **`docs/agents/specs/v1.19.0-auto-trigger-reliability.md`** + **`-grill.md`**, **`docs/agents/plans/0007-description-policy-amendment-v1.19.0.md`** — full chain artifacts for the v1.19.0 work (Balanced tier, 8 case studies, 6 OQs all DECIDED, 5-phase plan).
+
+### Success metric (load-bearing for v1.20.0 follow-up)
+
++30 days post-release, the transcript eval must show **>10 percentage-point lift** in (sessions with `"build"`/`"add"`/`"refactor"`/`"fix this"`/`"design"`/`"implement"` in the user prompt AND the matched entry-point skill fires within 2 turns) / (all sessions with those keywords). Below 10pp, v1.20.0 candidate uses the `You MUST use this skill when…` imperative-with-pronoun variant — NOT a revert. The metric is documented at `docs/agents/references/trigger-firing-eval.md`.
+
 ## [1.18.0] — 2026-05-24
 
 Cross-session conflict detection. When two Claude Code sessions work on the same repo simultaneously, they can unknowingly modify the same files and produce conflicting changes that only surface at push time. v1.18.0 adds advisory detection at three trigger points — SessionStart (warn-only peer scan), pre-push (block on overlap), and PreToolUse (opt-in annotate-only) — so sessions discover conflicts early and resolve them interactively. ADR-0019's four-sub-clause guard (advisory not authoritative, defined stale-data contract, per-writer-unique artifact, read-only across writers) carves out in-flight sidecar reads from ADR-0002's standalone constraint.

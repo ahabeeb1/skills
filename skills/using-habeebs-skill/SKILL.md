@@ -1,6 +1,6 @@
 ---
 name: using-habeebs-skill
-description: Introduction to the habeebs-skill methodology. Auto-loads when any habeebs-skill is referenced. Tells the agent how the skill chain composes — prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop — and which engineering primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) support each phase. Documents how to abort the chain cleanly. Make sure to use this skill whenever any habeebs-skill triggers, so you know what's coming next in the chain and how to recover if work needs to halt.
+description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the research → spec → grill → record → plan → tdd flow. Do not use for tasks unrelated to the chain.
 ---
 
 # Using habeebs-skill
@@ -51,6 +51,16 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 ## Standalone skills (invoked on demand, outside the chain)
 
 - **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`.
+
+## Auto-invocation scope (v1.19.0+ per ADR-0007 § C)
+
+The chain has 18 skills but only **7** compete for auto-invocation on natural-language user prompts:
+
+**Auto-invocable (7):** 4 entry points (`prior-art-research`, `systematic-debugging`, `deep-modules`, `security-audit`) + 3 support meta (`using-habeebs-skill`, `setup-habeebs-skill`, `using-worktrees`).
+
+**`disable-model-invocation: true` (11):** all chain-internal skills (`draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`, `verify-output`, `release`, `vertical-slice`, `parallel-dev`, `agent-factors-check`, `devex-review`). These fire on upstream HANDOFF or explicit `/slash` invocation — never on raw user language. The `/slash` surface is unchanged: typing `/spec` still launches `draft-spec` identically.
+
+Why: with 18 skills auto-invocable and 135 SKILL.md files installed system-wide, the fuzzy-match pool diluted entry points that should have won. Demoting chain-internals restores entry-point precedence while preserving the slash-command muscle memory. See ADR-0007 § C for the rationale and the per-skill demotion criteria.
 
 ## When chain runs go wrong — postmortem cadence
 

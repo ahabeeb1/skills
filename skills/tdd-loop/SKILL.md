@@ -1,6 +1,7 @@
 ---
 name: tdd-loop
-description: Red-green-refactor TDD loop, one vertical slice at a time. Writes the failing test FIRST, watches it fail with the expected error, writes minimal code to pass, watches it pass, refactors (invoking deep-modules), runs two-stage review (spec compliance + code quality), and commits. Make sure to use this skill whenever implementation starts — after a spec is locked, after socratic-grill closes open questions, or when the user says "let's start building" or "implement slice N". Do NOT use for spike/throwaway exploration code, prototyping where the design is the deliverable, or documentation-only changes.
+description: Red-green-refactor TDD on one vertical slice at a time. Use when user types "/tdd", "let's start building", "implement slice N", "spec is locked", or after write-plan emits "HANDOFF: implementation ready". Do not use for throwaway exploration, prototyping, or documentation-only changes.
+disable-model-invocation: true
 ---
 
 # TDD Loop

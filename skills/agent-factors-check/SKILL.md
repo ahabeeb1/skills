@@ -1,6 +1,7 @@
 ---
 name: agent-factors-check
-description: Domain extension of socratic-grill for LLM/agent specs. Runs the spec against the 13 agent quality factors and surfaces 6 gaps habeebs-skill's main chain misses (tool-call schemas, state unification, pause/resume, human-as-tool, trigger surface, pre-fetch context). Returns one Socratic question per gap for the grilling agenda. Make sure to use this skill whenever the spec is for an agent, assistant, copilot, chatbot, LLM workflow, RAG, or function-calling product. Do NOT use for generic CRUD/web/mobile apps without LLM orchestration.
+description: Conditional socratic-grill extension for LLM/agent specs. Use when socratic-grill detects "this is an agent", "we're building a copilot", "RAG system", "function-calling product", or user types "/factor-check" on an LLM-orchestration spec. Do not use for generic CRUD/web/mobile apps without LLM orchestration.
+disable-model-invocation: true
 ---
 
 # Agent Factors Check

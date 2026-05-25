@@ -1,6 +1,6 @@
 ---
 name: setup-habeebs-skill
-description: One-time per-repo bootstrap. Configures the issue tracker (GitHub / Linear / local markdown), triage label vocabulary, and domain doc layout (GLOSSARY.md + ADR directory) that other habeebs-skills consume. Writes an "## Agent skills" block to AGENTS.md and/or CLAUDE.md so future invocations know how the repo is configured. Make sure to use this skill before first use of vertical-slice, draft-spec, decision-record, deep-modules, or any skill that publishes issues or reads/writes domain docs. Do NOT use to reconfigure already-configured repos or for global config across multiple repos.
+description: One-time per-repo bootstrap for the habeebs-skill chain. Use when user says "set up habeebs-skill", "configure this repo", "initialize the chain", or before first use of /spec, /grill, /record, /plan, or /tdd in a fresh repo. Do not use to reconfigure already-configured repos.
 ---
 
 # Setup habeebs-skill

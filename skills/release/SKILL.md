@@ -1,6 +1,7 @@
 ---
 name: release
-description: Terminal chain link after tdd-loop. Bumps plugin.json + marketplace.json, writes a CHANGELOG entry (Why line mandatory), cleans commit history, drafts a PR body, runs a doc-sync coverage audit, and pushes a release tag via `git push origin refs/tags/<version>`. Make sure to use this skill when the user says "release", "ship", "cut a release", "bump the version", or "tag this" and tdd-loop is GREEN. Do NOT use mid-feature (tdd-loop must be done first), for hotfixes bypassing the chain, or when the user asks for a deploy/canary/benchmark — release stops at PR + tag, never touches production.
+description: Version bump + CHANGELOG + PR + tag-push. Use when tdd-loop is GREEN and user types "/release", "ship this", "cut a release", "bump the version", or "tag this". Do not use mid-feature, for hotfixes bypassing the chain, or for deploy/canary requests — release stops at PR + tag, never touches production.
+disable-model-invocation: true
 ---
 
 # Release
@@ -129,12 +130,25 @@ gh pr create --title "vX.Y.Z: <release headline>" --body "$(cat <<'EOF'
 
 <Status line: "All features have doc coverage" OR list of WARN/INFO findings from Phase 2a>
 
+## Description-policy audit (v1.19.0+)
+
+For any release that adds a new SKILL.md or modifies an existing one, the doc-sync audit MUST run `bash tests/dogfood/11-description-budget/check-description-budget.sh` and confirm exit 0 before tagging. This enforces ADR-0007 (amended 2026-05-24) § A-F:
+
+- § A length budget (≤1,024 hard cap, ≤300 avg target)
+- § B description anatomy (`[Capability ≤8 words]. [Imperative directive] when [literal user trigger 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].`)
+- § C auto-invocation scope (chain-internal skills carry `disable-model-invocation: true`; check `bash tests/dogfood/11-description-budget/check-disabled-list.sh`)
+- § E three-keystone anti-trigger thickness (`prior-art-research`, `systematic-debugging`, `deep-modules`)
+- OQ-4 block-scalar regression guard (no `|` or `>` on the `description:` line)
+
+If either script fails, halt the release. New skills authored after v1.19.0 land must comply at creation time.
+
 ## Release checklist
 
 - [ ] `tdd-loop` GREEN on this branch
 - [ ] `verify-output` DONE or DONE_WITH_CONCERNS
 - [ ] CHANGELOG entry written with Why lines
 - [ ] Version bumped in plugin.json and marketplace.json
+- [ ] Dogfood 11 description-budget AND disabled-list checks pass (v1.19.0+)
 - [ ] History clean (no WIP/fixup commits)
 - [ ] Tag push ready (Phase 8)
 

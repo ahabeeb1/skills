@@ -1,6 +1,7 @@
 ---
 name: devex-review
-description: Domain extension of socratic-grill for developer-facing product specs (CLI, SDK, library API, plugin, or developer framework). Surfaces DX gaps habeebs-skill's main chain misses: onboarding friction, first-time-developer roleplay, API/CLI ergonomics, error-message quality, docs-as-experienced, and upgrade friction. Returns one Socratic question per DX gap for the grilling agenda. Make sure to use this skill whenever the spec is for a CLI tool, SDK, library API, plugin system, or developer framework. Do NOT use for internal CRUD services, end-user web/mobile apps, or non-developer-facing products.
+description: Conditional socratic-grill extension for developer-facing specs. Use when socratic-grill detects "CLI tool", "SDK", "library API", "plugin system", "developer framework", or user types "/devex-review". Do not use for internal CRUD services, end-user web/mobile apps, or non-developer-facing products.
+disable-model-invocation: true
 ---
 
 # Devex Review

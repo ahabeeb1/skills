@@ -1,6 +1,6 @@
 ---
 name: security-audit
-description: Substrate-free static security audit of a repo or diff. Runs an attack-surface census, secrets archaeology over git history, an OWASP Top 10 pass, and STRIDE-per-component threat modelling, then emits a confidence-gated markdown report — high-precision findings only, no noise. Make sure to use this skill whenever the user asks to "security review", "audit for vulnerabilities", "check for security issues", or "threat model" a codebase, or before shipping a security-sensitive feature. Do NOT use for pre-implementation design review (that's socratic-grill), refactor concerns (deep-modules), generic anti-slop review (verify-output), or as a substitute for a professional penetration test against a running system.
+description: Static security audit of a repo or diff — attack-surface census, secrets archaeology, OWASP Top 10, STRIDE threat model. Use when user says "security review", "audit this", "check for vulnerabilities", "threat model this", or before shipping a security-sensitive feature. Do not use as a substitute for a live penetration test.
 ---
 
 # Security Audit

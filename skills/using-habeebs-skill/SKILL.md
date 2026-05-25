@@ -52,6 +52,16 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 
 - **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`.
 
+## Auto-invocation scope (v1.19.0+ per ADR-0007 § C)
+
+The chain has 18 skills but only **7** compete for auto-invocation on natural-language user prompts:
+
+**Auto-invocable (7):** 4 entry points (`prior-art-research`, `systematic-debugging`, `deep-modules`, `security-audit`) + 3 support meta (`using-habeebs-skill`, `setup-habeebs-skill`, `using-worktrees`).
+
+**`disable-model-invocation: true` (11):** all chain-internal skills (`draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`, `verify-output`, `release`, `vertical-slice`, `parallel-dev`, `agent-factors-check`, `devex-review`). These fire on upstream HANDOFF or explicit `/slash` invocation — never on raw user language. The `/slash` surface is unchanged: typing `/spec` still launches `draft-spec` identically.
+
+Why: with 18 skills auto-invocable and 135 SKILL.md files installed system-wide, the fuzzy-match pool diluted entry points that should have won. Demoting chain-internals restores entry-point precedence while preserving the slash-command muscle memory. See ADR-0007 § C for the rationale and the per-skill demotion criteria.
+
 ## When chain runs go wrong — postmortem cadence
 
 Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.

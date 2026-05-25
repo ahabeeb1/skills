@@ -134,7 +134,6 @@ Semantic-repo-discovery as a conditional Phase 4 Tier 2 technique. `prior-art-re
 - **No frontmatter or handoff-contract change.** The new semantic-repo-discovery loop is purely additive within Phase 4 Tier 2; existing `/research` invocations on keyword-rich queries are unaffected. The pre-dispatch gate in `parallel-dev` is additive Phase 3 discipline, not a return-contract change. No skills were renamed, removed, or had their description budgets exceeded.
 - **PR #19 (SYSTEM_CONTEXT.md refresh) and PR #20 (parallel-dev + setup-habeebs-skill principle bake) both landed on main during the v1.15.0 → v1.16.0 window and are included in this release.**
 - **Fire-rule calibration is theoretical until the dogfood scenarios run against labelled cases.** ADR-0017 records the threshold as accepted-with-revisit-trigger; two false-fire postmortems would trigger threshold tuning.
->>>>>>> origin/main
 
 ## [1.15.0] — 2026-05-19
 

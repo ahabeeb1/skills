@@ -77,6 +77,40 @@ Rules:
 
 Validate with the sell-test from Phase 2b before writing.
 
+### Phase 3.25 — Changeset aggregation + path audit (v1.20.0+)
+
+**Post-v1.20.0:** the feature branch never edits `plugin.json` / `marketplace.json` / `CHANGELOG.md` directly. Instead, each release-worthy PR drops a `.changeset/<slug>.md` carrying `bump:` + `why:`. This phase is the FIRST step of release-PR creation and runs BEFORE Phase 4 (version bump) — in fact it does the bump.
+
+**Step 1 — Path audit.** Verify the diff against the REQUIRED/OPTIONAL/NEVER matrix:
+
+```bash
+bash skills/release/scripts/check-changeset-required.sh
+```
+
+Exit 1 = a REQUIRED path was modified without an accompanying `.changeset/*.md` — the release halts loud with the operator-facing message ("PR modifies skill files but contains no `.changeset/*.md`..."). The matrix:
+
+- **REQUIRED:** `skills/`, `hooks/`, `.claude-plugin/`, `plugin.json`, `marketplace.json`
+- **OPTIONAL** (INFO note, does not block): `docs/`, `CLAUDE.md`, `AGENTS.md`, `README.md`, `CHANGELOG.md`
+- **NEVER required:** `tests/`, `.gitignore`, `.github/`, `.gitattributes`
+
+**Step 2 — Aggregation.** Dry-run first:
+
+```bash
+bash skills/release/scripts/aggregate-changesets.sh --dry-run
+```
+
+Verify the aggregated bump (highest of major > minor > patch) + the new version + the bullet count match expectations. Then apply:
+
+```bash
+bash skills/release/scripts/aggregate-changesets.sh
+```
+
+The script atomically (a) bumps `plugin.json` + `marketplace.json` from the current version, (b) prepends a `## vX.Y.Z` section to CHANGELOG.md with one bullet per `why:` line, (c) deletes the consumed changesets. Exit codes: 0 = success or nothing-to-do; 1 = aborted clean (write failure detected; working tree unchanged); 2 = aborted dirty (manual intervention required — should never happen given the temp-staging-dir + backup-and-rollback approach but documented for safety).
+
+Per ADR `adr-late-binding-and-changesets` § Decision: feature branches NEVER directly edit the three aggregated files. Two simultaneous release PRs targeting the same version slot will collide at git merge time (loud, not silent — operator closes the second PR + re-aggregates against post-first-merge state).
+
+**Skip this phase** if no changesets are present AND no REQUIRED path was modified (rare; only documentation-only PRs that pre-date the v1.20.0 cutover). Aggregation script exits 0 with "No changesets to aggregate." in that case.
+
 ### Phase 3.5 — ADR ID assignment (late-binding)
 
 **Post-v1.20.0:** any `docs/agents/adrs/adr-*.md` files (unnumbered ADRs written by `decision-record` since the last release) must be assigned sequential integers + renamed + added to the index before tagging.

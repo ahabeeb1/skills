@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Root-cause debugging via reproduce → minimize → hypothesis-driven probe → fix → regression-test → postmortem. Replaces "try things until it stops failing" with a structured method that produces evidence at each step. Make sure to use this skill whenever the user reports a bug, a test starts failing, behavior is unexpected, or something "worked yesterday". Especially trigger when previous fix attempts have failed (the cycle of vibe-fixes is the failure mode this skill exists to prevent). Do NOT use for already-understood bugs where the fix is obvious or for performance investigations without a known regression.
+description: Disciplined root-cause debugging loop. ALWAYS use when user says "this is broken", "fix this bug", "the test is failing", "this worked yesterday", reports unexpected behavior, or describes a performance regression. Do not use when the fix is obvious from a one-line stack trace.
 ---
 
 # Systematic Debugging

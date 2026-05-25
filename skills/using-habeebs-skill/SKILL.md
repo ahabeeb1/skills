@@ -1,6 +1,6 @@
 ---
 name: using-habeebs-skill
-description: Introduction to the habeebs-skill methodology. Auto-loads when any habeebs-skill is referenced. Tells the agent how the skill chain composes — prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop — and which engineering primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) support each phase. Documents how to abort the chain cleanly. Make sure to use this skill whenever any habeebs-skill triggers, so you know what's coming next in the chain and how to recover if work needs to halt.
+description: Chain orientation for the habeebs-skill methodology. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the prior-art-research → spec → grill → record → plan → tdd flow and how to abort cleanly. Do not use for tasks unrelated to the habeebs-skill chain.
 ---
 
 # Using habeebs-skill

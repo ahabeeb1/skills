@@ -1,6 +1,6 @@
 ---
 name: vertical-slice
-description: Decomposes a spec or plan into vertical slices (tracer bullets) — each cutting through ALL integration layers end-to-end, never a horizontal slice of one layer. Tags each slice HITL (human-in-the-loop required) or AFK (autonomous-friendly). Optionally publishes slices to the configured issue tracker. Make sure to use this skill whenever a plan, spec, PRD, or feature description needs to be broken into work items — especially when the user says "break this down", "create tickets", or "what are the steps". Do NOT use to re-slice already-sliced work or for trivial single-slice tasks.
+description: Decompose a spec or plan into vertical slices (HITL or AFK). Use when user says "break this down", "create tickets", "what are the steps", types "/slice", or when draft-spec needs explicit slice decomposition. Do not use to re-slice already-sliced work or for trivial single-slice tasks.
 disable-model-invocation: true
 ---
 

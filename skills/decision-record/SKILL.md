@@ -1,6 +1,6 @@
 ---
 name: decision-record
-description: Captures a chosen architecture as an ADR (Architectural Decision Record) in the repo. Writes context, decision, alternatives, consequences, and revisit triggers. The resulting ADR becomes Tier 0 prior art for future prior-art-research. Make sure to use this skill whenever a non-trivial architectural decision has been made — after socratic-grill resolves open questions, before implementation, or when the user says "lock this in" or "document this". Do NOT use for trivial choices (file naming, formatter config) or code documentation.
+description: Capture a chosen architecture as an ADR. Use when socratic-grill emits "HANDOFF: record ready", user types "/record", "lock this in", "document this decision", or after a non-trivial architectural choice. Do not use for trivial config (file naming, formatter rules) or code documentation.
 disable-model-invocation: true
 ---
 

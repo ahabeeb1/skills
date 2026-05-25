@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Disciplined root-cause debugging loop. ALWAYS use when user says "this is broken", "fix this bug", "the test is failing", "this worked yesterday", reports unexpected behavior, or describes a performance regression. Do not use when the fix is obvious from a one-line stack trace.
+description: Disciplined root-cause debugging loop. ALWAYS use when user says "this is broken", "fix this bug", "the test is failing", "this worked yesterday", reports unexpected behavior, or describes a performance regression. Do not use when the fix is obvious from a one-line stack trace, or for performance work without a known regression.
 ---
 
 # Systematic Debugging

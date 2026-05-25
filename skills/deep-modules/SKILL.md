@@ -1,6 +1,6 @@
 ---
 name: deep-modules
-description: Find and deepen shallow modules using the deletion test. ALWAYS use when user says "refactor this", "this code feels off", "too many small files", "this abstraction earns nothing", or at the refactor step inside tdd-loop. Do not use to rewrite already-deep modules.
+description: Find and deepen shallow modules using the deletion test. ALWAYS use when user says "refactor this", "this code feels off", "too many small files", "this abstraction earns nothing", or at the refactor step inside tdd-loop. Do not use to rewrite already-deep modules, or to add abstractions not yet earned.
 ---
 
 # Deep Modules

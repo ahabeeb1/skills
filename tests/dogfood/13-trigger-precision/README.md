@@ -1,5 +1,7 @@
 # Dogfood scenario 13 — trigger-precision audit (R4)
 
+**Status from v1.19.0:** **REGRESSION BASELINE.** This synthetic-prompt precision check is retained as a regression test through v1.20.0. The primary firing-rate signal lives in [`docs/agents/references/trigger-firing-eval.md`](../../../docs/agents/references/trigger-firing-eval.md) (real-session transcript review). Per OQ-6 resolution and ADR-0007's 2026-05-24 amendment, the synthetic corpus reports 100% precision *by construction* (Hamel Husain's red flag) — the transcript eval closes that gap. If real-session eval consistently surfaces failures this corpus misses across 2 consecutive quarters, dogfood 13 is sunset in v1.20.0+.
+
 One-time manual audit measuring whether habeebs-skill's 15 SKILL.md descriptions actually trigger correctly on realistic user prompts. Per Anthropic's [Claude Code best-practices](https://code.claude.com/docs/en/best-practices), description quality is **the** load-bearing correctness axis for skills — v1.9.0 trimmed all 14 pre-existing descriptions for budget compliance ([ADR-0007](../../../docs/agents/adrs/0007-description-budget-policy.md)) but did not measure whether the trimmed descriptions still trigger correctly. This audit fills that gap per the v1.10.0 R4 recommendation.
 
 ## Methodology

@@ -16,6 +16,24 @@ Each skill produces output that the next skill consumes. The handoff lines at th
 
 **Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
 
+## Skill routing
+
+When the user's request matches the LEFT column, invoke the RIGHT skill BEFORE anything else. This table is authoritative — it outranks fuzzy-match against competing skill descriptions.
+
+| User signal                                                                          | Skill                  |
+|--------------------------------------------------------------------------------------|------------------------|
+| "let's build", "I want to add X", "implement", "design this", "architect this"       | `/research`            |
+| "this is broken", "fix this bug", "test is failing", "this worked yesterday"         | `/debug`               |
+| "refactor this", "this code feels off", "too many small files", "clean this up"      | `/deepen`              |
+| "audit this", "security review", "check for vulnerabilities", "threat model"         | `/security-audit`      |
+| "do these N things in parallel", "run these batches concurrently"                    | `/parallel`            |
+| After `/research` emits `HANDOFF: spec ready`                                         | `/spec` then `/grill`  |
+| After `/grill` resolves OQs, before implementation                                    | `/record` then `/plan` |
+| "spec is locked", "start building slice N", "let's implement"                        | `/tdd`                 |
+| "ready to ship", "cut a release", "bump the version", "tag this"                     | `/release`             |
+
+If the request is ambiguous, ASK before picking a path. Do not skip the chain to vibe-code.
+
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** The user almost never says "research." They say "I want to build X." Read between the lines.

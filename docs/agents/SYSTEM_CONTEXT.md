@@ -1,7 +1,7 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-24
-**Refreshed by:** Release merge — v1.18.0 cross-session conflict detection merged on top of v1.17.0. Counts reconciled. Canonical writer per ADR-0005 single-writer invariant.
+**Last refreshed:** 2026-05-25
+**Refreshed by:** prior-art-research Phase 0 + Phase 7 (v1.18.0 workflow audit run). ADR count corrected 18→20 (0019 was missed by the prior v1.17.0 refresh). Steering reconciliation appended below. Canonical writer per ADR-0005 single-writer invariant.
 **Schema:** per ADR-0010 — non-re-derivable cross-session state only. Dropped sections (Stack / Persistence / Deployment shape / External services / Recent hot files / Open / unknown / Tracked manifests) are re-derivable from `package.json`, git, and imports on fresh invocation per Anthropic's Claude Code best-practices ❌ Exclude rule.
 
 ## Scale envelope
@@ -9,7 +9,7 @@
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
 - **Skill count:** 18 in tree (15 pre-v1.14.0; v1.14.0 added `security-audit`, `release`, `devex-review` per ADR-0014).
 - **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill (ADR-0014). 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill). Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `chain-postmortem` is a section in `using-habeebs-skill` (post-incident error-analysis, complementary to verify-output's pre-commit static check, per ADR-0011).
-- **ADR count:** 18 (0001-0018). ADR-0001 amended by 0006 + scope-narrowed by 0010. ADR-0002 amended by 0019 (advisory in-flight reads carve-out for cross-session conflict detection). ADR-0003 amended by 0015 (tag-only-push carve-out). ADR-0004 amended in place 2026-05-13 (Part 3 share-full-traces clause + Part 5 untrusted-content rule); Part 2 writer implemented by ADR-0018. ADR-0013 (research-context-gate) extended by ADR-0016 (chain-wide depth tier). ADR-0012 amended in place 2026-05-22 (template path relocation).
+- **ADR count:** 20 (0001-0019 + README). ADR-0001 amended by 0006 + scope-narrowed by 0010. ADR-0002 amended by 0019 (advisory in-flight reads carve-out for cross-session conflict detection). ADR-0003 amended by 0015 (tag-only-push carve-out). ADR-0004 amended in place 2026-05-13 (Part 3 share-full-traces clause + Part 5 untrusted-content rule); Part 2 writer implemented by ADR-0018. ADR-0013 (research-context-gate) extended by ADR-0016 (chain-wide depth tier). ADR-0012 amended in place 2026-05-22 (template path relocation).
 - **Current release:** v1.18.0 (cross-session conflict detection — 16 slices, 170 test assertions). New tracked directory: `docs/agents/conflicts/` (audit logs). New runtime directory: `$(git rev-parse --git-common-dir)/habeebs-sessions/` (session sidecars, auto-gitignored inside `.git/`).
 
 ## Methodology / agent setup
@@ -45,6 +45,24 @@
 (none — flushed 2026-05-13 per `prior-art-research` Phase 7 flush rule at end of v1.10.0 research run; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-05-25 — topic: habeebs-skill v1.18.0 workflow audit vs Anthropic + AI startups + canonical ADR + parallel-agent tooling (audit-only, no code changes)**
+
+- Anchor "Anthropic Skills best-practices": Honored with caveat — anthropics/skills has zero methodology folders; audit recommends shrinking habeebs-skill from 9 to 6 subdirs (not to 0); habeebs-skill is methodology-as-product, different category.
+- Anchor "Skills 2.0 conventions": Honored — skill file shapes match; no recommended changes beyond parallel-dev bifurcation by task class.
+- Anchor "Cognition don't-build-multi-agents": Honored — bifurcating parallel-dev (read-OK at 15× tokens per Anthropic; write-RESTRICTED per Cognition) is the compatible compromise; pure adherence (delete parallel-dev) rejected because read-task usage is Anthropic-validated.
+- Anchor "Nygard ADR canon": Honored — tombstone + immutable path + forward-pointer adopted from Nygard via MADR + Fowler; Backstage late-binding ID is a Nygard-compatible extension.
+- Look-at "Claude Code parallel features": Honored — Claude Code issue #25768 (EBUSY on global `~/.claude.json`) validates v1.18.0 per-repo sidecar choice; KEEP AS-IS verdict on v1.18.0.
+- Look-at "Cursor, Devin, Aider, Cline": Honored — Cursor's 8-cap + JSON sidecar is the closest peer to v1.18.0 (validates the shape; habeebs-skill's pre-tool peer-scan + pre-push gate is novel beyond Cursor's visibility-only sidecar).
+- Look-at "Spotify ADR, GitHub ADR": Honored — Backstage (Spotify) is the primary case study and the only canonical source with explicit parallel-writer guidance. joelparkerhenderson (GitHub) named as slug-only alternative.
+- Look-at "Vercel/Replit": Honored with caveat — Vercel cited via Changesets adoption; Replit not separately sampled (no public ADR/conflict material). Not material because Changesets and Backstage cover the same pattern shape.
+- Avoid "runtime substrate": Honored — all recommendations are markdown/JSON only (append-only intent files, tombstone ADRs, folder pruning, skill-content edits).
+- Avoid "re-litigating chain shape": Honored — audit accepts the chain (prior-art-research → spec → grill → record → plan → tdd); recommendations are scoped to taxonomy + identifier-strategy + skill-positioning.
+- Phase 2.5 critic outcome: ADDITIONS PROPOSED, 3 of 3 accepted (chain-usage telemetry → SP2; cost ceilings → SP3 with scope-narrowing; deprecation patterns → SP2). One open-set rejection with reason (skill-catalog discoverability — search would re-fetch same SP3 sources).
+- Pattern-extractor returned DONE_WITH_CONCERNS with 2 tier-narrow flags (dormancy detection, cost ceilings); both resolved without re-fan-out because enterprise contract-testing requires runtime substrate ADR-0002 forbids and FinOps tools control dollar-spend not chain-ceremony cost (already covered by ADR-0016).
+- Verdict: v1.18.0 cross-session detection is canonically correct and KEEP AS-IS; single highest-leverage change is adopting Changesets-shape append-only intent files for version bumps + Backstage late-binding for ADR IDs; recommend deleting dormant `dispatches/` + `conflicts/` and folding `grill-records/` + `research/` into `specs/` (3 tombstone ADRs needed). Archive: `docs/agents/research/v1.19.0-workflow-audit-research.md`. NO auto-trigger to draft-spec per user request — research-only run.
+- Prompt-injection report: None detected across 6 source-fetcher dispatches.
+- **Audit finding NOT in main report:** SYSTEM_CONTEXT.md said "ADR count: 18" but disk has 20 ADRs (0019 added 2026-05-22 + the post-v1.18.0 state). ADR-0005 single-writer invariant either was violated or Phase 0 missed an update. ADR-count text in this file should be updated to 20 by the next prior-art-research Phase 0 run (this run is the writer per ADR-0005, but the count update is one-line and orthogonal to the audit verdicts).
 
 **2026-05-13 (afternoon) — topic: habeebs-skill alignment audit vs Anthropic + practitioner + OpenAI + Google + LangChain (v1.10.0 candidate, full sweep)**
 

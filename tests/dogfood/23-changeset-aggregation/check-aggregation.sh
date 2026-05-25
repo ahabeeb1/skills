@@ -29,10 +29,14 @@ make_fixture() {
   mkdir -p "$dir/.claude-plugin" "$dir/.changeset"
   printf '{"version": "1.19.0"}\n' > "$dir/.claude-plugin/plugin.json"
   printf '{"version": "1.19.0"}\n' > "$dir/.claude-plugin/marketplace.json"
+  # Use the canonical CHANGELOG format (`## [X.Y.Z] — YYYY-MM-DD`) that real
+  # habeebs-skill CHANGELOGs use — catches the bug where the aggregator's
+  # regex only matched `## v...` and silently appended new sections at the
+  # bottom of the file instead of prepending them.
   cat > "$dir/CHANGELOG.md" <<'EOF'
 # Changelog
 
-## v1.19.0
+## [1.19.0] — 2026-05-22
 
 - Previous release
 EOF
@@ -59,7 +63,12 @@ make_changeset "$DIR" "feat-baz" "minor" "add baz feature"
 "$SCRIPT" --root "$DIR" >/dev/null 2>&1 || fail "(a) happy: exit non-zero"
 grep -q '"version": "1.20.0"' "$DIR/.claude-plugin/plugin.json" || fail "(a) plugin.json not bumped to 1.20.0"
 grep -q '"version": "1.20.0"' "$DIR/.claude-plugin/marketplace.json" || fail "(a) marketplace.json not bumped to 1.20.0"
-grep -q '## v1.20.0' "$DIR/CHANGELOG.md" || fail "(a) CHANGELOG missing v1.20.0 section"
+grep -qE '^## \[1\.20\.0\]' "$DIR/CHANGELOG.md" || fail "(a) CHANGELOG missing [1.20.0] section"
+# Verify the new section was PREPENDED (before [1.19.0]), not appended
+LINE_NEW=$(grep -n '^## \[1.20.0\]' "$DIR/CHANGELOG.md" | head -1 | cut -d: -f1)
+LINE_OLD=$(grep -n '^## \[1.19.0\]' "$DIR/CHANGELOG.md" | head -1 | cut -d: -f1)
+[ -n "$LINE_NEW" ] && [ -n "$LINE_OLD" ] && [ "$LINE_NEW" -lt "$LINE_OLD" ] || \
+  fail "(a) CHANGELOG: new [1.20.0] section was not prepended before [1.19.0] (new line=$LINE_NEW, old line=$LINE_OLD)"
 # Three bullets — one per changeset why
 WHY_COUNT=$(grep -cE 'fix the foo bug|add bar feature|add baz feature' "$DIR/CHANGELOG.md" || true)
 [ "$WHY_COUNT" -eq 3 ] || fail "(a) CHANGELOG missing one of the 3 why-lines (found $WHY_COUNT)"

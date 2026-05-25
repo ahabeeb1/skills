@@ -156,12 +156,15 @@ grep -q "\"version\": \"$NEW\"" "$STAGING/marketplace.json" || \
 # Write WHY_LINES to a temp file the awk reads
 printf '%s\n' "${WHY_LINES[@]}" > "$STAGING/whys.txt"
 
-# Stage new CHANGELOG: prepend a new "## vNEW" section before the first
-# existing "## v" heading, populating one bullet per why-line.
-awk -v new="$NEW" -v whys_file="$STAGING/whys.txt" '
+# Stage new CHANGELOG: prepend a new "## [NEW] — YYYY-MM-DD" section before
+# the first existing release heading. Matches BOTH legacy formats — "## v..."
+# and "## [...]" — so it works against pre-v1.20.0 CHANGELOGs and the format
+# this script itself writes going forward.
+TODAY=$(date +%Y-%m-%d)
+awk -v new="$NEW" -v today="$TODAY" -v whys_file="$STAGING/whys.txt" '
   BEGIN { inserted=0 }
-  /^## v/ && !inserted {
-    print "## v" new "\n"
+  /^## (\[|v[0-9])/ && !inserted {
+    print "## [" new "] — " today "\n"
     while ((getline line < whys_file) > 0) print "- " line
     print ""
     inserted=1
@@ -169,14 +172,14 @@ awk -v new="$NEW" -v whys_file="$STAGING/whys.txt" '
   { print }
   END {
     if (!inserted) {
-      print "\n## v" new "\n"
+      print "\n## [" new "] — " today "\n"
       while ((getline line < whys_file) > 0) print "- " line
     }
   }
 ' "$CHANGELOG" > "$STAGING/CHANGELOG.md" || \
   { echo "Failed to stage CHANGELOG" >&2; exit 1; }
 
-grep -q "^## v$NEW" "$STAGING/CHANGELOG.md" || \
+grep -q "^## \[$NEW\]" "$STAGING/CHANGELOG.md" || \
   { echo "CHANGELOG staging missing new section" >&2; exit 1; }
 
 # All three staging files built. Now commit atomically by moving each into place.

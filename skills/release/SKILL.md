@@ -1,6 +1,7 @@
 ---
 name: release
 description: Terminal chain link after tdd-loop. Bumps plugin.json + marketplace.json, writes a CHANGELOG entry (Why line mandatory), cleans commit history, drafts a PR body, runs a doc-sync coverage audit, and pushes a release tag via `git push origin refs/tags/<version>`. Make sure to use this skill when the user says "release", "ship", "cut a release", "bump the version", or "tag this" and tdd-loop is GREEN. Do NOT use mid-feature (tdd-loop must be done first), for hotfixes bypassing the chain, or when the user asks for a deploy/canary/benchmark — release stops at PR + tag, never touches production.
+disable-model-invocation: true
 ---
 
 # Release

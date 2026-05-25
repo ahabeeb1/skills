@@ -1,6 +1,7 @@
 ---
 name: write-plan
 description: Converts a locked ADR + sliced spec into a definitive implementation plan — phased delivery with explicit acceptance gates, dependency DAG, parallelization map, per-phase rollback hooks, and revisit triggers. The plan is the orchestration artifact tdd-loop reads slice-by-slice and parallel-dev consults when batching AFK groups. Make sure to use this skill whenever decision-record emits "HANDOFF: implementation ready", whenever the user says "give me a plan" or "map this out", or before any parallel-dev dispatch of 3+ slices. Do NOT use for single-slice work, exploration spikes, or when no ADR exists yet.
+disable-model-invocation: true
 ---
 
 # Write Plan

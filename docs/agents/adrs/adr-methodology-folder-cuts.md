@@ -1,6 +1,6 @@
 # ADR-NNNN: Cut dormant methodology folders and fold grill-records into specs
 
-**Status:** Accepted
+**Status:** Accepted (amended 2026-05-25 — see "## 2026-05-25 Amendment" below; `dispatches/` and `conflicts/` deletions REVERSED)
 **Date:** 2026-05-25
 **Deciders:** Modie (Habeeb)
 **Tier:** Balanced
@@ -150,4 +150,74 @@ This ADR should be reopened if any of:
 
 ## Changelog
 
-- 2026-05-25 — Initial ADR, status Accepted (locked by v1.20.0 grill resolution; slated for implementation in Slices 4, 5, and 6 of `docs/agents/specs/v1.20.0-methodology-overhaul.md`)
+- 2026-05-25 — Initial ADR, status Accepted (locked by v1.20.0 grill resolution; slated for implementation in Slices 4, 5, and 6 of `docs/agents/specs/v1.20.0-methodology-overhaul.md`).
+- 2026-05-25 — Amended in place. The `dispatches/` and `conflicts/` deletions are REVERSED based on evidence surfaced during Slice 4/5 implementation. The `grill-records/` fold (Slice 6) is unaffected and SHIPPED in commit `f309e0b`. See "## 2026-05-25 Amendment" section below for the full reasoning.
+
+---
+
+## 2026-05-25 Amendment — runtime audit-log directories carved out of Pattern G
+
+### Why this amendment
+
+Implementation of Slices 4 + 5 surfaced evidence that contradicts the audit memo's "Pattern G — methodology folders earn existence by file count" framing as applied to `docs/agents/dispatches/` and `docs/agents/conflicts/`.
+
+**The original analysis was:** both directories had 0 files; therefore both were "dormant declared contracts" per Pattern G; therefore both should be deleted with in-place ADR amendments tombstoning ADR-0004 Part 2 and ADR-0018 Part A.
+
+**The contradicting evidence (surfaced during cross-reference inventory in Slice 4/5 prep):** both directories have **live runtime writers** that have simply not had occasion to fire on this branch yet.
+
+- `docs/agents/dispatches/` is the target of `skills/parallel-dev/SKILL.md` Phase 7.5 ("Write the dispatch record"), wired up by ADR-0018 Part A in v1.17.0. The writer fires on every parallel-dev dispatch that reaches verification; the directory is empty on this branch only because no parallel-dev dispatch has run on this branch yet — this very v1.20.0 work has been sequential.
+- `docs/agents/conflicts/` is the target of `skills/cross-session-detect/audit.sh write --context <json>`, wired up by ADR-0019 in v1.18.0. The writer fires when a real cross-session conflict is detected; the directory is empty only because no real conflict has occurred since v1.18.0 shipped 2026-05-21 (4 days ago).
+
+Pattern G applies to **methodology folders** — directories where the human or agent is the writer and the file count reflects active methodology use (e.g., `specs/`, `plans/`, `adrs/`). It does NOT apply to **runtime audit-log folders** — directories where a script is the writer and a low file count is the *desired* steady state (a fire-alarm log being empty means no fires, not that the alarm should be removed).
+
+The audit memo's reasoning conflated these two classes. The classification error is honest — the original audit was substrate-free static analysis (`ls docs/agents/`) without examining whether each directory had a runtime writer. The Slice 4/5 implementation pass did the runtime-writer inventory that the audit missed.
+
+### Amended Decision
+
+We will REVERSE the `dispatches/` and `conflicts/` deletions and PRESERVE both directories along with ADR-0004 Part 2 + ADR-0018 Part A in their original (un-superseded) form:
+
+- **`docs/agents/dispatches/` is KEPT.** ADR-0004 Part 2's contract stands. The `.gitkeep` file remains. The `parallel-dev` Phase 7.5 writer remains the canonical writer.
+- **`docs/agents/conflicts/` is KEPT.** ADR-0019's audit-log carve-out stands. The `cross-session-detect/audit.sh` writer remains the canonical writer.
+- **No tombstone amendments to ADR-0004 or ADR-0018.** Slices 4 and 5 are DROPPED from the v1.20.0 spec. The original Decision section of this ADR is partially superseded by this amendment for those two folders only.
+- **The `grill-records/` → `specs/<name>-grill.md` fold (Slice 6) is unaffected.** Slice 6 shipped in commit `f309e0b` and is correct: `grill-records/` was a true methodology folder (single human-authored grill record, no runtime writer), Pattern G genuinely applies, and the fold preserves Pattern B (in-place amendment of the structural decision).
+
+The audit memo's recommendation #3 (originally "delete dispatches/ + conflicts/ + fold grill-records/") now reads "fold grill-records/" only. The two audit-reversals previously documented in this ADR (research/ kept; tracker-config kept separate) are joined by a third (dispatches/ + conflicts/ kept).
+
+### Amended Consequences
+
+**Positive:**
+
+- Preserves the v1.17.0 dispatch-record audit trail mechanism (ADR-0004 Part 2 + ADR-0018 Part A) without disruption.
+- Preserves the v1.18.0 cross-session conflict-detection audit log (ADR-0019) without disruption — `audit.sh` continues to work; the directory it writes to continues to exist.
+- Cleaner separation in the methodology now codified: Pattern G applies to *human/agent-written* methodology folders; runtime audit-log folders are governed by their own writer's ADR (ADR-0004, ADR-0018, ADR-0019) and not subject to file-count-based retirement.
+- v1.20.0 release scope shrinks slightly (3 active slices instead of 5: 1, 2, 3, 6, 7); fewer one-way-door deletions.
+
+**Negative / Accepted trade-offs:**
+
+- Two empty directories continue to exist in `docs/agents/`. Reviewers unfamiliar with the runtime-writer story will see them and wonder why. Mitigation: this amendment is the canonical explanation; `adrs/README.md` index entry for ADR-0004 + ADR-0018 + this ADR all cross-reference.
+- The audit memo's overall verdict count drops (the "9 → 7 declared surfaces" claim becomes "9 → 8" once you also keep `dispatches/` and `conflicts/`). Modest revision; methodology-folder cleanup still landed via the `grill-records/` fold.
+- This is a one-way-door reversal of a one-way-door decision — the cost of being wrong twice. Accepted because the second analysis (runtime-writer inventory) is strictly more evidence than the first (`ls`-only file count); the chain's "loud failure mode" caught the issue at the right time (mid-implementation, before any deletion landed).
+
+### Amended Revisit triggers
+
+The dispatches/ + conflicts/ retention is conditional on the writers remaining live:
+
+- **If the `parallel-dev` Phase 7.5 writer is removed or made conditional** (e.g., a future ADR makes Phase 7.5 opt-in and most chains skip it), revisit whether `dispatches/` still earns existence. Same writer-existence test as this amendment used.
+- **If ADR-0019 is superseded** (the v1.18.0 cross-session conflict-detection feature is rolled back or rewritten without an audit log), revisit `conflicts/`.
+- **If `dispatches/` or `conflicts/` accumulates 100+ records**, the existing ADR-0004 retention trigger at 1000 records becomes the operative concern; introduce `/sync` cleanup, but do not delete the directory itself.
+
+### Lesson for the audit methodology
+
+Add to the audit memo's Pattern G description (future readers, future audits): "Pattern G applies to methodology folders only. Before classifying a directory as 'dormant' based on file count, inventory its writers. If a runtime writer (script, hook, automation) targets the directory and would break on deletion, the directory is not dormant — it is a runtime audit log governed by the writer's own ADR, not by Pattern G."
+
+This is a candidate addition to the audit's "Anti-patterns this skill guards against" list in `prior-art-research` Phase 6 — flagged for the next audit-methodology revision.
+
+### References (amendment)
+
+- Surfaced during implementation of Slice 4 of `docs/agents/specs/v1.20.0-methodology-overhaul.md`
+- Live writer at `skills/parallel-dev/SKILL.md:186` (Phase 7.5)
+- Live writer at `skills/cross-session-detect/audit.sh:10`
+- Original audit memo: [`docs/agents/research/v1.19.0-workflow-audit-research.md`](../research/v1.19.0-workflow-audit-research.md) — Pattern G framing being amended here
+- [ADR-0004 Part 2](./0004-parallel-subagent-dispatch-contract.md) — preserved, NOT superseded
+- [ADR-0018 Part A](./0018-implement-dormant-artifact-recording-contracts.md) — preserved, NOT superseded
+- [ADR-0019](./0019-amend-adr-0002-for-advisory-in-flight-reads.md) — preserved (substrate carve-out unaffected)

@@ -357,6 +357,53 @@ On any halt, print the diagnosis + the local-only commit list + instructions on 
 - **Manually fighting squash-merge ghost commits.** If `git pull origin <default>` conflicts after a PR merge, run Phase 6.5 (or `/sync`) rather than resolving the conflict by hand. The ghost commits' content is already on origin; manual resolution risks introducing real drift.
 - **Auto-resetting on `ahead>0, behind=0`.** That signals genuine local-only work; resetting would lose it. Phase 6.5 halts in that case by design.
 
+## Hazards from git itself (not this skill's fault, but this skill is where you find out)
+
+Three git-worktree behaviors surprise multi-worktree users and have caused real conflicts in habeebs-skill's parallel-dev workflows. None are bugs in this skill, but this skill is where users go to figure out why their worktrees collided — so the warnings live here.
+
+### Shared config across worktrees (the `extensions.worktreeConfig` footgun)
+
+By default, git stores config in one place per repository — every worktree reads and writes the same `config` file. If one worktree (or one subagent) runs `git config core.sparseCheckout true`, every other worktree on the same repo inherits that setting on its next git operation. The official git docs name this directly: `core.worktree`, `core.bare`, and `core.sparseCheckout` "should never be shared" without enabling per-worktree config.
+
+The fix is a one-time per-repo opt-in:
+
+```bash
+git config extensions.worktreeConfig true
+```
+
+After that, each worktree has its own `config.worktree` file under its `.git` directory, and the three config keys above are read from there in priority order. **Run this on first repo setup, not per-worktree** — it changes how git resolves config repo-wide.
+
+Two pragmatic rules while this is opt-in:
+
+- **Never run `git config core.*` from inside a parallel-dev subagent's worktree.** The mutation leaks to every peer. If a subagent needs a config change, the dispatcher sets it before Phase 4 and re-evaluates afterward.
+- **Treat `git config --local` as repo-wide, not worktree-local,** unless you've confirmed `extensions.worktreeConfig` is on. The `--local` flag is named misleadingly relative to worktrees.
+
+### Manual `rm -rf` of a worktree dir leaves stale refs
+
+`git worktree remove <path>` is not equivalent to `rm -rf <path>`. The former cleans up the worktree's entry in `.git/worktrees/<name>` and the gitdir pointer; the latter leaves both behind. Orphaned entries surface later as:
+
+```
+fatal: '<branch>' is already checked out at '<deleted-path>'
+```
+
+…even though the path no longer exists. Recovery is `git worktree prune` (drops stale entries) followed by deleting the branch by name. Easy to misdiagnose because the error message names a path that no longer exists, so grepping for it finds nothing.
+
+Phase 6 of this skill always uses `git worktree remove`. If you (or another agent) reached for `rm -rf` between sessions, run `git worktree prune` before any new `git worktree add`.
+
+### One branch, one worktree, period
+
+Git refuses to check out the same branch in two worktrees simultaneously:
+
+```
+fatal: '<branch>' is already checked out at '<other-worktree-path>'
+```
+
+There is no force flag — the constraint is structural (two worktrees on one branch would race the index). If you want two worktrees with the same starting point, give them different branches off the same base (`git worktree add ../wt-a -b feature/a origin/main` + `git worktree add ../wt-b -b feature/b origin/main`).
+
+For cross-session parallel work (the v1.18.0 conflict-detection scenario), this constraint is doing useful work: it forces session-per-branch isolation. Don't try to work around it.
+
+**Source:** [`git-worktree(1)`](https://git-scm.com/docs/git-worktree) — the BUGS and CONFIGURATION FILES sections cover all three. Audit memo: `docs/agents/research/v1.19.0-workflow-audit-research.md` § "using-worktrees".
+
 ## Integration with the chain
 
 - **Consumed by `parallel-dev`** — each AFK slice subagent gets its own worktree (concurrent subagents never share a working tree)

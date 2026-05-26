@@ -49,15 +49,21 @@ Where do ADRs live in this repo? Check in order:
 
 If none found, ask: "Where should ADRs live? Default is `docs/agents/adrs/`. Y/N or specify."
 
-### Phase 2 — Number the ADR
+### Phase 2 — Late-binding ID (skip numbering)
 
-Find the highest existing ADR number in the directory. Pad to 4 digits, increment. Example: existing `0007-...` → new ADR is `0008-...`.
+**Post-v1.20.0:** do NOT assign an integer prefix at write time. New ADRs are filed as `adr-<slug>.md` (no number). The `release` skill is the sole writer of `NNNN-<slug>.md` filenames — it scans for `adr-*.md` files at release-PR-creation time, assigns sequential integers, renames the files in alphabetic slug order, and updates the README index.
+
+This separation-of-writers (per ADR `adr-late-binding-and-changesets`) eliminates the parallel-writer collision class that plagued integer prefixes pre-v1.20.0. Two concurrent sessions can both write ADRs without racing for the next integer; the release skill resolves the order deterministically at merge time.
+
+**This skill never writes `NNNN-<slug>.md` directly.** Dogfood scenario 21 (`tests/dogfood/21-late-binding-adr/check-late-binding.sh`) asserts the separation: `decision-record` output must never match `^[0-9]{4}-`.
+
+Existing ADRs (0001-0019) are NOT renamed (Pattern B / immutable path). Only the creation path changed; final at-rest shape is identical.
 
 ### Phase 3 — Choose the title slug
 
 Title: present-tense, action-oriented, concrete. "Use Yjs for collaborative editing conflict resolution" — not "Collaborative editing" or "Considering options for sync."
 
-Slug: lowercase, hyphenated, ≤8 words. `0008-use-yjs-for-collaborative-editing.md`
+Slug: lowercase, hyphenated, ≤8 words. Filename: `adr-<slug>.md` (e.g., `adr-use-yjs-for-collaborative-editing.md`). The `release` skill renames this to `NNNN-<slug>.md` at release time.
 
 ### Phase 4 — Gather inputs
 
@@ -91,9 +97,11 @@ Follow `references/adr-template.md` exactly. Sections:
 
 Echo the inherited tier into the ADR header's `**Tier:**` field.
 
-### Phase 6 — Update the ADR index
+### Phase 6 — Defer ADR index update to release
 
-If `docs/agents/adrs/README.md` (or equivalent) exists, append the new ADR to its index. If not, create one.
+**Post-v1.20.0:** do NOT update `adrs/README.md` here. The integer prefix doesn't exist yet, so the index entry can't be written. The `release` skill regenerates the index after assigning the integer (see `skills/release/scripts/assign-adr-ids.sh`).
+
+If the README is missing entirely (greenfield repo), create the skeleton table with a one-line header — but do not add a row for the new ADR. Release time owns that.
 
 ### Phase 7 — Hand off
 

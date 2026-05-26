@@ -40,6 +40,7 @@ If the request is ambiguous, ASK before picking a path. Do not skip the chain to
 - **Don't skip phases for speed — pick a lighter tier instead.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding. On genuinely simple work the Quick tier already trims the ceremony; the tier scale, not impatience, decides depth.
 - **Internal precedent first.** For Modie's repos (BeanBot, salahi.app, BOL automation), check local repos before going external. The user's own prior art is Tier 0.
 - **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in the Deep tier AND consumes `write-plan`'s parallelization groups. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes. `using-worktrees` isolates non-trivial slices. `systematic-debugging` handles bugs that surface during or after a slice.
+- **`parallel-dev` task-class split.** Read-task dispatches (research / extraction / audit — Anthropic-validated, ~15× tokens, no merge surface) and write-task dispatches (artifact-producing — Cognition-restricted: per-worktree isolation + ≤8 concurrent + Phase 2 independence verification, all mandatory) follow different rules. See `parallel-dev` § "Task class — read vs write" before dispatching a write batch.
 
 ## What this plugin is NOT
 

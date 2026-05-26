@@ -39,6 +39,8 @@ This repo is configured for habeebs-skill v1.8+. The methodology files are:
 - **Plans:** `docs/agents/plans/`
 - **Dispatches:** `docs/agents/dispatches/`
 
+**Directory classification:** Two of these surfaces are *runtime writer paths*, not authored methodology directories — `docs/agents/dispatches/` (written by `parallel-dev` Phase 7.5 when a pgroup completes) and `docs/agents/conflicts/` (written by `cross-session-detect/audit.sh` when a session conflict is detected). Their on-disk emptiness in git snapshots reflects runtime-path sparsity, not dormancy. Pattern G's "earn existence by file count" rule applies only to authored directories (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`); runtime writer paths remain on disk with `.gitkeep` regardless of file count. See [ADR-0021's 2026-05-26 Clarification](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the full distinction.
+
 When invoking habeebs-skills in this repo, read these files first. They define how `vertical-slice` publishes issues, what labels to use, what vocabulary to apply, and where decision records live. Per ADR-0005, `GLOSSARY.md` is the human-authored half of the two-file context layout; `SYSTEM_CONTEXT.md` is the tool-authored half (written by Phase 0).
 
 ## Anti-patterns

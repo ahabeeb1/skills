@@ -35,12 +35,14 @@ pass() { echo "PASS: $1"; }
 scan_for_pattern() {
   local file="$1" pattern="$2"
   awk -v pat="$pattern" '
-    BEGIN { in_fm=0; fm_seen=0; in_comment=0; in_footer=0 }
+    BEGIN { in_fm=0; fm_seen=0; in_comment=0; in_footer=0; in_code=0 }
     /^---$/ {
       if (fm_seen == 0) { in_fm = 1; fm_seen = 1; next }
       else if (in_fm == 1) { in_fm = 0; next }
     }
     in_fm { next }
+    /^```/ { in_code = !in_code; next }
+    in_code { next }
     {
       line = $0
       gsub(/<!--[^>]*-->/, "", line)

@@ -51,13 +51,11 @@ If none found, ask: "Where should ADRs live? Default is `docs/agents/adrs/`. Y/N
 
 ### Phase 2 — Late-binding ID (skip numbering)
 
-**Post-v1.20.0:** do NOT assign an integer prefix at write time. New ADRs are filed as `adr-<slug>.md` (no number). The `release` skill is the sole writer of `NNNN-<slug>.md` filenames — it scans for `adr-*.md` files at release-PR-creation time, assigns sequential integers, renames the files in alphabetic slug order, and updates the README index.
+Do NOT assign an integer prefix at write time. New ADRs are filed as `adr-<slug>.md` (no number). The `release` skill is the sole writer of `NNNN-<slug>.md` filenames — it scans for `adr-*.md` files at release-PR-creation time, assigns sequential integers, renames the files in alphabetic slug order, and updates the README index.
 
-This separation-of-writers (per ADR `adr-late-binding-and-changesets`) eliminates the parallel-writer collision class that plagued integer prefixes pre-v1.20.0. Two concurrent sessions can both write ADRs without racing for the next integer; the release skill resolves the order deterministically at merge time.
+Separation-of-writers lets two concurrent sessions both write ADRs without racing for the next integer; the release skill resolves the order deterministically at merge time.
 
 **This skill never writes `NNNN-<slug>.md` directly.** Dogfood scenario 21 (`tests/dogfood/21-late-binding-adr/check-late-binding.sh`) asserts the separation: `decision-record` output must never match `^[0-9]{4}-`.
-
-Existing ADRs (0001-0019) are NOT renamed (Pattern B / immutable path). Only the creation path changed; final at-rest shape is identical.
 
 ### Phase 3 — Choose the title slug
 
@@ -99,7 +97,7 @@ Echo the inherited tier into the ADR header's `**Tier:**` field.
 
 ### Phase 6 — Defer ADR index update to release
 
-**Post-v1.20.0:** do NOT update `adrs/README.md` here. The integer prefix doesn't exist yet, so the index entry can't be written. The `release` skill regenerates the index after assigning the integer (see `skills/release/scripts/assign-adr-ids.sh`).
+Do NOT update `adrs/README.md` here. The integer prefix doesn't exist yet, so the index entry can't be written. The `release` skill regenerates the index after assigning the integer (see `skills/release/scripts/assign-adr-ids.sh`).
 
 If the README is missing entirely (greenfield repo), create the skeleton table with a one-line header — but do not add a row for the new ADR. Release time owns that.
 

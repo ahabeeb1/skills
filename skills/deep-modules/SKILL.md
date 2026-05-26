@@ -24,7 +24,7 @@ This skill is informed by the project's domain model. The domain language gives 
 **Do NOT trigger on:**
 
 - Modules that are already deep — don't rewrite for sport
-- Re-litigating decisions captured in ADRs — if a deepening contradicts an ADR, surface it but mark clearly ("contradicts ADR-NNNN — only worth reopening because…")
+- Re-litigating decisions captured in ADRs — if a deepening contradicts a locked ADR, surface it but mark clearly ("contradicts the X ADR — only worth reopening because…")
 - Adding abstractions before friction exists (this is YAGNI's other half)
 - Renaming/restructuring without functional benefit
 
@@ -34,7 +34,7 @@ This skill is informed by the project's domain model. The domain language gives 
 
 Before Phase 1, verify `docs/agents/GLOSSARY.md` exists. If missing, halt with:
 
-> **SETUP REQUIRED:** `docs/agents/GLOSSARY.md` missing. Run `/setup` to populate the domain glossary stub. (Per ADR-0005, GLOSSARY.md is the domain-vocabulary half of habeebs-skill's two-file context layout; `deep-modules` cannot propose names without it.)
+> **SETUP REQUIRED:** `docs/agents/GLOSSARY.md` missing. Run `/setup` to populate the domain glossary stub. GLOSSARY.md is the domain-vocabulary half of the two-file context layout; `deep-modules` cannot propose names without it.
 
 This skill cannot produce good deepenings without the domain vocabulary. Do not proceed to Phase 1.
 

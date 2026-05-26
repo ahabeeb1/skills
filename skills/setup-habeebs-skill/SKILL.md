@@ -139,7 +139,7 @@ If `AGENTS.md` / `CLAUDE.md` already exist with the block, update its contents r
 
 ### Phase 7 — Trigger Phase 0 reconnaissance
 
-**Goal:** populate `docs/agents/SYSTEM_CONTEXT.md` so downstream chain skills don't halt on first invocation. ADR-0005 mandates this chain: setup is the bootstrap entry point that *invokes* Phase 0; Phase 0 is the sole *writer* (ADR-0001 single-writer invariant preserved by construction).
+**Goal:** populate `docs/agents/SYSTEM_CONTEXT.md` so downstream chain skills don't halt on first invocation. Setup is the bootstrap entry point that *invokes* Phase 0; Phase 0 is the sole writer (single-writer invariant preserved by construction).
 
 Invoke `prior-art-research` Phase 0 reconnaissance now. Phase 0 walks `references/recon-checklist.md`, probes every applicable manifest, and writes (or refreshes) `docs/agents/SYSTEM_CONTEXT.md`.
 
@@ -181,7 +181,7 @@ Skills that will now read from these files:
   - decision-record (writes ADRs to docs/agents/adrs/)
   - deep-modules (reads GLOSSARY.md + existing ADRs)
   - prior-art-research (treats existing ADRs as Tier 0 internal precedent; refreshes SYSTEM_CONTEXT.md on every /research invocation)
-  - socratic-grill, write-plan, parallel-dev (read SYSTEM_CONTEXT.md as load-bearing per ADR-0001)
+  - socratic-grill, write-plan, parallel-dev (read SYSTEM_CONTEXT.md as load-bearing)
 ```
 
 ## Anti-patterns this skill guards against

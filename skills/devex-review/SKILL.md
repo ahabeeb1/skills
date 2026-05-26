@@ -133,7 +133,7 @@ HANDOFF: grilling agenda updated — <N> new questions added from devex-review.
 
 ## Return contract
 
-This skill produces one of four statuses at the end of every run (consistent with ADR-0004):
+This skill produces one of four statuses at the end of every run:
 
 | Status | Meaning |
 |---|---|

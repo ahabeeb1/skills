@@ -238,6 +238,40 @@ Produce the output using the template in `references/output-template.md`. The st
 
 **Template applies when research actually runs.** If you declined the request (anti-trigger fired) or halted at Phase 1 (insufficient context), produce a much shorter output: a one-line status, what you need from the user, and a path forward. Don't pad with empty template sections.
 
+### Phase 6.4 — HITL pivot gate
+
+After composing the Phase 6 report and BEFORE writing the Phase 6.5 archive, HALT for a human review. Surface the recommendation summary + the concrete decisions for `/spec` and wait for an explicit direction.
+
+This gate exists to prevent wasted downstream token spend. By the time `/spec`, `/grill`, `/record`, and `/plan` finish, the chain has paid for four artifacts on top of the research. If the recommendation is in the wrong direction, halting here costs one user message; halting after `/plan` costs the artifacts AND the re-do. Most peer methodologies (Python PEP 1, Kubernetes KEP `provisional` state, Backstage BEP pre-RFC issue, obra/superpowers design sign-off — 4 of 5 surveyed in v1.22.0 research) gate BEFORE the full spec is written.
+
+**Gate format.** Emit a clearly-labeled halt block at the end of the Phase 6 output:
+
+```markdown
+## Phase 6 ready for HITL review — pivot point
+
+This is the new gate. **The chain is HALTED here.** Phase 6.5 archive will NOT write until you confirm direction.
+
+[Then ask the user to pick from THREE response options:]
+```
+
+Then ask the user to choose one of three responses:
+
+1. **(a) Approve as-is** — proceed to Phase 6.5 archive write unchanged. The recommendation as composed is correct; the chain continues.
+2. **(b) Approve with pivots** — free-text edits applied to the in-conversation Phase 6 report BEFORE Phase 6.5 commits to the archive file. The user describes the pivot in prose; the agent applies the edits to the in-conversation report; then Phase 6.5 writes the (edited) report to disk. Once Phase 6.5 writes the file, the file IS the source of truth — downstream skills read the archive, not the conversation.
+3. **(c) Reject + re-research with new scope** — return to Phase 2 (re-decomposition) with a new scope statement from the user. The Phase 6 report in conversation is discarded; the archive is NOT written; the chain re-enters Phase 2 with the user's new framing.
+
+**Format the user prompt as yes/no + free-text iteration, NOT menu-of-options.** Zero of five surveyed peer methodologies used menus; four of five used yes/no + iteration. Use the `AskUserQuestion` tool with `multiSelect: false` and the three options above as the choices; allow free-text follow-up for option (b) or (c) details.
+
+**On approve-as-is or approve-with-pivots:** apply any edits to the in-conversation report, then continue to Phase 6.5.
+
+**On reject + re-research:** abandon the current Phase 6 report. Do NOT archive. Return to Phase 2 with the user's new scope statement. Re-run the Phase 2 decomposition, Phase 2.5 critic, Phase 3 tier check, Phase 4-5 fan-out. The new Phase 6 report then hits the pivot gate again.
+
+**Why HITL here and not after `/spec`?** Same pivot point, lower latency. By Phase 6 the user has the recommendation + the alternatives + the trade-offs + the decisions-to-make-next. They have everything needed to pivot. Adding a separate `/spec`-pre-gate would double-gate the same decision; better to make the first gate sufficient.
+
+**On `--auto` invocations** (no user present): the gate skips with a note in the archive ("HITL pivot gate auto-passed; no user available"). The gate's value depends on a human being present to pivot.
+
+**On the user accepting as-is with deferrals:** if the user picks (a) but defers any sub-decisions to `/grill`, capture the deferred items as open questions in the report. The grill phase resolves them. This is the common case — the recommendation is directionally right, individual details need socratic pressure.
+
 ### Phase 6.5 — Archive the report
 
 After Phase 6 composes the report, write it verbatim to:

@@ -156,8 +156,6 @@ Required sections in order:
 10. **Change log** — added on first revision
 11. **References** — ADR, spec, grill, research archive (Deep-tier), SYSTEM_CONTEXT.md, GLOSSARY.md
 
-**Dropped from the pre-v1.22.0 template** (do not include): rollback-hook columns in tables beyond the slice list, Jira-style blocked-by tables, 3-level-nested risk hierarchies, separate full-risk-register table (per-phase prose risks subsume it).
-
 Status field semantics:
 - **Proposed** — written but no slice has started
 - **Active** — at least one slice is in `tdd-loop`

@@ -1,6 +1,6 @@
 # ADR-NNNN: Cut dormant methodology folders and fold grill-records into specs
 
-**Status:** Accepted (amended 2026-05-25 — see "## 2026-05-25 Amendment" below; `dispatches/` and `conflicts/` deletions REVERSED)
+**Status:** Accepted (amended 2026-05-25, clarified 2026-05-26 — see amendment + clarification blocks below)
 **Date:** 2026-05-25
 **Deciders:** Modie (Habeeb)
 **Tier:** Balanced
@@ -221,3 +221,52 @@ This is a candidate addition to the audit's "Anti-patterns this skill guards aga
 - [ADR-0004 Part 2](./0004-parallel-subagent-dispatch-contract.md) — preserved, NOT superseded
 - [ADR-0018 Part A](./0018-implement-dormant-artifact-recording-contracts.md) — preserved, NOT superseded
 - [ADR-0019](./0019-amend-adr-0002-for-advisory-in-flight-reads.md) — preserved (substrate carve-out unaffected)
+
+---
+
+## 2026-05-26 Clarification — runtime writer paths vs authored methodology directories
+
+The 2026-05-25 Amendment carved out `dispatches/` and `conflicts/` from Pattern G's "earn existence by file count" rule but didn't articulate WHY. v1.22.0 methodology overhaul (research at [`docs/agents/research/2026-05-26-v1.22.0-methodology-overhaul-research.md`](../research/2026-05-26-v1.22.0-methodology-overhaul-research.md); grill at [`docs/agents/specs/v1.22.0-methodology-overhaul-grill.md`](../specs/v1.22.0-methodology-overhaul-grill.md) § OQ-5 + OQ-6) surfaced the missing reasoning: these are not "carved-out dormant directories" — they are RUNTIME WRITER PATHS.
+
+### The distinction
+
+**Authored methodology directories** (e.g., `adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`):
+
+- Files are human-authored at chain-step time (or written by skills that ARE the chain-step writer)
+- File count grows monotonically as the chain produces artifacts
+- Pattern G applies: 3+ files = directory earns existence; declared-but-empty = scaffolding without merit
+
+**Runtime writer paths** (e.g., `dispatches/`, `conflicts/`):
+
+- Files are written by skill RUNTIME mechanisms when the mechanism fires (`parallel-dev` Phase 7.5 fires when a pgroup completes; `cross-session-detect/audit.sh` fires when a conflict is detected)
+- File count is INHERENTLY SPARSE — empty in git snapshots reflects "the mechanism hasn't fired in production yet," not dormancy
+- Pattern G does NOT apply: emptiness is the normal state, not a signal to retire
+- Documented as load-bearing writer paths in skill bodies + templates + dogfood scenarios (28 cross-references across 10 active-surface files as of 2026-05-26)
+
+### Why this matters
+
+The 2026-05-25 Amendment correctly REVERSED the original deletion of `dispatches/` + `conflicts/`. The reason it should have given is the writer-path semantic, not "future v1.22.0+ uses will populate" (which sounded like a deferred promise that never materialized). This clarification lands the right reason explicitly.
+
+The v1.22.0 prior-art-research run almost re-litigated the 2026-05-25 reversal because the research's SP4 sub-problem (Dormant directory retirement) framed the question as "directory retirement" and biased the source-fetcher toward MADR-style remove-empty-section evidence. The grill caught the orthogonal axis (writer-path vs authored-content). This clarification prevents future runs from rehashing the same orthogonal-axis confusion.
+
+### Future rule (refines the 2026-05-25 Amendment's "future rule")
+
+Any future ADR declaring a directory under `docs/agents/` MUST classify it as either:
+
+1. **Authored methodology directory** — Pattern G applies (file count earns existence); first file MUST land in the same PR as the declaring ADR.
+2. **Runtime writer path** — must name the runtime writer (skill + phase + condition) in the ADR; emptiness is acceptable and expected until the writer first fires; `.gitkeep` preserves the directory shape.
+
+The classification appears in the ADR's Status section or Decision section. Future audits use the classification to skip dormancy reviews for runtime writer paths.
+
+### What this changes operationally
+
+Nothing in `docs/agents/dispatches/` or `docs/agents/conflicts/`. Both remain on disk with `.gitkeep`. No files deleted. No cross-references cleaned (all 28 references point at the load-bearing writer-path contract). CLAUDE.md and AGENTS.md gain one prose paragraph (per v1.22.0 spec Slice 1) describing the writer-path category vs authored-methodology category.
+
+### References (clarification)
+
+- Surfaced during v1.22.0 spec/grill phase (2026-05-26) — see grill OQ-5 + OQ-6 in [`docs/agents/specs/v1.22.0-methodology-overhaul-grill.md`](../specs/v1.22.0-methodology-overhaul-grill.md)
+- Spec amendment: [`docs/agents/specs/v1.22.0-methodology-overhaul.md`](../specs/v1.22.0-methodology-overhaul.md) § "## 2026-05-26 Amendment" — Slice 1 rewritten from "delete dirs" to "clarify ADR-0021 carve-out semantics"
+- Sibling ADR landed in v1.22.0: [`adr-methodology-bundle-v1.22.md`](./adr-methodology-bundle-v1.22.md) — methodology bundle that triggered the clarification
+- [ADR-0004 Part 2](./0004-parallel-subagent-dispatch-contract.md) — `dispatches/` runtime writer path declared here
+- [ADR-0018 Part A](./0018-implement-dormant-artifact-recording-contracts.md) — `dispatches/` writer (parallel-dev Phase 7.5) implemented here
+- [ADR-0019](./0019-amend-adr-0002-for-advisory-in-flight-reads.md) — `conflicts/` runtime writer path; live writer at `skills/cross-session-detect/audit.sh:10`

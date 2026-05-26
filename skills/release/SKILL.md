@@ -237,6 +237,49 @@ EOF
 )"
 ```
 
+### Phase 9.5 — Editorial dormancy scan (minor + major releases only)
+
+On minor and major releases ONLY (patches skipped — low signal, redundant with the most-recent minor scan), walk the ADR and plan corpus to surface dormant decisions. The scan is advisory; it does NOT block the release.
+
+Run only when the version bump from Phase 1 is `minor` or `major`. Skip on `patch`.
+
+```bash
+# Threshold: max(3 minor releases ago, 6 months ago) — whichever produces the older cutoff
+# Minor-releases approach: count git tags matching v*.*.0 since the artifact's Last-Reviewed
+# Date approach: subtract 6 months from today
+
+today=$(date +%Y-%m-%d)
+six_months_ago=$(date -d '6 months ago' +%Y-%m-%d 2>/dev/null || date -v-6m +%Y-%m-%d)
+
+# For each ADR + plan with YAML frontmatter, extract Status: and Last-Reviewed:
+for f in docs/agents/adrs/*.md docs/agents/plans/*.md; do
+  # Skip files without YAML frontmatter (existing ADRs 0001-0022 pre-v1.22.0; back-fill is v1.23.0+)
+  head -1 "$f" | grep -q '^---$' || continue
+
+  status=$(awk '/^---$/{c++; next} c==1 && /^Status:/{sub(/^Status: */, ""); print; exit}' "$f")
+  last_reviewed=$(awk '/^---$/{c++; next} c==1 && /^Last-Reviewed:/{sub(/^Last-Reviewed: */, ""); print; exit}' "$f")
+
+  # Only flag artifacts in non-terminal states
+  case "$status" in
+    Proposed|Active) ;;
+    *) continue ;;
+  esac
+
+  # Flag if Last-Reviewed older than 6 months
+  if [ "$last_reviewed" \< "$six_months_ago" ]; then
+    echo "DORMANCY WARNING: $f — Status: $status, Last-Reviewed: $last_reviewed"
+  fi
+done
+```
+
+If any warnings print, surface them to the user as a single block. Modie reads the warnings and decides whether to land an update PR (same shape as chore PR #47 today). The release continues regardless — dormancy is signal, not blockage.
+
+**Why this exists.** ADRs and plans drift across releases. Without a release-time check, decisions land in `Status: Proposed` and stay there silently. Per v1.22.0 Piece 5 — `Last-Reviewed:` carries deliberate-review semantics (NOT auto-bumped on every commit), so a stale `Last-Reviewed:` is meaningful signal.
+
+**Why minor+major only.** Patch releases are wording fixes; the scan would re-flag the same items on every patch with no new information. Re-flagging adds noise without signal.
+
+**ADRs without YAML frontmatter are skipped automatically** by the `head -1 "$f" | grep -q '^---$' || continue` guard. This makes the scan tolerant of mixed conventions (pre-telemetry ADRs and post-telemetry ADRs in the same corpus) without changing the scan logic if back-fill ships later.
+
 ### Phase 10 — Handoff
 
 ```

@@ -82,18 +82,45 @@ If any upstream artifact is missing, halt and ask the user to provide it (or run
 
 ### Phase 5 — Write the ADR
 
-Follow `references/adr-template.md` exactly. Sections:
+Follow `references/adr-template.md` exactly. The template has TWO header blocks (the v1.22.0 Piece 5 telemetry convention):
+
+**YAML frontmatter** (PascalCase keys; load-bearing for the release skill's editorial scan):
+
+```yaml
+---
+Status: Proposed | Accepted | Deprecated | Superseded by ADR-NNNN
+Date-Created: YYYY-MM-DD     # never changes after initial write
+Last-Reviewed: YYYY-MM-DD    # deliberate-review timestamp; NOT auto-bumped on every commit
+Superseded-By: null          # path to replacement ADR; null until superseded
+Tier: Quick | Balanced | Deep
+Deciders: [Names or roles]
+---
+```
+
+**Markdown-emphasis block** (mirrors frontmatter for human readability):
+
+```markdown
+**Status:** ...
+**Date:** YYYY-MM-DD
+**Deciders:** ...
+**Tier:** ...
+```
+
+Both blocks are required for new ADRs. Set `Date-Created` and `Last-Reviewed` to the same date on initial write. The release skill's Phase 10 editorial scan reads `Last-Reviewed:` on minor+major releases to detect dormancy — auto-bumping on every commit would defeat the signal.
+
+Sections following the headers:
 
 1. **Title** — present-tense action
-2. **Status** — Proposed (default) | Accepted | Deprecated | Superseded by ADR-NNNN
-3. **Context** — the problem, the constraints, the scale. From research Context section.
-4. **Decision** — what we chose, in ACTIVE voice. "We will use Yjs..." not "It was decided that Yjs would be used..."
-5. **Consequences** — positive, negative, accepted trade-offs. From research + grill.
-6. **Alternatives considered** — alternatives with one-line rejections, from the research Patterns section. 2-4 at Balanced; ≥3 at Deep.
-7. **Revisit triggers** — scale milestones, capability gaps, market changes. From research + grill.
-8. **References** — links to research output, spec, grill record, external sources.
+2. **Context** — the problem, the constraints, the scale. From research Context section.
+3. **Decision** — what we chose, in ACTIVE voice. "We will use Yjs..." not "It was decided that Yjs would be used..."
+4. **Consequences** — positive, negative, accepted trade-offs. From research + grill.
+5. **Alternatives considered** — alternatives with one-line rejections, from the research Patterns section. 2-4 at Balanced; ≥3 at Deep.
+6. **Revisit triggers** — scale milestones, capability gaps, market changes. From research + grill.
+7. **References** — links to research output, spec, grill record, external sources.
 
-Echo the inherited tier into the ADR header's `**Tier:**` field.
+Echo the inherited tier into both the YAML `Tier:` field AND the markdown `**Tier:**` field.
+
+**ADRs without YAML frontmatter** (the markdown-emphasis block alone) are valid — they predate the telemetry convention. Don't retrofit them when writing a new ADR; back-fill is its own task with its own ADR. The release skill's editorial scan tolerates the absence (skips files without YAML frontmatter).
 
 ### Phase 6 — Defer ADR index update to release
 

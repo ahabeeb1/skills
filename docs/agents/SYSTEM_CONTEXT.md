@@ -1,16 +1,18 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-25
-**Refreshed by:** prior-art-research Phase 0 + Phase 7 (v1.18.0 workflow audit run). ADR count corrected 18→20 (0019 was missed by the prior v1.17.0 refresh). Steering reconciliation appended below. Canonical writer per ADR-0005 single-writer invariant.
-**Schema:** per ADR-0010 — non-re-derivable cross-session state only. Dropped sections (Stack / Persistence / Deployment shape / External services / Recent hot files / Open / unknown / Tracked manifests) are re-derivable from `package.json`, git, and imports on fresh invocation per Anthropic's Claude Code best-practices ❌ Exclude rule.
+**Last refreshed:** 2026-05-26
+**Refreshed by:** prior-art-research Phase 0 (v1.22.0 methodology-overhaul research run). Catch-up refresh — last write was 2026-05-25 (v1.20.0 audit run); two releases shipped since (v1.20.0 + v1.21.0). Counts updated: ADRs 20→22, skills 18→19, dogfood scenarios → 31 (5 baselines + 21-28 live + adversarial suites). Canonical writer per ADR-0005 single-writer invariant.
+**Schema:** per ADR-0010 — non-re-derivable cross-session state only. Re-derivable sections (Stack / Deployment / Hot files / Tracked manifests) excluded.
 
 ## Scale envelope
 
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
-- **Skill count:** 18 in tree (15 pre-v1.14.0; v1.14.0 added `security-audit`, `release`, `devex-review` per ADR-0014).
-- **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill (ADR-0014). 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill). Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `chain-postmortem` is a section in `using-habeebs-skill` (post-incident error-analysis, complementary to verify-output's pre-commit static check, per ADR-0011).
-- **ADR count:** 20 (0001-0019 + README). ADR-0001 amended by 0006 + scope-narrowed by 0010. ADR-0002 amended by 0019 (advisory in-flight reads carve-out for cross-session conflict detection). ADR-0003 amended by 0015 (tag-only-push carve-out). ADR-0004 amended in place 2026-05-13 (Part 3 share-full-traces clause + Part 5 untrusted-content rule); Part 2 writer implemented by ADR-0018. ADR-0013 (research-context-gate) extended by ADR-0016 (chain-wide depth tier). ADR-0012 amended in place 2026-05-22 (template path relocation).
-- **Current release:** v1.18.0 (cross-session conflict detection — 16 slices, 170 test assertions). New tracked directory: `docs/agents/conflicts/` (audit logs). New runtime directory: `$(git rev-parse --git-common-dir)/habeebs-sessions/` (session sidecars, auto-gitignored inside `.git/`).
+- **Skill count:** 19 in tree (v1.14.0 added `security-audit`, `release`, `devex-review`; v1.18.0 added `cross-session-detect`).
+- **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill. 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill) + cross-session-detect. Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016).
+- **ADR count:** 22 (0001-0022). Recent batch: ADR-0020 (late-binding ADR IDs + Changesets-shape version bumps, shipped v1.20.0), ADR-0021 (methodology folder cuts — amended 2026-05-25 to REVERSE the `dispatches/` + `conflicts/` deletions; `grill-records/` fold shipped), ADR-0022 (behavioral-only SKILL.md body + Pattern-D empirical-claim exception, shipped v1.21.0). Cross-amends: 0001 (by 0006/0010), 0002 (by 0019), 0003 (by 0015), 0004 (Part 5 untrusted-content rule), 0012 (template path relocation), 0013 (extended by 0016).
+- **Current release:** v1.21.0 (behavioral-only SKILL.md body convention — 58 cruft hits across 11 files removed; Pattern-D empirical-claim exception codified; dogfood scenarios 26/27/28 prevent regression).
+- **Dogfood scenario count:** 31 live (5 baselines + 21-28 = 13 scenarios commonly cited as "all passing on main"; remainder are adversarial suites like 09-category-critic, 10-pgroup-dispatch, 17-security-audit fixtures).
+- **Hook count:** 4 active (SessionStart ghost-commit-detect, SessionStart peer-scan, PreToolUse[Bash] commits-to-default-block, PreToolUse[Edit|Write|NotebookEdit] peer-scan; plus 1 dormant pre-push.sh on disk). All conform to ADR-0003 (warn-only or block-only, stateless, multi-harness aware).
 
 ## Methodology / agent setup
 
@@ -18,10 +20,11 @@
 - **Issue tracker:** GitHub Issues (`docs/agents/issue-tracker.md`)
 - **Triage labels:** Canonical 5 (`docs/agents/triage-labels.md`)
 - **Domain glossary:** Populated — 13 concepts (`docs/agents/GLOSSARY.md`). Methodology-specific vocabulary.
-- **Latest ADR:** ADR-0018 (`implement-dormant-artifact-recording-contracts`, Accepted 2026-05-22). Recent batch — ADR-0017 (`semantic-repo-discovery-port`, Accepted 2026-05-22, shipped v1.16.0); ADR-0016 (`chain-wide-depth-tier`, Accepted 2026-05-19, shipped v1.15.0); ADR-0014 (gstack capability adoption) + ADR-0015 (hook tag-push carve-out) Accepted 2026-05-18, shipped v1.14.0.
-- **Postmortem directory:** `docs/agents/postmortems/` (new in v1.10.0 per ADR-0011). One retrospective entry to date (2026-05-12 missed-architectural-categories).
-- **Dispatch record directory:** `docs/agents/dispatches/` (location declared by ADR-0004 Part 2 in v1.7.0; writer implemented by ADR-0018 Part A — `parallel-dev` Phase 7.5). Schema: `skills/parallel-dev/references/dispatch-record-template.md` § Section 4.
-- **Research archive directory:** `docs/agents/research/` (Deep-tier convention established by ADR-0018 Part B — `prior-art-research` Phase 6.5 writes the Phase 6 report verbatim; tier-conditional per ADR-0016).
+- **Latest ADR:** ADR-0022 (`behavioral-only-skill-body`, Accepted 2026-05-26, shipped v1.21.0). Recent batch — ADR-0021 (`methodology-folder-cuts`, Accepted+amended 2026-05-25, shipped v1.20.0 with `grill-records/` fold only); ADR-0020 (`late-binding-and-changesets`, Accepted 2026-05-25, shipped v1.20.0); ADR-0018 (dormant artifact-recording contracts implemented, shipped v1.17.0); ADR-0017 (semantic-repo-discovery port, shipped v1.16.0).
+- **Postmortem directory:** `docs/agents/postmortems/` (per ADR-0011). One retrospective: 2026-05-12 missed-architectural-categories.
+- **Dispatch record directory:** `docs/agents/dispatches/` — EMPTY (0 files) as of 2026-05-26. ADR-0021 amendment carved this out as "future-use audit log" but 6 weeks since v1.18.0 with zero population. Candidate for re-evaluation in v1.22.0.
+- **Conflicts directory:** `docs/agents/conflicts/` — EMPTY (0 files) as of 2026-05-26. Same dormant-carve-out status as dispatches/.
+- **Research archive directory:** `docs/agents/research/` — 5 files (2 v1.X.Y named + 3 dated YYYY-MM-DD-slug). Per ADR-0018 Part B / ADR-0016 tier-conditional fire rule: Deep REQUIRED, Balanced OPTIONAL, Quick SKIPPED.
 - **Session-summary template:** `skills/using-habeebs-skill/references/session-summary-template.md` (introduced in v1.10.0 per ADR-0012; relocated 2026-05-22 from `docs/agents/templates/` per ADR-0009's 3-consumer threshold). Used by the Compress-at-overflow protocol documented in `using-habeebs-skill` § "When sessions grow long".
 
 ## Notable absences
@@ -38,13 +41,31 @@
 
 ## Project mode
 
-- **brownfield** — habeebs-skill v1.15.0 is current on `main`. Release line since v1.12.0: v1.14.0 (gstack capability adoption — `security-audit` / `release` / `devex-review` skills, ADR-0014/0015) and v1.15.0 (chain-wide depth tiers, ADR-0016), both shipped 2026-05-18/19. The v1.13.0 number is intentionally skipped (gstack spec staggered v1.13.0+v1.14.0 but shipped all slices as v1.14.0). Methodology is mature.
+- **brownfield, methodology-mature** — habeebs-skill v1.21.0 is current on `main` (`ec58a7c`, 2026-05-26). Release line since v1.18.0: v1.19.0 (description-trim trigger-first anatomy, ADR-0007 amendment); v1.20.0 (late-binding ADRs + Changesets-shape version bumps + grill-records fold, ADRs 0020/0021); v1.21.0 (behavioral-only SKILL.md body, ADR-0022). v1.13.0 intentionally skipped (gstack spec staggered v1.13.0+v1.14.0; shipped as v1.14.0). 6 self-dogfood release cycles complete.
 
 ## Active steering
 
-(none — flushed 2026-05-13 per `prior-art-research` Phase 7 flush rule at end of v1.10.0 research run; last outcome below)
+(none — flushed 2026-05-26 per `prior-art-research` Phase 7 flush rule at end of v1.22.0 methodology-overhaul research run; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-05-26 — topic: habeebs-skill v1.22.0 methodology overhaul — 7-strand Deep-tier research dogfooding the early-HITL-pivot pattern**
+
+- Anchor "spec-driven development": Honored — KEP `provisional` state + superpowers design sign-off + PEP pre-spec gate all surfaced; Piece 2 (HITL pivot between Phase 6 synthesize and 6.5 archive) lands the canonical pattern.
+- Anchor "RFC process": Honored — Rust RFC, Python PEP, Kubernetes KEP, Backstage BEP all in SP3 source set; 4 of 5 peer methodologies gate BEFORE spec is written, validating Modie's stated pain.
+- Anchor "design-doc patterns": Honored with caveat — Increment + Pragmatic Engineer were the design-doc industry sources; thin compared to language-RFC sources. Re-research with internal-tooling-spec dominant set is a future trigger.
+- Anchor "claude-code hooks": Honored — Anthropic docs + 4 peer plugins + 1 community defensive bundle (slavaspitsyn). SP2 + SP6 both anchored here.
+- Anchor "agent chain enforcement": Honored with override — anchor implies *prescriptive* enforcement; evidence shows *advisory* enforcement is peer norm (Cursor `.cursorrules` empirical test: caught 0 violations against 6 sneaky prompts). Piece 3 (warn-only PostToolUse validator) follows evidence over anchor.
+- Look-at "obra/superpowers": Honored — primary peer; informed SP1 (plans), SP2 (hooks), SP3 (HITL), SP5 (in-flight branch survival).
+- Look-at "mattpocock/skills": Honored with caveat — ships zero plans, zero hooks; useful as canonical floor, not as positive pattern.
+- Look-at "anthropics/skills + anthropics/claude-code-plugins": Honored — canonical floor (zero plans, no threat-model docs). The absence IS the finding for SP6.
+- Look-at "Backstage ADRs": Honored — BEPs (Backstage's RFC equivalent) were the closest structural peer to habeebs-skill's plan format AND hit the exact same in-flight-branch problem (solved via manual reclassification gate, adopted as Piece 5 (SP5)).
+- Avoid "marketing posts": Honored — Anthropic plugins blog flagged marketing-tone-high, used only for absence-of-security-framing finding.
+- Avoid "substrate-coupled tools": Honored — all 5 pieces are markdown-only; no MCP/daemon adoption.
+- Phase 2.5 critic outcome: ADDITIONS PROPOSED, 3 of 3 accepted (SP5 mid-flight branch survival, SP6 plugin supply-chain, SP7 markdown-only telemetry). One open-set rejection with reason (rollback granularity — folded into SP3 HITL placement). One brief-candidate modify (session-state hygiene → folded into SP5).
+- Pattern-extractor returned DONE with 8 converging patterns, 6 competing-pattern picks resolved with reasons, 6 silent contradictions surfaced + resolved, 6 homogeneity-bias flags acknowledged (notably git-hooks ecosystem absent from SP2; solo-author OSS precedent absent from SP3; Markdown-graph dormancy absent from SP4).
+- Phase 6 HITL pivot OUTCOME: Modie accepted as-is (5-piece bundle + Piece 6 deferred-hardening ADR), validated gate placement, picked in-place re-amendment for ADR-0021, deferred Piece 3 validator scope to `/grill`. Gate caught one real ambiguity AND validated three convergent picks — net evidence the gate fires at the right grain.
+- Verdict: v1.22.0 bundle (Piece 1 plain-English plans + Piece 2 HITL pivot + Piece 3 PostToolUse validator + Piece 4 delete dormant dirs / re-amend ADR-0021 + Piece 5 markdown-only telemetry frontmatter) + Piece 6 deferred-hardening supply-chain ADR. Archive: `docs/agents/research/2026-05-26-v1.22.0-methodology-overhaul-research.md`.
 
 **2026-05-25 — topic: habeebs-skill v1.18.0 workflow audit vs Anthropic + AI startups + canonical ADR + parallel-agent tooling (audit-only, no code changes)**
 

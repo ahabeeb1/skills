@@ -1,9 +1,20 @@
+---
+Status: Proposed | Accepted | Deprecated | Superseded by ADR-NNNN
+Date-Created: YYYY-MM-DD
+Last-Reviewed: YYYY-MM-DD
+Superseded-By: null
+Tier: Quick | Balanced | Deep
+Deciders: [Names or roles]
+---
+
 # ADR-NNNN: [Title in present-tense, action-oriented]
 
 **Status:** Proposed | Accepted | Deprecated | Superseded by ADR-NNNN
 **Date:** YYYY-MM-DD
 **Deciders:** [Names or roles]
 **Tier:** Quick | Balanced | Deep (when produced by a chain run; omit for stand-alone ADRs)
+
+> The YAML frontmatter block above is the v1.22.0 Piece 5 telemetry convention (PascalCase keys; deliberate-review semantics on `Last-Reviewed:`). The markdown-emphasis block below mirrors the frontmatter for human readability and is what previous ADRs use. New ADRs ship with both; existing ADRs (0001-0022) carry only the markdown block and back-fill is a v1.23.0+ candidate.
 
 ## Context
 

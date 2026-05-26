@@ -133,23 +133,36 @@ If a trigger fires mid-execution, halt at the current phase gate and re-run `soc
 
 ### Phase 7 — Write the plan doc
 
-Follow `references/plan-template.md` exactly. Required sections in order:
+Follow `references/plan-template.md` exactly. The template enforces the **plain-English plan format** — a plan a human can read cold, top-to-bottom, without prior context. Six conventions:
 
-1. **Header** — slug, ADR link, tier (inherited), status (Proposed / Active / Done / Superseded), last updated, owner
-2. **Goal & success measure** — one sentence each, copied from spec; success measure must be observable in production
-3. **Phases** — each phase has: name, slices contained, acceptance gate, top-3 risks, rollback hook
-4. **Slice table** — one row per slice: id, name, label (HITL:inline / HITL:approval-gate / AFK:full-auto), phase, pgroup, blocked-by, est duration, rollback hook
-5. **Dependency DAG** — Mermaid or ASCII
-6. **Parallelization map** — `pgroup-N` listing
-7. **Risk register** — full enumeration; the per-phase top-3 lifts from this
-8. **Revisit triggers** — bulleted list
-9. **References** — ADR, spec, grill record, SYSTEM_CONTEXT.md
+1. **TL;DR at top** — 3-5 plain-English sentences BEFORE any table. A reader who only reads the TL;DR knows what's happening. The 5-row status block follows the TL;DR.
+2. **Per-phase narrative intro** — every phase opens with 1-3 sentences of "why this phase exists / what we accomplish here" BEFORE acceptance gates, risks, or mechanics. A phase that opens directly with `**Acceptance gate:**` is malformed.
+3. **Tables limited to TWO uses only** — the status block at the top (≤5 rows: Plan ID, ADR, Tier, Status, Owner) and the slice list (once, in dependency order). No other tables anywhere in the plan.
+4. **Acceptance gates are numbered prose**, not stacked AND-clause bullets or nested checklists. Example: "The phase is done when all four of these are simultaneously true: (1) ...; (2) ...; (3) ...; (4) ...".
+5. **Risks are prose paragraphs** with embedded `Mitigation:` lines, NOT 3-level-nested bullet hierarchies. Example: "The biggest risk is X. Mitigation: Y. The second risk is A. Mitigation: B."
+6. **Jargon discipline** — terms with `docs/agents/GLOSSARY.md` entries (`pgroup`, `HITL:approval-gate`, `HITL:per-file`, `HITL:inline`, `AFK:full-auto`, `tracer slice`, `pre-flight verification`) can be used unexplained because the GLOSSARY link is in the plan footer. Plan-specific identifiers (`pre-Slice-2 verification`, `pgroup-2A`) get inline definitions on first use.
+
+Required sections in order:
+
+1. **Frontmatter** — YAML block with `Status:`, `Date-Created:`, `Last-Reviewed:`, `Superseded-By:`, `Tier:` (PascalCase per the v1.22.0 telemetry convention)
+2. **TL;DR** — 3-5 plain-English sentences
+3. **Status block** — 5-row table (Plan ID, ADR, Tier, Status, Owner)
+4. **Goal & success measure** — one sentence each
+5. **Phases** — each opens with narrative prose, then acceptance gate (numbered prose), then top risks (prose paragraph with Mitigation: lines), then rollback hook (one sentence)
+6. **Slice table** — one row per slice: ID, name, label (HITL:inline / HITL:approval-gate / HITL:per-file / AFK:full-auto), phase, pgroup, blocked-by, est, rollback
+7. **Dependency DAG** — Mermaid (preferred) or ASCII fallback
+8. **Parallelization map** — `pgroup-N` listing with one-line description per group
+9. **Revisit triggers** — bulleted list (this is the one bulleted list that survives; revisit triggers are inherently a discrete enumeration)
+10. **Change log** — added on first revision
+11. **References** — ADR, spec, grill, research archive (Deep-tier), SYSTEM_CONTEXT.md, GLOSSARY.md
 
 Status field semantics:
 - **Proposed** — written but no slice has started
 - **Active** — at least one slice is in `tdd-loop`
 - **Done** — final phase gate passed; feature is shipped
 - **Superseded by plans/<slug>.md** — replaced by a newer plan
+
+`Last-Reviewed:` semantics: deliberate-review timestamp; updated when a human says "I reviewed this and the Status is still correct," NOT auto-bumped on every commit. The release skill's editorial scan reads this field for dormancy detection.
 
 ### Phase 8 — Hand off
 

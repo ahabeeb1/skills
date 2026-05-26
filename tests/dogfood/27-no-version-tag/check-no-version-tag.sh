@@ -73,11 +73,15 @@ scan_for_pattern() {
 # The version-archaeology pattern union. Matches any of:
 #   "Added in v"  /  "Introduced in v"  /  "Phase N.M (added"  /
 #   "vN.M+"  /  "(vN.M.Z+)"  /  "Post-vN.M"
+#   "pre-vN.M"  /  "pre-vN.M.Z" (v1.22.0 — same shape as Post- and Added in)
+#   "Dropped from the pre-vN.M template" / "Dropped in vN.M"  (v1.22.0 —
+#       version-transition prose framing migrated cruft from one shape to
+#       another; catch the prose form too)
 #
 # POSIX awk strips backslash-escapes when a regex arrives via -v (string
 # context). To match literal `.`, `(`, `+`, `)`, use bracket-character-class
 # forms ([.] [(] [+] [)]) which survive both string and regex contexts.
-VERSION_PAT='(Added in v[0-9]|Introduced in v[0-9]|Phase [0-9]+[.][0-9]+ [(]added|v[0-9]+[.][0-9]+([.][0-9]+)?[+]|[(]v[0-9]+[.][0-9]+([.][0-9]+)?[+][)]|Post-v[0-9]+[.][0-9]+)'
+VERSION_PAT='(Added in v[0-9]|Introduced in v[0-9]|Phase [0-9]+[.][0-9]+ [(]added|v[0-9]+[.][0-9]+([.][0-9]+)?[+]|[(]v[0-9]+[.][0-9]+([.][0-9]+)?[+][)]|Post-v[0-9]+[.][0-9]+|pre-v[0-9]+[.][0-9]+|Dropped from|Dropped in v[0-9])'
 
 make_skill_fixture() {
   local dir; dir=$(mktemp -d)
@@ -130,6 +134,15 @@ RESULT=$(scan_for_pattern "$F" "$VERSION_PAT")
 [ -n "$RESULT" ] || fail "(d) '(v1.20.0+)' in section heading not detected"
 rm -rf "$(dirname "$F")"
 pass "(d) section-heading '(vN.M.Z+)' parenthetical — detected"
+
+# ---------------------------------------------------------------------------
+# Case (d2) — "pre-vN.M template" + "Dropped from" version-transition prose
+# ---------------------------------------------------------------------------
+F=$(make_skill_fixture "Dropped from the pre-v1.22.0 template (do not include): old columns.")
+RESULT=$(scan_for_pattern "$F" "$VERSION_PAT")
+[ -n "$RESULT" ] || fail "(d2) 'Dropped from the pre-v1.22.0 template' not detected"
+rm -rf "$(dirname "$F")"
+pass "(d2) 'pre-vN.M' + 'Dropped from' version-transition prose — detected"
 
 # ---------------------------------------------------------------------------
 # Case (e) — main repo scan

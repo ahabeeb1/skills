@@ -40,3 +40,5 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 - **Length:** As long as the decision warrants, no longer. The first ADR sets the tone for the rest.
 
 ADRs are produced by the `decision-record` skill (`/record`). The skill writes here automatically after `socratic-grill` resolves a non-trivial architectural decision.
+| 0023 | --- | Accepted |
+| 0024 | --- | Accepted |

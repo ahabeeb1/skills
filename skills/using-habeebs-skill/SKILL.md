@@ -13,6 +13,7 @@ A research-grounded engineering methodology. The skills compose into a chain. Do
 [User says "I want to build X"]
          ↓
 prior-art-research    → finds production patterns, recommends an approach
+         │   ↳ HITL pivot gate (Phase 6.4) — user reviews recommendation BEFORE archive write
          ↓
 draft-spec            → turns recommendation into an implementation spec
          ↓
@@ -29,6 +30,12 @@ deep-modules          → refactor pass to deepen modules and remove shallow lay
          ↓
 release               → version bump, CHANGELOG, PR body, tag-push — terminal chain link
 ```
+
+**HITL gates in the chain** (where the user pivots):
+
+1. **Phase 6.4 in `prior-art-research`** — after the recommendation is composed, before the archive is written. The earliest pivot point. User picks (a) approve as-is, (b) approve with free-text edits, or (c) reject + re-research with new scope. Halting here costs one user message; halting after `/plan` costs spec + grill + ADR + plan tokens. See `prior-art-research/SKILL.md` Phase 6.4 for the mechanics.
+2. **`socratic-grill` open questions** — every OQ from the spec gets pressure-tested with the user; resolutions feed back into the spec as amendments.
+3. **HITL slices in plans** — slices labelled `HITL:approval-gate`, `HITL:per-file`, or `HITL:inline` require the user mid-implementation (see GLOSSARY.md § Slice for the variant semantics).
 
 ## HANDOFF lines — navigation, not state transfer
 

@@ -1,5 +1,5 @@
 {
-  "description": "habeebs-skill hooks — warn-only SessionStart (ghost-commit detection + peer-scan), block-only PreToolUse on Bash (commits to default branch). All follow ADR-0003: warn-or-block only, multi-harness aware, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
+  "description": "habeebs-skill hooks — warn-only SessionStart (ghost-commit detection + peer-scan), block-only PreToolUse on Bash (commits to default branch), warn-only PostToolUse on Edit|Write|NotebookEdit (chain-state validator). All follow ADR-0003: warn-or-block only, multi-harness aware, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
   "hooks": {
     "SessionStart": [
       {
@@ -38,6 +38,18 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pretool-use-peer-scan.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-chain-state.sh",
             "timeout": 10
           }
         ]

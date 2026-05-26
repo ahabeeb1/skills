@@ -13,6 +13,10 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.22.0] — 2026-05-26
+
+- methodology overhaul — plain-English plan format (TL;DR + per-phase narrative + tables limited to status block + slice list); provisional-state HITL pivot gate between research Phase 6 and Phase 6.5 archive; warn-only PostToolUse chain-state validator hook (missing-grill-when-Grilled + editing-on-default-no-worktree); markdown-only telemetry frontmatter (PascalCase Status / Date-Created / Last-Reviewed / Superseded-By + release editorial scan on minor+major); ADR-0021 in-place 2026-05-26 Clarification (runtime writer paths vs authored methodology directories); supply-chain threat-model ADR acknowledging Anthropic-plugin gap, deferring hardening to v1.23.0+. Drives the v1.22.0 methodology-overhaul research (`docs/agents/research/2026-05-26-v1.22.0-methodology-overhaul-research.md`, Deep tier, 36 sources, 7 sub-problems).
+
 ## [1.21.0] — 2026-05-26
 
 - behavioral-only SKILL.md body convention — strip inline ADR cites + version-archaeology tags + dated incidents (58 hits across 11 files); Pattern-D empirical-claim exception for load-bearing quantitative claims; new dogfood scenarios 26/27/28 prevent regression

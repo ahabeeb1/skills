@@ -35,6 +35,15 @@ A vertical work item that cuts through ALL integration layers end-to-end (tracer
 - **HITL slice** — human-in-the-loop required mid-slice; agent must pause and surface a decision.
 - **AFK slice** — autonomous-friendly; agent can implement and merge without human gating.
 - **Tracer bullet** — synonym for "vertical slice"; from *Pragmatic Programmer*.
+- **Tracer slice** — the FIRST slice in a phase, deliberately chosen as the lowest-risk, lowest-coupling unit that still demonstrates end-to-end value. Surfaces format/integration/coupling problems cheaply before higher-load slices commit to the same pattern. Distinct from "tracer bullet" (which describes the *shape* of every vertical slice) — a tracer slice is the *role* a specific slice plays in a phase's ordering.
+
+**HITL variants** (used in plan tables, scoped within HITL):
+- **HITL:inline** — human reviews/decides in the chat session mid-slice; the agent halts and waits for an inline reply before continuing the same slice.
+- **HITL:approval-gate** — human approves each commit out-of-band (Slack/email/PR review) before it lands; the agent drafts the commit then surfaces it for sign-off.
+- **HITL:per-file** — human approves each file's diff in the slice individually; finer-grained than approval-gate. Used when the slice touches multiple skills/files and each diff has independent judgment weight.
+
+**AFK variants:**
+- **AFK:full-auto** — the AFK extreme: no human gating at all between dispatch and merge. The agent implements, tests, and (per the plan's authorization) merges without checking in.
 
 **Synonyms to AVOID:** "task" (ambiguous — tasks live in the TaskCreate tool, slices live in specs), "ticket" (tickets are the issue-tracker representation of a slice, not the slice itself), "horizontal slice" (forbidden — that's the anti-pattern `vertical-slice` exists to prevent).
 
@@ -71,6 +80,24 @@ A set of subagents `parallel-dev` launches concurrently for independent work. Ea
 - **category-completeness-critic** — reviews a Phase 2 decomposition for missing categories before Phase 4-5 burns budget.
 
 **Synonyms to AVOID:** "swarm" (implies emergent behavior; dispatch groups are explicit and bounded), "team" (collides with OMC `/team`; habeebs-skill doesn't use that orchestration).
+
+### pgroup
+
+Short for *parallelization group*. A set of slices in the same phase of a plan with no inter-slice dependencies — they touch disjoint files, share no state, contend on no resources, and have no ordering requirement between them. Plans declare pgroups (`pgroup-1A`, `pgroup-2B`, etc.); `parallel-dev` consumes them as the dispatch contract; `tdd-loop` Phase 0.5 auto-dispatches any pgroup of size ≥ 2.
+
+Naming convention: `pgroup-<phase-number><letter>`. Phase 1 has `pgroup-1A`, `pgroup-1B`, etc. (sequential within a phase, parallel within each group). Letters within a phase do NOT imply ordering — `pgroup-1A` and `pgroup-1B` are sequential because one blocks the other; if they were truly parallel they'd be one pgroup. A single-slice pgroup (e.g., `pgroup-2A = {#3}`) is legal — it marks "no parallel sibling at this position" without implying single-slice work is sub-optimal.
+
+Independence is sanity-checked against `parallel-dev`'s Phase 2 checklist (file overlap, state dependency, resource contention, ordering, implicit shared state) before two slices are co-labeled. The 20% rule applies: if more than 80% of a plan's slices are tagged parallelizable, the slicing is wrong — real features have ordering dependencies.
+
+**Synonyms to AVOID:** "batch" (implies homogeneous work; pgroup members can be heterogeneous), "wave" (implies temporal cadence; pgroups are about dependency-shape, not timing).
+
+### Pre-flight verification
+
+A read-only check performed before a slice's RED phase to confirm the slice's preconditions hold. Distinct from a slice's own acceptance criteria (which fire AFTER the slice's GREEN). Common pre-flight checks include: "does `docs/agents/SYSTEM_CONTEXT.md` exist?", "is the source baseline test suite passing?", "are the upstream chain artifacts (ADR, spec, grill record) present and consistent?". Pre-flight produces a binary "ready / not ready" verdict; on not-ready the slice halts with a `SETUP REQUIRED` banner per the halt-with-redirect contract.
+
+The term also appears in plans as a phase-level gate. A phase's pre-flight is the small set of checks (typically 1-3) that MUST pass before the phase's first slice starts. Phase pre-flight differs from acceptance gate: pre-flight is the input contract; acceptance gate is the output contract.
+
+**Synonyms to AVOID:** "precheck" (too vague — could mean linter, type-check, format), "smoke test" (smoke tests run AFTER implementation; pre-flight runs BEFORE), "sanity check" (too informal — pre-flight has a defined output contract).
 
 ### Single-writer invariant
 

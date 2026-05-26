@@ -27,6 +27,9 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 | 0017 | [Port reposeek.ai's NL→repo idea as a conditional Tier 2 technique](./0017-semantic-repo-discovery-port.md) | Accepted | 2026-05-22 |
 | 0018 | [Implement the dormant artifact-recording contracts — `parallel-dev` Phase 7.5 (dispatch records) and `prior-art-research` Phase 6.5 (research archives)](./0018-implement-dormant-artifact-recording-contracts.md) | Accepted | 2026-05-22 |
 | 0019 | [Amend ADR-0002 to permit advisory in-flight reads of in-repo session state](./0019-amend-adr-0002-for-advisory-in-flight-reads.md) | Accepted | 2026-05-24 |
+| 0020 | [Adopt late-binding ADR IDs and Changesets-shape version bumps with the release skill as single coordinator](./0020-late-binding-and-changesets.md) | Accepted | 2026-05-25 |
+| 0021 | [Cut dormant methodology folders and fold grill-records into specs](./0021-methodology-folder-cuts.md) | Accepted (amended 2026-05-25 — dispatches/ and conflicts/ cuts reversed; only grill-records/ fold ships) | 2026-05-25 |
+| 0022 | [Behavioral-only SKILL.md body with Pattern-D empirical-claim exception](./0022-behavioral-only-skill-body.md) | Accepted | 2026-05-26 |
 
 ## Conventions
 
@@ -37,5 +40,3 @@ ADRs are the asynchronous memory of this repo. They explain WHY the methodology 
 - **Length:** As long as the decision warrants, no longer. The first ADR sets the tone for the rest.
 
 ADRs are produced by the `decision-record` skill (`/record`). The skill writes here automatically after `socratic-grill` resolves a non-trivial architectural decision.
-| 0020 | Adopt late-binding ADR IDs and Changesets-shape version bumps with the release skill as single coordinator | Accepted |
-| 0021 | Cut dormant methodology folders and fold grill-records into specs | Accepted |

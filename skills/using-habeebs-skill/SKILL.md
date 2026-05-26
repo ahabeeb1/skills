@@ -36,7 +36,7 @@ Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines 
 
 Worked example: `socratic-grill` finishes a session by writing `docs/agents/specs/<slug>-grill.md` (the full record) and emitting `HANDOFF: record ready — invoke decision-record to capture as ADRs`. When `decision-record` runs, it reads the grill record IN FULL — every resolved item, every axes-grilled rationale, every revisit trigger. The HANDOFF line tells you which skill runs next; the grill record tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
 
-This shape positively matches [OpenAI's Agents SDK](https://openai.github.io/openai-agents-python/multi_agent/) "Handoff = ownership transfer" primitive — handoffs at the markdown layer carry full state via the file the next skill reads, not via the pointer string. It also guards against the failure mode documented in Walden Yan's ["Don't Build Multi-Agents"](https://cognition.ai/blog/dont-build-multi-agents) (Cognition AI, 2025-06-12): subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The full-doc-read contract is what keeps habeebs-skill's chain on the right side of Yan's line. Same invariant applies to `parallel-dev` subagent dispatches per [ADR-0004 § Part 3](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md): subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
+The full-doc-read contract keeps the chain on the right side of the "don't build multi-agents" line: subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The same invariant applies to `parallel-dev` subagent dispatches — subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
 
 If you're a downstream skill author: when you encounter a `HANDOFF: X ready` line, your first action is to READ the file it points to (the spec, the grill, the ADR). Don't infer what the previous phase decided from the HANDOFF text alone.
 
@@ -52,7 +52,7 @@ If you're a downstream skill author: when you encounter a `HANDOFF: X ready` lin
 
 - **security-audit** — a static security audit: attack-surface census, secrets archaeology over git history, OWASP Top 10, STRIDE per-component, confidence-gated findings. Invoked via `/security-audit` on demand — it is not chain-triggered and does not require habeebs-skill setup or `SYSTEM_CONTEXT.md`.
 
-## Auto-invocation scope (v1.19.0+ per ADR-0007 § C)
+## Auto-invocation scope
 
 The chain has 18 skills but only **7** compete for auto-invocation on natural-language user prompts:
 
@@ -60,11 +60,11 @@ The chain has 18 skills but only **7** compete for auto-invocation on natural-la
 
 **`disable-model-invocation: true` (11):** all chain-internal skills (`draft-spec`, `socratic-grill`, `decision-record`, `write-plan`, `tdd-loop`, `verify-output`, `release`, `vertical-slice`, `parallel-dev`, `agent-factors-check`, `devex-review`). These fire on upstream HANDOFF or explicit `/slash` invocation — never on raw user language. The `/slash` surface is unchanged: typing `/spec` still launches `draft-spec` identically.
 
-Why: with 18 skills auto-invocable and 135 SKILL.md files installed system-wide, the fuzzy-match pool diluted entry points that should have won. Demoting chain-internals restores entry-point precedence while preserving the slash-command muscle memory. See ADR-0007 § C for the rationale and the per-skill demotion criteria.
+Why: with 18 skills auto-invocable and 135 SKILL.md files installed system-wide, the fuzzy-match pool diluted entry points that should have won. Demoting chain-internals restores entry-point precedence while preserving the slash-command muscle memory.
 
 ## When chain runs go wrong — postmortem cadence
 
-Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs — Hamel Husain + Shreya Shankar's "[error analysis before infrastructure](https://hamel.dev/blog/posts/evals-faq/)" thesis applied to a markdown-only chain.
+The chain has two complementary quality loops: `verify-output` (static, pre-commit, KNOWN slop classes) and chain-postmortems (dynamic, post-incident, NEW failure categories). Postmortems are where error analysis happens on real chain runs.
 
 **Trigger conditions** — write a postmortem when:
 - A chain run produced a wrong-shaped output (spec missed a sub-problem; grill missed a question; ADR locked something that's wrong in retrospect)
@@ -73,15 +73,15 @@ Per [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md), the chain
 - The user says "that didn't work" / "this chain went sideways"
 - A previously-passing dogfood scenario started failing
 
-**Artifact:** one markdown file at `docs/agents/postmortems/YYYY-MM-DD-<slug>.md` per incident. Template structure (transition-failure-matrix per Hamel + Shreya): see [`docs/agents/postmortems/README.md`](../../docs/agents/postmortems/README.md).
+**Artifact:** one markdown file at `docs/agents/postmortems/YYYY-MM-DD-<slug>.md` per incident. Template structure: see [`docs/agents/postmortems/README.md`](../../docs/agents/postmortems/README.md).
 
 **What postmortems produce:** named failure categories that feed back into `verify-output`'s ruleset (new static rules), into a SKILL.md's anti-pattern list, or into a new ADR. The output is durable rule-derivation, not narrative.
 
-**v1.11.0 promotion criterion** (per ADR-0011): if 10+ real postmortems land in 90 days OR the user explicitly requests a `/postmortem` slash-command → promote this section to a standalone `chain-postmortem` skill with description tuned to failure-shaped trigger phrases.
+**Promotion criterion:** if 10+ real postmortems land in 90 days OR the user explicitly requests a `/postmortem` slash-command, promote this section to a standalone `chain-postmortem` skill with description tuned to failure-shaped trigger phrases.
 
 ## Cross-session learnings — no separate ledger (by design)
 
-habeebs-skill deliberately has no learnings ledger or memory file. Cross-session knowledge lives in three existing artifacts: **ADRs** capture decisions and their rationale, **`docs/agents/postmortems/`** captures incident and error analysis, and **`SYSTEM_CONTEXT.md`'s "Last reconciliation outcome"** log captures research learnings. A separate curated ledger was evaluated and rejected (see ADR-0014 grill, 2026-05-18): it duplicates these artifacts, decays without the automated pruning ADR-0002 forbids, and reverses ADR-0010's doc-weight reduction. If you want a "learnings file", write an ADR or a postmortem instead.
+habeebs-skill deliberately has no learnings ledger or memory file. Cross-session knowledge lives in three existing artifacts: **ADRs** capture decisions and their rationale, **`docs/agents/postmortems/`** captures incident and error analysis, and **`SYSTEM_CONTEXT.md`'s "Last reconciliation outcome"** log captures research learnings. A separate curated ledger was evaluated and rejected: it duplicates these artifacts, decays without the automated pruning the standalone-by-design constraint forbids, and reverses prior doc-weight reductions. If you want a "learnings file", write an ADR or a postmortem instead.
 
 ## Conditional extensions
 
@@ -102,17 +102,15 @@ habeebs-skill addresses each:
 2. **Socratic grilling surfaces assumptions.** Every ambiguous decision becomes explicit before code is written.
 3. **Deep modules + vertical slices preserve architecture.** Each slice cuts through all layers end-to-end. Each refactor pass deepens modules.
 
-## Standalone by design (ADR-0002)
+## Standalone by design
 
 habeebs-skill is **one-time-use per feature, with no runtime dependencies.** The chain runs once for a given feature, produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code, tests), and ends. It does not depend on any external runtime substrate — no shared memory store, vector store, MCP server, or session-state directory. `parallel-dev` is the only in-chain parallelism primitive — it dispatches sub-agents within a single chain run via git worktrees, not a persistent worker pool.
 
 If a feature being built by the chain has long-running runtime concerns (queues, workers, sessions, dispatch), those are properties of the product spec — the chain captures them in the spec / ADR / plan and hands off to whatever production runtime the product chooses. They are NOT properties of habeebs-skill itself.
 
-See [`docs/agents/adrs/0002-habeebs-skill-standalone.md`](../../docs/agents/adrs/0002-habeebs-skill-standalone.md).
-
 ## Aborting the chain
 
-Sometimes a chain in flight needs to stop before reaching `tdd-loop` — a new requirement invalidates the active spec, research surfaces an ADR-0002 blocker, the user explicitly says "stop / abort / cancel", or the work needs to be paused indefinitely. Abort is rare but high-stakes: leaving a half-flushed chain behind contaminates the next `prior-art-research` invocation's Phase 0 reconnaissance and confuses the next user picking up the work.
+Sometimes a chain in flight needs to stop before reaching `tdd-loop` — a new requirement invalidates the active spec, research surfaces a standalone-by-design blocker, the user explicitly says "stop / abort / cancel", or the work needs to be paused indefinitely. Abort is rare but high-stakes: leaving a half-flushed chain behind contaminates the next `prior-art-research` invocation's Phase 0 reconnaissance and confuses the next user picking up the work.
 
 This is a documented convention, not a separate skill. Invoke it inline when needed: write "I'm aborting the chain — reason: <one line>" in the conversation, then execute the cleanup checklist below.
 
@@ -120,7 +118,7 @@ This is a documented convention, not a separate skill. Invoke it inline when nee
 
 - **User says** "abort", "cancel", "stop the chain", "let's drop this", or equivalent
 - **New requirement invalidates the active spec** (scope shift; the current draft-spec or grill record no longer maps to reality)
-- **Research surfaces a blocker** — e.g., the chosen architecture violates [ADR-0002](../../docs/agents/adrs/0002-habeebs-skill-standalone.md) and the alternatives all violate it too
+- **Research surfaces a blocker** — e.g., the chosen architecture violates the standalone-by-design constraint and the alternatives all violate it too
 - **Work is paused indefinitely** — the user wants to come back to this later; in-flight artifacts shouldn't pollute the next chain run
 - **A critic surfaces a coverage gap so large** that proceeding would ship the very class of bug the chain exists to prevent
 
@@ -151,7 +149,7 @@ After cleanup completes, choose one of two handoffs:
 
 ## When sessions grow long — summary-and-flush
 
-Per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), the chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-only summary-and-flush protocol for sessions that approach context-window pressure. The other three moves (Write, Select, Isolate per [LangChain's framework](https://blog.langchain.com/context-engineering-for-agents/)) are already covered by SYSTEM_CONTEXT writes, prior-art-research fetches, parallel-dev dispatch isolation. This section closes the Compress gap.
+The chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-only summary-and-flush protocol for sessions that approach context-window pressure. The other three moves (Write, Select, Isolate) are already covered by SYSTEM_CONTEXT writes, prior-art-research fetches, and parallel-dev dispatch isolation. This section closes the Compress gap.
 
 **Trigger signals** (agent notices these; no runtime detection):
 
@@ -172,9 +170,9 @@ Per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md), th
 6. **Recent test state** — last dogfood / test run outcome + any red commits since
 7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time
 
-`.scratch/` is gitignored by user convention (not enforced by ADR — these are ephemeral working-set files, not durable artifacts). Cleanup is manual or per-user-environment policy. Per ADR-0002, no runtime substrate manages the lifecycle.
+`.scratch/` is gitignored by convention — these are ephemeral working-set files, not durable artifacts. Cleanup is manual or per-user-environment policy. No runtime substrate manages the lifecycle.
 
-**v1.11.0 promotion criterion** (per ADR-0012): 3+ postmortems in `docs/agents/postmortems/` showing Context Distraction OR Context Confusion as the failure mode → promote this passive doc to an active skill (`chain-overflow-flush` or similar) with richer detection heuristics.
+**Promotion criterion:** 3+ postmortems in `docs/agents/postmortems/` showing Context Distraction OR Context Confusion as the failure mode → promote this passive doc to an active skill (`chain-overflow-flush` or similar) with richer detection heuristics.
 
 ## When to skip the chain
 
@@ -193,7 +191,7 @@ Plugin commands appear as `/habeebs-skill:<command>` in Claude Code. The auto-tr
 
 ## Shared chain protocols
 
-Chain skills consume `docs/agents/SYSTEM_CONTEXT.md` as their environment-binding cache. The canonical freshness/staleness protocol is documented once and consumed by all 10 chain skills that read the file: [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). Per ADR-0005, only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md (single-writer invariant); all other skills only read.
+Chain skills consume `docs/agents/SYSTEM_CONTEXT.md` as their environment-binding cache. The canonical freshness/staleness protocol is documented once and consumed by every chain skill that reads the file: [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). Only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md; all other skills only read.
 
 ## The implicit promise
 

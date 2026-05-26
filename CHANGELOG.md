@@ -13,6 +13,10 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.21.0] — 2026-05-26
+
+- behavioral-only SKILL.md body convention — strip inline ADR cites + version-archaeology tags + dated incidents (58 hits across 11 files); Pattern-D empirical-claim exception for load-bearing quantitative claims; new dogfood scenarios 26/27/28 prevent regression
+
 ## [1.20.0] — 2026-05-25
 
 Methodology overhaul — late-binding ADR IDs + Changesets-shape append-only version bumps eliminate the two largest parallel-session merge-conflict classes (ADR integer collisions + `plugin.json` / `marketplace.json` / `CHANGELOG.md` 3-way conflicts on every PR). `decision-record` writes `adr-<slug>.md` (no integer); `release` skill is the SOLE writer of numbered ADR files and assigns ints at release-PR-creation time in alphabetic slug order. Feature branches never edit version files — they drop a `.changeset/<slug>.md` carrying `bump:` + `why:`, and the new release-skill `Phase 3.25` aggregates them atomically. This release self-dogfoods the entire mechanism: the v1.20.0 bump itself + the two new ADRs (renamed to 0020 + 0021 here) shipped via the new scripts. Drives the [v1.19.0 workflow audit memo](docs/agents/research/v1.19.0-workflow-audit-research.md) findings.

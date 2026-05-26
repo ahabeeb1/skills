@@ -400,9 +400,9 @@ fatal: '<branch>' is already checked out at '<other-worktree-path>'
 
 There is no force flag — the constraint is structural (two worktrees on one branch would race the index). If you want two worktrees with the same starting point, give them different branches off the same base (`git worktree add ../wt-a -b feature/a origin/main` + `git worktree add ../wt-b -b feature/b origin/main`).
 
-For cross-session parallel work (the v1.18.0 conflict-detection scenario), this constraint is doing useful work: it forces session-per-branch isolation. Don't try to work around it.
+For cross-session parallel work, this constraint is doing useful work: it forces session-per-branch isolation. Don't try to work around it.
 
-**Source:** [`git-worktree(1)`](https://git-scm.com/docs/git-worktree) — the BUGS and CONFIGURATION FILES sections cover all three. Audit memo: `docs/agents/research/v1.19.0-workflow-audit-research.md` § "using-worktrees".
+**Source:** [`git-worktree(1)`](https://git-scm.com/docs/git-worktree) — the BUGS and CONFIGURATION FILES sections cover all three.
 
 ## Integration with the chain
 

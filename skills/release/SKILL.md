@@ -77,9 +77,9 @@ Rules:
 
 Validate with the sell-test from Phase 2b before writing.
 
-### Phase 3.25 — Changeset aggregation + path audit (v1.20.0+)
+### Phase 3.25 — Changeset aggregation + path audit
 
-**Post-v1.20.0:** the feature branch never edits `plugin.json` / `marketplace.json` / `CHANGELOG.md` directly. Instead, each release-worthy PR drops a `.changeset/<slug>.md` carrying `bump:` + `why:`. This phase is the FIRST step of release-PR creation and runs BEFORE Phase 4 (version bump) — in fact it does the bump.
+The feature branch never edits `plugin.json` / `marketplace.json` / `CHANGELOG.md` directly. Instead, each release-worthy PR drops a `.changeset/<slug>.md` carrying `bump:` + `why:`. This phase is the FIRST step of release-PR creation and runs BEFORE Phase 4 (version bump) — in fact it does the bump.
 
 **Step 1 — Path audit.** Verify the diff against the REQUIRED/OPTIONAL/NEVER matrix:
 
@@ -107,13 +107,13 @@ bash skills/release/scripts/aggregate-changesets.sh
 
 The script atomically (a) bumps `plugin.json` + `marketplace.json` from the current version, (b) prepends a `## vX.Y.Z` section to CHANGELOG.md with one bullet per `why:` line, (c) deletes the consumed changesets. Exit codes: 0 = success or nothing-to-do; 1 = aborted clean (write failure detected; working tree unchanged); 2 = aborted dirty (manual intervention required — should never happen given the temp-staging-dir + backup-and-rollback approach but documented for safety).
 
-Per ADR `adr-late-binding-and-changesets` § Decision: feature branches NEVER directly edit the three aggregated files. Two simultaneous release PRs targeting the same version slot will collide at git merge time (loud, not silent — operator closes the second PR + re-aggregates against post-first-merge state).
+Feature branches NEVER directly edit the three aggregated files. Two simultaneous release PRs targeting the same version slot will collide at git merge time (loud, not silent — operator closes the second PR + re-aggregates against post-first-merge state).
 
-**Skip this phase** if no changesets are present AND no REQUIRED path was modified (rare; only documentation-only PRs that pre-date the v1.20.0 cutover). Aggregation script exits 0 with "No changesets to aggregate." in that case.
+**Skip this phase** if no changesets are present AND no REQUIRED path was modified (rare; only documentation-only PRs that touch nothing release-worthy). Aggregation script exits 0 with "No changesets to aggregate." in that case.
 
 ### Phase 3.5 — ADR ID assignment (late-binding)
 
-**Post-v1.20.0:** any `docs/agents/adrs/adr-*.md` files (unnumbered ADRs written by `decision-record` since the last release) must be assigned sequential integers + renamed + added to the index before tagging.
+Any `docs/agents/adrs/adr-*.md` files (unnumbered ADRs written by `decision-record` since the last release) must be assigned sequential integers + renamed + added to the index before tagging.
 
 Run:
 
@@ -129,7 +129,7 @@ bash skills/release/scripts/assign-adr-ids.sh
 
 Exit codes: 0 = success or nothing-to-do; 2 = slug collision (halt and rename one ADR per the operator-facing message; never silently merge). The script regenerates `adrs/README.md`.
 
-Per ADR `adr-late-binding-and-changesets` § Decision: `release` is the SOLE writer of `NNNN-<slug>.md` filenames. `decision-record` is the SOLE writer of `adr-<slug>.md`. The separation is enforced by `tests/dogfood/21-late-binding-adr/check-late-binding.sh`.
+`release` is the SOLE writer of `NNNN-<slug>.md` filenames. `decision-record` is the SOLE writer of `adr-<slug>.md`. The separation is enforced by `tests/dogfood/21-late-binding-adr/check-late-binding.sh`.
 
 ### Phase 4 — Version bump
 
@@ -184,17 +184,17 @@ gh pr create --title "vX.Y.Z: <release headline>" --body "$(cat <<'EOF'
 
 <Status line: "All features have doc coverage" OR list of WARN/INFO findings from Phase 2a>
 
-## Description-policy audit (v1.19.0+)
+## Description-policy audit
 
-For any release that adds a new SKILL.md or modifies an existing one, the doc-sync audit MUST run `bash tests/dogfood/11-description-budget/check-description-budget.sh` and confirm exit 0 before tagging. This enforces ADR-0007 (amended 2026-05-24) § A-F:
+For any release that adds a new SKILL.md or modifies an existing one, the doc-sync audit MUST run `bash tests/dogfood/11-description-budget/check-description-budget.sh` and confirm exit 0 before tagging. The audit enforces:
 
-- § A length budget (≤1,024 hard cap, ≤300 avg target)
-- § B description anatomy (`[Capability ≤8 words]. [Imperative directive] when [literal user trigger 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].`)
-- § C auto-invocation scope (chain-internal skills carry `disable-model-invocation: true`; check `bash tests/dogfood/11-description-budget/check-disabled-list.sh`)
-- § E three-keystone anti-trigger thickness (`prior-art-research`, `systematic-debugging`, `deep-modules`)
-- OQ-4 block-scalar regression guard (no `|` or `>` on the `description:` line)
+- Length budget: ≤1,024 hard cap, ≤300 avg target
+- Description anatomy: `[Capability ≤8 words]. [Imperative directive] when [literal user trigger 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].`
+- Auto-invocation scope: chain-internal skills carry `disable-model-invocation: true`; check `bash tests/dogfood/11-description-budget/check-disabled-list.sh`
+- Three-keystone anti-trigger thickness (`prior-art-research`, `systematic-debugging`, `deep-modules`)
+- Block-scalar regression guard: no `|` or `>` on the `description:` line
 
-If either script fails, halt the release. New skills authored after v1.19.0 land must comply at creation time.
+If either script fails, halt the release. New SKILL.md files must comply at creation time.
 
 ## Release checklist
 
@@ -202,7 +202,7 @@ If either script fails, halt the release. New skills authored after v1.19.0 land
 - [ ] `verify-output` DONE or DONE_WITH_CONCERNS
 - [ ] CHANGELOG entry written with Why lines
 - [ ] Version bumped in plugin.json and marketplace.json
-- [ ] Dogfood 11 description-budget AND disabled-list checks pass (v1.19.0+)
+- [ ] Dogfood 11 description-budget AND disabled-list checks pass
 - [ ] History clean (no WIP/fixup commits)
 - [ ] Tag push ready (Phase 8)
 
@@ -222,7 +222,7 @@ git tag -a vX.Y.Z -m "vX.Y.Z: <release headline>"
 git push origin refs/tags/vX.Y.Z
 ```
 
-**Always use the `refs/tags/` form** — `git push origin refs/tags/vX.Y.Z` — not `git push origin vX.Y.Z`. The unambiguous refspec ensures the commit-block hook (ADR-0003/ADR-0015) correctly identifies this as a tag-only push and allows it on the default branch.
+**Always use the `refs/tags/` form** — `git push origin refs/tags/vX.Y.Z` — not `git push origin vX.Y.Z`. The unambiguous refspec ensures the commit-block hook correctly identifies this as a tag-only push and allows it on the default branch.
 
 Do NOT use `git push --tags` for a single-release push — it pushes all local tags, including any draft tags. Prefer the explicit form above.
 
@@ -267,7 +267,6 @@ HANDOFF: release complete with doc-sync concerns — vX.Y.Z tagged.
 - [`tdd-loop`](../tdd-loop/SKILL.md) — primary caller; `release` is the terminal link after `tdd-loop` GREEN
 - [`verify-output`](../verify-output/SKILL.md) — must reach DONE/DONE_WITH_CONCERNS before `release` runs
 - [`CHANGELOG.md`](../../CHANGELOG.md) — the Convention block this skill follows
-- [ADR-0015](../../docs/agents/adrs/0015-hook-allow-tag-pushes-on-default.md) — the hook amendment that allows tag-only pushes on the default branch
-- [ADR-0003](../../docs/agents/adrs/0003-hooks-scope.md) — commit-block hook scope; tag-push carve-out recorded as amendment
+- [`hooks/`](../../hooks/) — the commit-block hook scope and tag-push carve-out it implements
 - [`references/release-checklist.md`](references/release-checklist.md) — printable release checklist
 - [`references/doc-sync-procedure.md`](references/doc-sync-procedure.md) — expanded doc-sync audit procedure

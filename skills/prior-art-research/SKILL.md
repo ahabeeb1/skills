@@ -38,7 +38,7 @@ The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is ope
 Walk `references/recon-checklist.md` and probe every applicable manifest. Then run the **staleness-check protocol** per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md):
 
 - **File fresh** → load it; skip to Phase 1 with the cache populated.
-- **File stale** → emit the staleness banner and refresh inline (prior-art-research is the canonical SYSTEM_CONTEXT.md writer per ADR-0005 single-writer invariant; other chain skills only read).
+- **File stale** → emit the staleness banner and refresh inline (prior-art-research is the canonical SYSTEM_CONTEXT.md writer; other chain skills only read).
 - **File missing** → populate from probe results following `references/system-context-template.md`, write it, and ask the user to confirm/correct the inferred fields before moving on.
 
 See the shared protocol doc for the canonical mtime-check command, banner format, and failure-mode fallbacks (git-history-unavailable, file-malformed). This skill's Phase 0 is the only place a chain skill is permitted to write SYSTEM_CONTEXT.md.
@@ -53,7 +53,7 @@ Phase 0 populated most of the structural context. Ask only what couldn't be infe
 
 Ask questions plainly. Do not preface them with explanations of why you're asking, why there are this many, or what you already know. State the questions and stop. Stage them in two messages (2 then 3) — never dump all five at once.
 
-**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes. This gate is adaptive, never a hard block (see ADR-0013, generalized chain-wide by ADR-0016).
+**Scale the asking to the anticipated tier.** Phase 1 precedes the formal tier choice (Phase 3), but the scope is usually legible from the prompt. If the scope is obviously Quick — a single sub-problem and shipping speed signalled in the prompt — collapse Phase 1 to the 2 foundational questions, or to a single confirmation line when Phase 0 and the prompt already cover them, and proceed on assumptions tagged `[assumed]`. Reserve the full staged 2-then-3 for Deep-tier scopes. This gate is adaptive, never a hard block.
 
 **First message (2 questions, asked together):**
 
@@ -115,7 +115,7 @@ If any slot was empty, omit it from the echo. If no steering was provided, skip 
 
 ### Phase 2.5 — Category-completeness critic (coverage gate)
 
-**Why this exists:** a single-agent Phase 2 planner reliably misses entire categories of architectural concern. The chain's bleeding pain (documented 2026-05-12) was a research run that missed `hooks / event handlers` and `subagent-driven patterns` for habeebs-skill itself — and the chain blindly proceeded against the incomplete decomposition. Phase 2.5 is the coverage gate that catches this.
+**Why this exists:** a single-agent Phase 2 planner reliably misses entire categories of architectural concern. Without a coverage gate, the chain proceeds against incomplete decompositions and ships specs missing whole architectural axes (for example: hooks / event handlers / subagent-driven patterns). Phase 2.5 is the coverage gate that catches this.
 
 **What runs:** dispatch ONE `category-completeness-critic` subagent (see `../../agents/category-completeness-critic.md`) via `parallel-dev` Phase 4 (single-subagent dispatch is allowed). The critic receives the proposed decomposition + Phase 1 context + the SYSTEM_CONTEXT preamble. It returns either:
 
@@ -129,7 +129,7 @@ For each proposed addition, the lead does exactly one of:
 1. **Accept** — add the suggested sub-problem to the decomposition. Note "Phase 2.5: accepted (critic surfaced this)" in the running notes for the final report.
 2. **Reject with written reason** — explicitly state why the category is non-applicable for this feature + context. The reason is captured in the **Phase 2.5 outcome** section of the final report (`references/output-template.md`). Silent rejection is forbidden.
 
-**Iteration cap:** Phase 2.5 runs exactly ONCE. No re-fan-out, no second pass. If the critic missed something the user later spots, that's a v1.8.0+ improvement candidate (Phase 6 CitationAgent equivalent). The bounded loop keeps Phase 2.5 from becoming a coverage-debate hole.
+**Iteration cap:** Phase 2.5 runs exactly ONCE. No re-fan-out, no second pass. If the critic missed something the user later spots, capture it as a postmortem candidate. The bounded loop keeps Phase 2.5 from becoming a coverage-debate hole.
 
 **When this phase is skipped:**
 
@@ -180,9 +180,9 @@ guards:
 - If "correctness" is a top-2 priority and the project is greenfield and the
   computed tier is Balanced, bump to Deep.
 
-This is a heuristic, not a hard gate (consistent with ADR-0013). The user can
-override with `--quick`, `--balanced`, or `--deep`; the override wins and is
-recorded with a `(user override)` annotation in the `Tier:` header.
+This is a heuristic, not a hard gate. The user can override with `--quick`,
+`--balanced`, or `--deep`; the override wins and is recorded with a
+`(user override)` annotation in the `Tier:` header.
 
 **State the tier and a task-based reason in one line** before proceeding —
 e.g. `Tier: Quick — 1 sub-problem, low ambiguity, no hard constraints.` Cite
@@ -198,7 +198,7 @@ Search in priority order. **Always start with T1 and T2.** Drop to lower tiers o
 See `references/source-tiers.md` for the curated list of high-signal engineering blogs by domain.
 
 - **Tier 1 — Engineering blogs from teams that actually shipped it.** Uber, Stripe, Discord, Figma, Cloudflare, LinkedIn, Notion, Shopify, Airbnb, Slack, Pinterest, Dropbox, GitHub, Vercel, Anthropic, OpenAI, Databricks, Snowflake, Netflix, Amazon (Builders' Library). These post-mortems describe what they actually did at scale.
-- **Tier 2 — GitHub repos shipping similar features.** Read the actual code, not just READMEs. Look at the directory structure, the abstractions, the migration history. For NL-framed feature descriptions on Balanced/Deep tiers, run the **semantic-repo-discovery loop** in [`references/semantic-repo-discovery.md`](references/semantic-repo-discovery.md) — fire-rule-gated per [ADR-0017](../../docs/agents/adrs/0017-semantic-repo-discovery-port.md) — to surface candidates that don't compress to keyword queries. Quick skips the loop unconditionally; precise-tech queries fall through to plain `gh search repos` or WebSearch.
+- **Tier 2 — GitHub repos shipping similar features.** Read the actual code, not just READMEs. Look at the directory structure, the abstractions, the migration history. For NL-framed feature descriptions on Balanced/Deep tiers, run the **semantic-repo-discovery loop** in [`references/semantic-repo-discovery.md`](references/semantic-repo-discovery.md) — fire-rule-gated — to surface candidates that don't compress to keyword queries. Quick skips the loop unconditionally; precise-tech queries fall through to plain `gh search repos` or WebSearch.
 - **Tier 3 — Conference talks, RFCs, ADRs in OSS projects.** QCon, Strange Loop, PWLConf, RailsConf. ADRs from Kubernetes, Rust, etc.
 - **Tier 4 — HackerNews/Reddit practitioner threads.** Where engineers argue trade-offs with real numbers.
 - **Tier 5 — Official docs / tutorials.** Lowest signal. Usually theoretical, not battle-tested.
@@ -240,7 +240,7 @@ Produce the output using the template in `references/output-template.md`. The st
 
 ### Phase 6.5 — Archive the report
 
-Per [ADR-0018](../../docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md) Part B. After Phase 6 composes the report, write it verbatim to:
+After Phase 6 composes the report, write it verbatim to:
 
 ```
 docs/agents/research/<slug>-research.md
@@ -250,7 +250,7 @@ The `<slug>` is the same feature slug the user (or you) will use for the downstr
 
 The archive's content is the full Phase 6 output — every numbered section above (Executive summary through Sources) plus the Steering reconciliation block when applicable. Phase 7's HANDOFF lines should name the archive file path so downstream skills (`draft-spec`, `socratic-grill`) can read the durable archive instead of relying on in-conversation context.
 
-**Tier-conditional** per [ADR-0016](../../docs/agents/adrs/0016-chain-wide-depth-tier.md). The tier is in this report's header (`**Tier:**`); fire by tier:
+**Tier-conditional.** The tier is in this report's header (`**Tier:**`); fire by tier:
 
 - **Deep:** **REQUIRED.** Multi-source synthesis (10-20 sources, subagent fan-out) is worth preserving as the evidence base for future "why did we pick X?" audits.
 - **Balanced:** **OPTIONAL.** Default-off. Write only if the synthesis contains decisions or evidence you expect the user to revisit; otherwise the spec's "Concrete picks" table preserves what's load-bearing.
@@ -262,7 +262,7 @@ The archive's content is the full Phase 6 output — every numbered section abov
 ⚠ Could not write research archive at <path>: <error>. Proceeding to HANDOFF.
 ```
 
-Research success is not held hostage to archival failure — same shape as the dispatch-record fallback in `parallel-dev` Phase 7.5.
+Research success is not held hostage to archival failure — same shape as the dispatch-record fallback in `parallel-dev`.
 
 **Post-write edits are file edits.** Once Phase 6.5 commits the file, the file is the source of truth. Any edit to the report (clarifying a Recommendation, adding a Source, fixing a typo surfaced in Phase 7) MUST update the on-disk archive too — don't let the conversation transcript and the archive diverge.
 

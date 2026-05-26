@@ -160,7 +160,7 @@ HANDOFF: implementation ready — plan locked at docs/agents/plans/<slug>.md.
   Gate to pass before phase 2: <phase 1 gate>.
 ```
 
-**Always emit (v1.7.0+):** if the plan has any pgroup of size ≥ 2, also emit the pgroup-dispatch-ready handoff so the downstream `tdd-loop` Phase 0.5 knows to auto-dispatch (rather than fall through to single-slice sequential):
+**Always emit:** if the plan has any pgroup of size ≥ 2, also emit the pgroup-dispatch-ready handoff so the downstream `tdd-loop` Phase 0.5 knows to auto-dispatch (rather than fall through to single-slice sequential):
 
 ```
 HANDOFF: pgroup-dispatch-ready — when tdd-loop is invoked on this plan, pgroups of size ≥2 will auto-dispatch via parallel-dev.
@@ -176,7 +176,7 @@ HANDOFF: parallel dispatch ready — pgroup-<N> contains <K> AFK slices with no 
   parallel-dev can dispatch these concurrently. Each gets its own worktree per using-worktrees.
 ```
 
-Both handoff lines are read by `tdd-loop` Phase 0.5 (ADR-0004). The `pgroup-dispatch-ready` line is the *machine-readable* dispatch trigger; the `parallel dispatch ready` line is the *human-readable* heads-up.
+Both handoff lines are read by `tdd-loop` Phase 0.5. The `pgroup-dispatch-ready` line is the *machine-readable* dispatch trigger; the `parallel dispatch ready` line is the *human-readable* heads-up.
 
 ## Anti-patterns this skill guards against
 

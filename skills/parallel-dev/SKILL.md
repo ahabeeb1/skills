@@ -30,11 +30,11 @@ Orchestration primitive for parallel subagent dispatch. The art is in proving in
 
 Two production literatures disagree on multi-agent fan-out, and the split lines up with the two kinds of work this skill dispatches. Classify the batch before Phase 1; the answer changes which downstream phases are mandatory.
 
-**Read-task dispatch — Anthropic-validated.** Subagents fetch information, extract patterns, audit, or otherwise *read* shared substrate and return structured records the parent aggregates. No subagent writes to the repo. Anthropic's "Built a multi-agent research system" reports ~90% lift on research-shaped tasks at ~15× the token cost of a single-agent equivalent — the cost is real, the gain is real, the merge-conflict surface is zero because nothing is written. Examples: `prior-art-research` Phase 4-5 source-fetchers, `pattern-extractor` runs, audit-style dispatches.
+**Read-task dispatch.** Subagents fetch information, extract patterns, audit, or otherwise *read* shared substrate and return structured records the parent aggregates. No subagent writes to the repo. Research-shaped tasks see ~90% lift at ~15× the token cost of a single-agent equivalent — the cost is real, the gain is real, the merge-conflict surface is zero because nothing is written. Examples: `prior-art-research` Phase 4-5 source-fetchers, `pattern-extractor` runs, audit-style dispatches.
 
-**Write-task dispatch — Cognition-restricted.** Subagents commit artifacts (code, ADRs, slices, docs) to the repo. Cognition's "Don't build multi-agents" essay names this as the canonical failure mode: "actions carry implicit decisions, and conflicting decisions carry bad results." Parallel writers without isolation diverge irrecoverably. This skill makes the failure mode survivable by enforcing three gates simultaneously — none of which are optional for write tasks:
+**Write-task dispatch.** Subagents commit artifacts (code, ADRs, slices, docs) to the repo. Parallel writers without isolation diverge irrecoverably: actions carry implicit decisions, and conflicting decisions carry bad results. This skill makes the failure mode survivable by enforcing three gates simultaneously — none of which are optional for write tasks:
 
-1. **Per-worktree isolation** — every artifact-producing subagent runs in its own `git worktree` on its own branch, via `using-worktrees` invoked once per subagent before dispatch. Phase 4 already requires this; the Cognition essay is the *reason* it is required.
+1. **Per-worktree isolation** — every artifact-producing subagent runs in its own `git worktree` on its own branch, via `using-worktrees` invoked once per subagent before dispatch. Phase 4 already requires this.
 2. **≤8 concurrent dispatches** — the existing 5-default concurrency cap (Phase 4) and the per-pgroup ceiling of 8 (the empirical maximum across Cursor's parallel-agent mode and the appxlab 5-7 ceiling). Overrides above 8 are forbidden, not just discouraged — past that point reviewer burden has been shown to exceed parallelism gain in every published case.
 3. **Phase 2 independence verification, mandatory** — file overlap, state dependency, ordering semantics. For read tasks Phase 2 is hygiene; for write tasks it is the load-bearing failure-prevention step. Skipping Phase 2 on a write dispatch is the most common silent cause of `parallel-dev` failures.
 
@@ -42,10 +42,10 @@ If a write dispatch cannot honor all three, **fall back to sequential**. The cos
 
 **Hybrid dispatches are not a category.** A pgroup either writes to the repo or it doesn't. If some subagents write and some read, treat the entire pgroup as a write dispatch (the stricter rule wins).
 
-**Sources for this section:**
+## Sources for this section
+
 - [Anthropic — Built a multi-agent research system](https://www.anthropic.com/research/built-a-multi-agent-research-system) — read-task efficacy + 15× token cost
 - [Cognition — Don't build multi-agents](https://cognition.ai/blog/dont-build-multi-agents) — write-task anti-pattern
-- Audit memo: `docs/agents/research/v1.19.0-workflow-audit-research.md` § "parallel-dev + using-worktrees positioning"
 
 ## Core workflow
 
@@ -92,15 +92,15 @@ SUBAGENT N: <name>
   worktree_path:    <required for artifact-producing subagents; see Phase 4>
   branch:           <required for artifact-producing subagents; see Phase 4>
   context_preamble: <REQUIRED — full content of docs/agents/SYSTEM_CONTEXT.md
-                    per ADR-0004 Part 3; injected into the subagent's prompt
-                    so subagents inherit the parent's environment binding
-                    rather than re-running Phase 0 reconnaissance>
+                    injected into the subagent's prompt so subagents inherit
+                    the parent's environment binding rather than re-running
+                    Phase 0 reconnaissance>
   commit:           <required for any subagent that produces persistent artifacts; see "Commit discipline" below>
 ```
 
 The spec should be self-contained. The subagent should not need to ask clarifying questions — if it does, the spec was incomplete (which is a `STATUS: NEEDS_CONTEXT` return per the contract in `## Return contract` below).
 
-**Context preamble is mandatory** (ADR-0004 Part 3). Without it, subagents drift from the parent's environment binding, re-run Phase 0 reconnaissance, and burn tokens for no reason. The dispatcher reads `docs/agents/SYSTEM_CONTEXT.md` once and injects the content into every subagent's input.
+**Context preamble is mandatory.** Without it, subagents drift from the parent's environment binding, re-run Phase 0 reconnaissance, and burn tokens for no reason. The dispatcher reads `docs/agents/SYSTEM_CONTEXT.md` once and injects the content into every subagent's input.
 
 #### Commit discipline (required for any subagent that writes to the repo)
 
@@ -185,7 +185,7 @@ If verification fails, the parallel dispatch saved nothing — and may have cost
 
 ### Phase 7.5 — Write the dispatch record
 
-Per [ADR-0004](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md) Part 2 — implemented by [ADR-0018](../../docs/agents/adrs/0018-implement-dormant-artifact-recording-contracts.md) Part A. After Phase 7 verifies, write **one JSON file** at:
+After Phase 7 verifies, write **one JSON file** at:
 
 ```
 docs/agents/dispatches/<dispatch-id>.json
@@ -199,7 +199,7 @@ The `<dispatch-id>` is the same ulid or short hash generated in Phase 4 (carried
 - `aggregate` block — `total_wall_ms = max(durations)`, `sequential_equivalent_ms = sum(durations)`, `parallelism_gain = sequential / wall`, `outcome ∈ {SUCCESS, PARTIAL, FAILED}` from Phase 7's verdict.
 - `re_dispatches` array — empty if no re-dispatch fired.
 
-**Always-on.** No tier conditionality. ADR-0004 Part 2 mandates every dispatch produces a record; this phase honors that mandate. (Tier governs whether a chain *uses* parallel-dev at all — see ADR-0016 — but once a dispatch happens, recording is unconditional.)
+**Always-on.** No tier conditionality. Every dispatch produces a record. (Tier governs whether a chain *uses* parallel-dev at all, but once a dispatch happens, recording is unconditional.)
 
 **Failure mode.** If the write fails (filesystem full, permission denied, path missing), emit one line and proceed:
 
@@ -209,11 +209,11 @@ The `<dispatch-id>` is the same ulid or short hash generated in Phase 4 (carried
 
 The parallel work already succeeded; losing the audit log MUST NOT poison successful results. This matches the graceful-degradation pattern in [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md) § Case A.
 
-**Single-writer invariant.** The dispatcher is the sole writer of dispatch records. No downstream skill reads dispatch records during chain execution; the directory is an audit-only log per ADR-0004 Part 2. Forensic readers (`socratic-grill` re-grilling a past failed slice, future calibration scripts) grep across the directory after the fact.
+**Single-writer invariant.** The dispatcher is the sole writer of dispatch records. No downstream skill reads dispatch records during chain execution; the directory is an audit-only log. Forensic readers (`socratic-grill` re-grilling a past failed slice, future calibration scripts) grep across the directory after the fact.
 
 ## Return contract
 
-Every subagent dispatched via `parallel-dev` returns exactly one of four statuses (snapshot locked by ADR-0004). The full input + return JSON schemas live in `references/dispatch-record-template.md`; semantics below.
+Every subagent dispatched via `parallel-dev` returns exactly one of four statuses. The full input + return JSON schemas live in `references/dispatch-record-template.md`; semantics below.
 
 ### `DONE`
 
@@ -256,7 +256,7 @@ These are dispatch shapes that recur often enough to warrant naming. Each is a s
 
 **Independence sanity:** probes are usually read-only and operate against shared infrastructure (prod replica, staging DB). File-overlap independence is automatic; resource contention (rate limits, connection pool) may need a soft cap < 5.
 
-**Consumer:** `systematic-debugging` Phase 3.5 (planned for v1.8.0+) — when ≥3 hypotheses are on the table, fan out probes via this pattern instead of probing sequentially.
+**Consumer:** `systematic-debugging` Phase 3.5 — when ≥3 hypotheses are on the table, fan out probes via this pattern instead of probing sequentially.
 
 **Citation:** ["competitive programming with AlphaCode" — DeepMind blog](https://deepmind.google/blog/competitive-programming-with-alphacode/). Pattern adapted from generate-N-filter-to-K to N-hypothesis-fan-out via probe execution.
 

@@ -6,7 +6,9 @@ disable-model-invocation: true
 
 # Verify Output
 
-Post-generation anti-slop pass. Runs between `tdd-loop` GREEN (tests passing) and the commit. Scans the staged diff against the seven heuristics in [`references/slop-heuristics.md`](references/slop-heuristics.md) and returns a 4-status verdict per [ADR-0004](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md).
+<!-- Inspired by oh-my-claudecode's ai-slop-cleaner + ultraqa skills. -->
+
+Post-generation anti-slop pass. Runs between `tdd-loop` GREEN (tests passing) and the commit. Scans the staged diff against the seven heuristics in [`references/slop-heuristics.md`](references/slop-heuristics.md) and returns a 4-status verdict.
 
 This is the post-implementation review pass. It is NOT a refactor pass (that's [`deep-modules`](../deep-modules/SKILL.md), invoked earlier at the `tdd-loop` refactor step). It is NOT a linter (that's the project's static analysis). It is NOT a security review. Its scope is narrow: detect slop, surface it, and let the user decide whether to ship.
 
@@ -56,8 +58,6 @@ Default mode is **ANNOTATE**. Check for the explicit `--gate` arg (in slash-comm
 |---|---|---|
 | **ANNOTATE** (default) | `DONE_WITH_CONCERNS` (warns, does not block) | `BLOCKED` |
 | **GATE** (`--gate`) | `BLOCKED` | `BLOCKED` |
-
-If a `--strict` flag emerges in the future, it would sit between ANNOTATE and GATE — moderate slop becomes blocking only after N concerns are surfaced. Not implemented in v1.9.0.
 
 ### Phase 3 — Scan against the 7 heuristics
 
@@ -162,9 +162,9 @@ The override is NOT a way to silence false positives — those should produce a 
 - **Using verify-output for security or correctness.** It's a slop detector. A diff can be slop-free and still wrong / insecure.
 - **Hand-tuning heuristics per-diff.** If a heuristic systematically misfires, fix `references/slop-heuristics.md` once. Don't patch around it per-commit.
 
-## 4-status return contract (per ADR-0004)
+## 4-status return contract
 
-This skill's return contract matches the parallel-dev dispatch contract from ADR-0004:
+This skill's return contract matches the parallel-dev dispatch contract:
 
 | Status | Meaning | Caller action |
 |---|---|---|
@@ -178,13 +178,5 @@ This skill's return contract matches the parallel-dev dispatch contract from ADR
 - [`tdd-loop`](../tdd-loop/SKILL.md) — primary caller; invokes verify-output between GREEN and commit
 - [`deep-modules`](../deep-modules/SKILL.md) — adjacent; fires at the refactor step (earlier in tdd-loop), targets interface shape rather than code shape
 - [`references/slop-heuristics.md`](references/slop-heuristics.md) — the 7 heuristics this skill applies
-- [ADR-0008](../../docs/agents/adrs/0008-verify-output-skill-scope.md) — scope, default mode, blocking criteria, separation from deep-modules
-- [ADR-0004](../../docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md) — 4-status return contract
-- [ADR-0011](../../docs/agents/adrs/0011-error-analysis-cadence.md) — when verify-output keeps missing a failure class, [`docs/agents/postmortems/`](../../docs/agents/postmortems/) is the canonical place to document the new category and propose a rule for the next release. Static pre-commit check (this skill) and post-incident error analysis (postmortems) are complementary loops, not peers.
+- [`docs/agents/postmortems/`](../../docs/agents/postmortems/) — when verify-output keeps missing a failure class, postmortems are the canonical place to document the new category and propose a rule for the next release. Static pre-commit check (this skill) and post-incident error analysis (postmortems) are complementary loops, not peers.
 - `CLAUDE.md` at repo root — canonical source for H1-H4
-
-## Origins
-
-- Inspired by oh-my-claudecode's [`ai-slop-cleaner`](https://github.com/Yeachan-Heo/oh-my-claudecode) and `ultraqa` — post-generation anti-slop pass framing; "agent stopped mid-thought" pattern recognition
-- Lifted from this repo's `CLAUDE.md` — H1-H4 verbatim (user-authored canon, same source of truth)
-- `agent-factors-check` applied to verify-output's own design before commit (this skill is itself an LLM workflow with a tool-call schema, state, and a pause/resume case via `NEEDS_CONTEXT`)

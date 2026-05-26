@@ -34,7 +34,7 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 
 Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
 
-Phase 0.5 (added v1.7.0) reads the active plan and, when a pgroup of size ≥2 is ready, hands off to `parallel-dev` for concurrent dispatch — each subagent runs its own Phase 1-6 cycle in its own worktree. Single-slice flows pass through Phase 0.5 unchanged.
+Phase 0.5 reads the active plan and, when a pgroup of size ≥2 is ready, hands off to `parallel-dev` for concurrent dispatch — each subagent runs its own Phase 1-6 cycle in its own worktree. Single-slice flows pass through Phase 0.5 unchanged.
 
 ### Pre-flight — Environment check
 
@@ -74,7 +74,7 @@ If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in t
 
 ### Phase 0.5 — Plan inspection: pgroup auto-dispatch + idempotent re-invocation
 
-(Introduced in v1.7.0 per ADR-0004 and plan 0004. Runs only when an active plan exists at `docs/agents/plans/<slug>.md`. Skipped when there's no active plan or the plan has been flagged Done.)
+(Runs only when an active plan exists at `docs/agents/plans/<slug>.md`. Skipped when there's no active plan or the plan has been flagged Done.)
 
 **No plan is an expected state, not a degraded one.** A **Quick**-tier chain (see the `**Tier:**` field on the spec — [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)) deliberately skips `write-plan`; `tdd-loop` then runs the spec's slice order directly, sequentially. Do not emit a setup warning or hunt for a missing plan — fall through to Phase 1. `tdd-loop` itself always runs in full at every tier; the tier scales the *design* that precedes implementation, never the TDD rigor.
 
@@ -95,7 +95,7 @@ For each slice in the next pgroup, classify:
 - **In-flight** — a `slice-<N>-*` branch or worktree exists but no completion commit. Treat as `BLOCKED — investigate-manually` and surface to the user (don't auto-resume someone else's mid-edit).
 - **Pending** — no trace. Dispatch fresh in Step 3.
 
-This is the pause/resume API: git is the durability layer (ADR-0004 Part 4). Killing the chain mid-pgroup and re-running `tdd-loop` will skip completed slices and re-dispatch only pending ones. **No checkpoint file is consulted** — only git refs and dispatch records (audit log).
+This is the pause/resume API: git is the durability layer. Killing the chain mid-pgroup and re-running `tdd-loop` will skip completed slices and re-dispatch only pending ones. **No checkpoint file is consulted** — only git refs and dispatch records (audit log).
 
 **Step 3 — Dispatch decision.**
 
@@ -109,7 +109,7 @@ This is the pause/resume API: git is the durability layer (ADR-0004 Part 4). Kil
 |---|---|
 | `DONE` | Mark slice complete in the plan; advance |
 | `DONE_WITH_CONCERNS` | Mark slice complete; **emit a warning to the user** with the `notes` field content; append `notes` to the dispatch record at `docs/agents/dispatches/<dispatch-id>.json` |
-| `BLOCKED` | Halt the pgroup; surface the **structured BLOCKED message** (`{type, subagent, slice_id, reason, suggested_action}` per ADR-0004 Part 1) to the user; do NOT auto-re-dispatch |
+| `BLOCKED` | Halt the pgroup; surface the **structured BLOCKED message** (`{type, subagent, slice_id, reason, suggested_action}`) to the user; do NOT auto-re-dispatch |
 | `NEEDS_CONTEXT` | Re-dispatch the slice ONCE with the corrected input (typically: a clarification to the spec or a fix to the input contract); if the re-dispatch also returns `NEEDS_CONTEXT`, escalate as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
 
 **Step 5 — Loop or descend.**
@@ -122,7 +122,7 @@ This is the pause/resume API: git is the durability layer (ADR-0004 Part 4). Kil
 
 **What Phase 0.5 does NOT do:**
 
-- It does not write to dispatch records mid-pgroup — only `parallel-dev` writes, after all subagents return (single-writer invariant per ADR-0004 Part 2).
+- It does not write to dispatch records mid-pgroup — only `parallel-dev` writes, after all subagents return (single-writer invariant).
 - It does not read dispatch records *during* chain execution — they are an audit log, not a substrate.
 - It does not skip the `using-worktrees` Phase 0 check; each dispatched subagent still gets its own worktree.
 - It does not auto-merge concurrent worktrees — merge to main remains sequential with rebase-then-test (per `using-worktrees` Phase 5).
@@ -207,7 +207,7 @@ Before declaring the slice complete, run TWO independent passes. Skipping either
 - Naming that fights the domain glossary
 - Helper that's used in exactly one place and should be inlined
 
-**Pass 5c — Anti-slop review (verify-output):** stage the slice's diff (`git add` the relevant files) and invoke [`verify-output`](../verify-output/SKILL.md). The skill scans for the seven slop heuristics (unjustified comments, defensive validation past trusted boundaries, half-finished implementations, dead code, repeated boilerplate, feature creep, backward-compat shims for unshipped code). 4-status return per ADR-0004:
+**Pass 5c — Anti-slop review (verify-output):** stage the slice's diff (`git add` the relevant files) and invoke [`verify-output`](../verify-output/SKILL.md). The skill scans for the seven slop heuristics (unjustified comments, defensive validation past trusted boundaries, half-finished implementations, dead code, repeated boilerplate, feature creep, backward-compat shims for unshipped code). 4-status return:
 
 - `DONE` → proceed to Phase 4 COMMIT.
 - `DONE_WITH_CONCERNS` → read the concerns, decide deliberately; ANNOTATE mode is the default and does NOT block. Proceed to commit (or fix and re-run if the concerns are worth addressing).
@@ -264,6 +264,6 @@ These are signs the slice is wrong, not that TDD is wrong:
 - `deep-modules` — invoked at the refactor step
 - `verify-output` — invoked at Pass 5c between two-stage review and commit; anti-slop pass
 - `parallel-dev` — dispatches parallel TDD loops on independent slices
-- [`using-habeebs-skill` § "When sessions grow long — summary-and-flush"](../using-habeebs-skill/SKILL.md) — long tdd-loop runs (20+ slices in one conversation) are the most likely Compress-at-overflow site per [ADR-0012](../../docs/agents/adrs/0012-compress-at-overflow-protocol.md); flush via the 7-section summary template at [`../using-habeebs-skill/references/session-summary-template.md`](../using-habeebs-skill/references/session-summary-template.md)
+- [`using-habeebs-skill` § "When sessions grow long — summary-and-flush"](../using-habeebs-skill/SKILL.md) — long tdd-loop runs (20+ slices in one conversation) are the most likely Compress-at-overflow site; flush via the 7-section summary template at [`../using-habeebs-skill/references/session-summary-template.md`](../using-habeebs-skill/references/session-summary-template.md)
 - `vertical-slice` — defines what makes a slice implementable
 - `references/test-seam-guide.md` — choosing unit vs integration vs e2e

@@ -2,9 +2,13 @@
 
 **Slug:** `feature-slug`
 **Status:** Draft | Grilled | Locked | In-progress | Done
+**Version:** vX.Y.Z (the release this spec ships in)
+**Release:** vX.Y.Z (alias of Version; keep both or drop one — the version lives in frontmatter, carrying spec→plan→release traceability)
 **Tier:** Quick | Balanced | Deep (inherited from the research report)
 **Spec'd from:** [Link to research output or ADR]
 **Spec'd on:** [Date]
+
+> Filename convention: `docs/agents/specs/YYYY-MM-DD-<feature-slug>.md` (slug is the uniqueness key). The version is carried in the `**Version:**` field above.
 
 ## TL;DR
 

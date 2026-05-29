@@ -99,7 +99,9 @@ Never let an item exit as "we'll see." That's the failure mode the skill exists 
 
 ### Phase 4 — Produce the grill output
 
-Write a Grill Record using `references/grill-output-template.md`:
+Write a Grill Record to `docs/agents/specs/YYYY-MM-DD-<spec-slug>-grill.md`, mirroring the dated spec it grills (same date and slug, `-grill` suffix). Its `**Spec:**` link points at the spec, which carries the version in frontmatter. Halt loud if the dated filename already exists.
+
+Use `references/grill-output-template.md`:
 
 - Every item, its starting state, the dimensions grilled on, the resolution
 - New decisions surfaced during grilling (often the grill reveals decisions the spec didn't anticipate)

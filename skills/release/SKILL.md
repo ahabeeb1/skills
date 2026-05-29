@@ -111,26 +111,6 @@ Feature branches NEVER directly edit the three aggregated files. Two simultaneou
 
 **Skip this phase** if no changesets are present AND no REQUIRED path was modified (rare; only documentation-only PRs that touch nothing release-worthy). Aggregation script exits 0 with "No changesets to aggregate." in that case.
 
-### Phase 3.5 — ADR ID assignment (late-binding)
-
-Any `docs/agents/adrs/adr-*.md` files (unnumbered ADRs written by `decision-record` since the last release) must be assigned sequential integers + renamed + added to the index before tagging.
-
-Run:
-
-```bash
-bash skills/release/scripts/assign-adr-ids.sh --dry-run
-```
-
-Verify the rename plan matches expectations (correct integers, alphabetic slug order, no surprise files). Then apply:
-
-```bash
-bash skills/release/scripts/assign-adr-ids.sh
-```
-
-Exit codes: 0 = success or nothing-to-do; 2 = slug collision (halt and rename one ADR per the operator-facing message; never silently merge). The script regenerates `adrs/README.md`.
-
-`release` is the SOLE writer of `NNNN-<slug>.md` filenames. `decision-record` is the SOLE writer of `adr-<slug>.md`. The separation is enforced by `tests/dogfood/21-late-binding-adr/check-late-binding.sh`.
-
 ### Phase 4 — Version bump
 
 Edit exactly two files:

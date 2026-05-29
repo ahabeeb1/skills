@@ -9,7 +9,7 @@
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
 - **Skill count:** 19 in tree (v1.14.0 added `security-audit`, `release`, `devex-review`; v1.18.0 added `cross-session-detect`).
 - **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill. 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill) + cross-session-detect. Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016).
-- **ADR count:** 22 (0001-0022). Recent batch: ADR-0020 (late-binding ADR IDs + Changesets-shape version bumps, shipped v1.20.0), ADR-0021 (methodology folder cuts — amended 2026-05-25 to REVERSE the `dispatches/` + `conflicts/` deletions; `grill-records/` fold shipped), ADR-0022 (behavioral-only SKILL.md body + Pattern-D empirical-claim exception, shipped v1.21.0). Cross-amends: 0001 (by 0006/0010), 0002 (by 0019), 0003 (by 0015), 0004 (Part 5 untrusted-content rule), 0012 (template path relocation), 0013 (extended by 0016).
+- **ADR count:** 24 (0001-0024). Recent batch: ADR-0021 (methodology folder cuts — amended 2026-05-25 to REVERSE the `dispatches/` + `conflicts/` deletions; `grill-records/` fold shipped), ADR-0022 (behavioral-only SKILL.md body + Pattern-D empirical-claim exception, shipped v1.21.0), ADR-0023 (v1.22.0 methodology bundle — plain-English plans + HITL pivot + chain-state validator + markdown telemetry, shipped v1.22.0), ADR-0024 (plugin supply-chain threat model — deferred hardening, shipped v1.22.0). Cross-amends: 0001 (by 0006/0010), 0002 (by 0019), 0003 (by 0015), 0004 (Part 5 untrusted-content rule), 0012 (template path relocation), 0013 (extended by 0016). **ADR-0020** is the live target of the current research run (release-driven late-binding integer scheme — under reconsideration in favor of dated naming).
 - **Current release:** v1.21.0 (behavioral-only SKILL.md body convention — 58 cruft hits across 11 files removed; Pattern-D empirical-claim exception codified; dogfood scenarios 26/27/28 prevent regression).
 - **Dogfood scenario count:** 31 live (5 baselines + 21-28 = 13 scenarios commonly cited as "all passing on main"; remainder are adversarial suites like 09-category-critic, 10-pgroup-dispatch, 17-security-audit fixtures).
 - **Hook count:** 4 active (SessionStart ghost-commit-detect, SessionStart peer-scan, PreToolUse[Bash] commits-to-default-block, PreToolUse[Edit|Write|NotebookEdit] peer-scan; plus 1 dormant pre-push.sh on disk). All conform to ADR-0003 (warn-only or block-only, stateless, multi-harness aware).
@@ -48,6 +48,20 @@
 (none — flushed 2026-05-26 per `prior-art-research` Phase 7 flush rule at end of v1.22.0 methodology-overhaul research run; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-05-28 — topic: dated artifact naming vs. release-driven late-binding integers (v1.23.0 candidate) — Deep-tier, 5 sub-problems**
+
+- Look-at "obra/superpowers": Honored — dates plans/specs (`YYYY-MM-DD-<slug>.md`, mandated verbatim) but keeps ZERO ADRs; informs the spec/plan half, not a dated-ADR precedent.
+- Look-at "AWS Kiro": Honored with override — investigated as requested, found to be a COUNTER-example (slug dirs `.kiro/specs/<slug>/{requirements,design,tasks}.md`, no dates, no ADRs). Recommendation does not follow Kiro; reported plainly.
+- Look-at "similar methodologies": Honored — github/spec-kit (sequential `001-`), log4brains + Shopware (production dated ADRs), Rust RFCs (number-at-merge=PR#) all surfaced.
+- Anchor "dated / YYYY-MM-DD": Honored with caveat — adopted, but evidence forced the refinement that the SLUG (not the bare date) is the collision-uniqueness key; bare `YYYY-MM-DD` is provably collision-prone under parallel sessions (MADR #28 verbatim).
+- Avoid "re-introduce parallel-session collisions": Honored — hence `date+slug`; flagged same-day rule for grill.
+- Avoid "runtime substrate": Honored — all changes markdown + script DELETIONS; nothing added.
+- **Key finding: ADR-0020's "zero canonical endorsement for date-prefix ADR naming" is OVERSTATED.** log4brains defaults to dated ADR filenames and documents the exact merge-collision rationale ADR-0020 dismissed. Prior research missed this counterexample.
+- Phase 2.5 critic: ADDITIONS PROPOSED (2), both accepted — #1 machinery-teardown → SP5; #2 dogfood-28 self-consistency → folded into SP4.
+- Machinery disposition (SP5): mechanism #1 (ADR late-binding) separates CLEANLY from mechanism #2 (Changesets version bumps) — share the release coordinator but no code/state. DELETE assign-adr-ids.sh + release Phase 3.5 + dogfood 21; EDIT decision-record + dogfood 28; changeset machinery (aggregate-changesets.sh, dogfood 22/23/25, .changeset/*) UNTOUCHED.
+- Phase 6 HITL pivot OUTCOME: Modie approved as-is → `/spec`. Sub-decisions (same-day rule, cross-ref style, version-in-frontmatter traceability) deferred to `/grill`.
+- Verdict: write ADRs/specs/plans/grill-records as `YYYY-MM-DD-<slug>.md` AT CREATION (slug = uniqueness key); kill release-rename; freeze 24 existing integer ADRs (zero broken cross-refs across ~117 files). New ADR partially supersedes ADR-0020 (late-binding-ID half only). Archive: `docs/agents/research/2026-05-28-v1.23.0-dated-artifact-naming-research.md`.
 
 **2026-05-26 — topic: habeebs-skill v1.22.0 methodology overhaul — 7-strand Deep-tier research dogfooding the early-HITL-pivot pattern**
 

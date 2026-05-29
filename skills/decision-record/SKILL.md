@@ -49,19 +49,21 @@ Where do ADRs live in this repo? Check in order:
 
 If none found, ask: "Where should ADRs live? Default is `docs/agents/adrs/`. Y/N or specify."
 
-### Phase 2 — Late-binding ID (skip numbering)
+### Phase 2 — Name the ADR at creation (dated, release-independent)
 
-Do NOT assign an integer prefix at write time. New ADRs are filed as `adr-<slug>.md` (no number). The `release` skill is the sole writer of `NNNN-<slug>.md` filenames — it scans for `adr-*.md` files at release-PR-creation time, assigns sequential integers, renames the files in alphabetic slug order, and updates the README index.
+Write the ADR's **final filename at creation**: `YYYY-MM-DD-<slug>.md`, where the date is today (the decision date) and the slug is a lowercase-hyphenated title. No release step ever renames it. A decision gets a stable, human-legible identifier the moment it is written — repos with no release cadence are first-class.
 
-Separation-of-writers lets two concurrent sessions both write ADRs without racing for the next integer; the release skill resolves the order deterministically at merge time.
+**The slug — not the date — is the uniqueness key.** Two ADRs on the same day are fine because their slugs differ. The date prefix is for chronological sorting; the slug carries the identity.
 
-**This skill never writes `NNNN-<slug>.md` directly.** Dogfood scenario 21 (`tests/dogfood/21-late-binding-adr/check-late-binding.sh`) asserts the separation: `decision-record` output must never match `^[0-9]{4}-`.
+**Halt loud on a true duplicate.** Before writing, check whether `docs/agents/adrs/YYYY-MM-DD-<slug>.md` already exists. If it does, **refuse to write**: no overwrite, no suffix, no counter. A same-date-same-slug collision means the slug is too vague; stop and demand a more specific slug, then retry. Losing a decision to a silent overwrite is the failure mode this rule exists to prevent.
+
+This skill writes the dated name directly; it does not produce an unnumbered `adr-<slug>.md` placeholder and does not assign an integer prefix. (The 24 legacy integer ADRs `0001-0024` are frozen in place — never renamed.)
 
 ### Phase 3 — Choose the title slug
 
 Title: present-tense, action-oriented, concrete. "Use Yjs for collaborative editing conflict resolution" — not "Collaborative editing" or "Considering options for sync."
 
-Slug: lowercase, hyphenated, ≤8 words. Filename: `adr-<slug>.md` (e.g., `adr-use-yjs-for-collaborative-editing.md`). The `release` skill renames this to `NNNN-<slug>.md` at release time.
+Slug: lowercase, hyphenated, ≤8 words, descriptive enough to be unique on its day. Filename: `YYYY-MM-DD-<slug>.md` (e.g., `2026-05-29-use-yjs-for-collaborative-editing.md`). This is the permanent name — written at creation, never renamed.
 
 ### Phase 4 — Gather inputs
 
@@ -122,11 +124,13 @@ Echo the inherited tier into both the YAML `Tier:` field AND the markdown `**Tie
 
 **ADRs without YAML frontmatter** (the markdown-emphasis block alone) are valid — they predate the telemetry convention. Don't retrofit them when writing a new ADR; back-fill is its own task with its own ADR. The release skill's editorial scan tolerates the absence (skips files without YAML frontmatter).
 
-### Phase 6 — Defer ADR index update to release
+### Phase 6 — Append the ADR index row
 
-Do NOT update `adrs/README.md` here. The integer prefix doesn't exist yet, so the index entry can't be written. The `release` skill regenerates the index after assigning the integer (see `skills/release/scripts/assign-adr-ids.sh`).
+The dated filename exists now, so write the index entry now. Hand-append one row to the `adrs/README.md` index table for the new ADR — `| [<Title>](./YYYY-MM-DD-<slug>.md) | <Status> | <date> |` in the same column shape as the existing rows. No script runs; the index is maintained by this skill at write time, one row per ADR. Keep the row in the table proper (after the last existing row), not below the Conventions section.
 
-If the README is missing entirely (greenfield repo), create the skeleton table with a one-line header — but do not add a row for the new ADR. Release time owns that.
+If the README is missing entirely (greenfield repo), create the skeleton table with a one-line header, then add this ADR's row.
+
+**Cross-reference convention.** When the new ADR (or any other artifact) refers to *another dated ADR*, cite it by **title + markdown link** — e.g. "see the [dated-naming decision](./YYYY-MM-DD-<slug>.md)" — not by a brittle date-slug string typed in prose. When referring to one of the **frozen integer ADRs** (`0001-0024`), keep the stable `ADR-00NN` form: the integer is still that file's permanent identifier. So new→new uses title+link, and new→old uses `ADR-00NN`.
 
 ### Phase 7 — Hand off
 
@@ -152,7 +156,7 @@ HANDOFF: future research — this ADR is now Tier 0 prior art. Future `prior-art
 - **Proposed** — written but not yet acted on. Implementation hasn't started.
 - **Accepted** — implementation has started or is complete. This is the current state of the system.
 - **Deprecated** — no longer current but kept for historical context.
-- **Superseded by ADR-NNNN** — explicitly replaced by a newer ADR. Always link forward.
+- **Superseded** — explicitly replaced by a newer ADR. Always link forward: by title+markdown-link when the replacement is a dated ADR, or as `ADR-00NN` when it is one of the frozen integer ADRs.
 
 Move from Proposed → Accepted on the same commit that starts the implementation. Never delete an ADR — mark it Deprecated or Superseded.
 

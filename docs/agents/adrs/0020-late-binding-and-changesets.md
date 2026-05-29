@@ -1,11 +1,13 @@
-# ADR-NNNN: Adopt late-binding ADR IDs and Changesets-shape version bumps with the release skill as single coordinator
+# ADR-0020: Adopt late-binding ADR IDs and Changesets-shape version bumps with the release skill as single coordinator
 
-**Status:** Accepted
+**Status:** Superseded by the [decouple-decision-identity-from-releases decision](./2026-05-28-decouple-decision-identity-from-releases.md) (ADR-ID half only)
 **Date:** 2026-05-25
 **Deciders:** Modie (Habeeb)
 **Tier:** Balanced
 
-> Note: This ADR is filed as `adr-late-binding-and-changesets.md` (no integer prefix) per the late-binding convention it itself adopts. The `release` skill will assign the next sequential int and rename this file to `NNNN-late-binding-and-changesets.md` at v1.20.0 release time. This run is the load-bearing self-dogfood demonstrating the convention works end-to-end.
+> **Superseded (partial) 2026-05-28.** The **late-binding ADR-integer-ID half** of this ADR is superseded by the [dated-artifact-naming decision](./2026-05-28-decouple-decision-identity-from-releases.md): ADRs are now named `YYYY-MM-DD-<slug>.md` at creation, and the release-time rename machinery (Phase 3.5 + `assign-adr-ids.sh`) is removed. **The Changesets-shape version-bump half of this ADR (append-only `.changeset/*.md` intent files aggregated by the release skill) is NOT superseded — it continues unchanged and remains in force under the new ADR.**
+>
+> Historical note: this ADR was itself filed as `adr-late-binding-and-changesets.md` and renamed to `0020-` at v1.20.0 release time, dogfooding the (now-superseded) late-binding scheme.
 
 ## Context
 

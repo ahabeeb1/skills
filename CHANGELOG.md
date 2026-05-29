@@ -13,6 +13,10 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.23.0] — 2026-05-29
+
+- Decouple decision identity from releases — decision-record writes dated YYYY-MM-DD-<slug>.md ADRs at creation (slug is the uniqueness key, halt-loud on duplicate); the release-driven late-binding rename machinery is removed; convention extends to specs/plans/grill-records with version in frontmatter; the 24 integer ADRs stay frozen. Also fixes the commit-block hook to resolve the branch from a command's target worktree (was false-positive-blocking worktree commits).
+
 ## [1.22.0] — 2026-05-26
 
 - methodology overhaul — plain-English plan format (TL;DR + per-phase narrative + tables limited to status block + slice list); provisional-state HITL pivot gate between research Phase 6 and Phase 6.5 archive; warn-only PostToolUse chain-state validator hook (missing-grill-when-Grilled + editing-on-default-no-worktree); markdown-only telemetry frontmatter (PascalCase Status / Date-Created / Last-Reviewed / Superseded-By + release editorial scan on minor+major); ADR-0021 in-place 2026-05-26 Clarification (runtime writer paths vs authored methodology directories); supply-chain threat-model ADR acknowledging Anthropic-plugin gap, deferring hardening to v1.23.0+. Drives the v1.22.0 methodology-overhaul research (`docs/agents/research/2026-05-26-v1.22.0-methodology-overhaul-research.md`, Deep tier, 36 sources, 7 sub-problems).

@@ -60,9 +60,9 @@ This skill cannot produce reliable output without the environment-binding cache.
 
 ### Phase 1 — Locate inputs and choose plan home
 
-ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/<slug>.md`. The slug matches the ADR slug (e.g., ADR `0008-use-yjs-for-collaborative-editing` → plan `0008-use-yjs-for-collaborative-editing.md`).
+ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/YYYY-MM-DD-<slug>.md` — dated at creation, slug is the uniqueness key (the same convention `decision-record` uses for ADRs). The slug matches the source ADR's slug (e.g., ADR `2026-05-29-use-yjs-for-collaborative-editing` → plan `2026-05-29-use-yjs-for-collaborative-editing.md`); the two dates may differ if the plan is written on a later day. The release version does NOT go in the filename — it goes in the plan's frontmatter `Version:` / `Release:` field, so spec→plan→release traceability survives.
 
-If `docs/agents/plans/` doesn't exist, create it. If a plan with this slug already exists, switch mode: UPDATE the plan in place; do NOT write a second.
+If `docs/agents/plans/` doesn't exist, create it. Halt loud if the dated filename already exists (demand a more specific slug; no overwrite). If a plan with this slug already exists for the same feature, switch mode: UPDATE that plan in place; do NOT write a second. Existing `vX.Y.Z-<slug>.md` plans are NOT renamed (freeze-old / date-new).
 
 ### Phase 2 — Group slices into phases
 
@@ -160,14 +160,14 @@ Status field semantics:
 - **Proposed** — written but no slice has started
 - **Active** — at least one slice is in `tdd-loop`
 - **Done** — final phase gate passed; feature is shipped
-- **Superseded by plans/<slug>.md** — replaced by a newer plan
+- **Superseded by plans/YYYY-MM-DD-<slug>.md** — replaced by a newer plan (link by title + markdown link)
 
 `Last-Reviewed:` semantics: deliberate-review timestamp; updated when a human says "I reviewed this and the Status is still correct," NOT auto-bumped on every commit. The release skill's editorial scan reads this field for dormancy detection.
 
 ### Phase 8 — Hand off
 
 ```
-HANDOFF: implementation ready — plan locked at docs/agents/plans/<slug>.md.
+HANDOFF: implementation ready — plan locked at docs/agents/plans/YYYY-MM-DD-<slug>.md.
   Next: tdd-loop on slice <first-id> (phase 1, pgroup-1A).
   Parallelizable now: <pgroup-1A members>.
   Gate to pass before phase 2: <phase 1 gate>.

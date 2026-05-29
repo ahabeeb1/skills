@@ -104,11 +104,9 @@ DAG and parallelization scale with the tier: **Quick** — skip both (slices run
 
 Follow `references/spec-template.md` exactly. Write to:
 
-- `docs/agents/specs/YYYY-MM-DD-<feature-slug>.md` if the repo's setup convention is established (via `setup-habeebs-skill`) — dated at creation, the slug is the uniqueness key, same convention `decision-record` uses for ADRs. The release version does NOT go in the filename; it goes in the `**Version:**` / `**Release:**` header field so spec→plan→release traceability survives. Halt loud if the dated filename already exists (demand a more specific slug; no overwrite).
+- `docs/agents/specs/YYYY-MM-DD-<feature-slug>.md` if the repo's setup convention is established (via `setup-habeebs-skill`). The slug is the uniqueness key; the release version goes in the `**Version:**` / `**Release:**` header field, not the filename. Halt loud if the dated filename already exists (demand a more specific slug).
 - `.scratch/YYYY-MM-DD-<feature-slug>.md` if the repo has no convention
 - Inline in the conversation if no filesystem is available
-
-Existing `vX.Y.Z-<slug>.md` specs are NOT renamed (freeze-old / date-new, the same migration ADRs use).
 
 ### Phase 7 — Hand off
 

@@ -11,7 +11,7 @@ This template enforces the **plain-English plan format** — a plan a human can 
 - **Risks are prose paragraphs** with embedded "Mitigation:" lines, not 3-level-nested bullets.
 - **Jargon discipline** — terms with GLOSSARY entries (`pgroup`, `HITL:approval-gate`, `AFK:full-auto`, `tracer slice`, `pre-flight verification`) can be used unexplained because the GLOSSARY link is in the footer. Plan-specific identifiers (`pre-Slice-2 verification`, `pgroup-2A`) are defined inline on first use. Cross-plan jargon NOT in the GLOSSARY gets an inline definition on first use OR a GLOSSARY entry if used in 3+ plans.
 
-The frontmatter dogfoods the telemetry convention — `Status:` is a deliberate lifecycle state; `Last-Reviewed:` is updated on review, not on every commit; `Superseded-By:` points at a replacement plan when applicable; `Version:` / `Release:` carry the release identifier that used to live in the filename.
+The frontmatter dogfoods the telemetry convention — `Status:` is a deliberate lifecycle state; `Last-Reviewed:` is updated on review, not on every commit; `Superseded-By:` points at a replacement plan when applicable; `Version:` / `Release:` carry the release identifier.
 
 Copy from here. Replace bracketed placeholders. Delete sections that genuinely don't apply (rare; default is to keep all sections, marking unused ones with "N/A — reason").
 
@@ -23,13 +23,13 @@ Status: Active
 Date-Created: YYYY-MM-DD
 Last-Reviewed: YYYY-MM-DD
 Superseded-By: null
-Version: vX.Y.Z      # the release this plan ships in — lives here, NOT in the filename
-Release: vX.Y.Z      # alias of Version; keep both or drop one. Carries spec->plan->release traceability now that the version left the filename.
+Version: vX.Y.Z      # the release this plan ships in
+Release: vX.Y.Z      # alias of Version; keep both or drop one. Carries spec->plan->release traceability.
 Tier: Quick | Balanced | Deep
 ---
 ```
 
-Filename convention: `docs/agents/plans/YYYY-MM-DD-<slug>.md` (dated at creation, slug is the uniqueness key — matching the ADR convention). The version is carried in `Version:` / `Release:` above, not in the filename.
+Filename convention: `docs/agents/plans/YYYY-MM-DD-<slug>.md` (slug is the uniqueness key). The version is carried in `Version:` / `Release:` above.
 
 # Plan: [present-tense action that matches ADR title]
 

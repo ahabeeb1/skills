@@ -49,21 +49,19 @@ Where do ADRs live in this repo? Check in order:
 
 If none found, ask: "Where should ADRs live? Default is `docs/agents/adrs/`. Y/N or specify."
 
-### Phase 2 — Name the ADR at creation (dated, release-independent)
+### Phase 2 — Name the ADR
 
-Write the ADR's **final filename at creation**: `YYYY-MM-DD-<slug>.md`, where the date is today (the decision date) and the slug is a lowercase-hyphenated title. No release step ever renames it. A decision gets a stable, human-legible identifier the moment it is written — repos with no release cadence are first-class.
+Write the ADR's filename: `YYYY-MM-DD-<slug>.md`, where the date is today and the slug is a lowercase-hyphenated title.
 
-**The slug — not the date — is the uniqueness key.** Two ADRs on the same day are fine because their slugs differ. The date prefix is for chronological sorting; the slug carries the identity.
+**The slug — not the date — is the uniqueness key.** Two ADRs on the same day are fine because their slugs differ; the date prefix is for chronological sorting.
 
-**Halt loud on a true duplicate.** Before writing, check whether `docs/agents/adrs/YYYY-MM-DD-<slug>.md` already exists. If it does, **refuse to write**: no overwrite, no suffix, no counter. A same-date-same-slug collision means the slug is too vague; stop and demand a more specific slug, then retry. Losing a decision to a silent overwrite is the failure mode this rule exists to prevent.
-
-This skill writes the dated name directly; it does not produce an unnumbered `adr-<slug>.md` placeholder and does not assign an integer prefix. (The 24 legacy integer ADRs `0001-0024` are frozen in place — never renamed.)
+**Halt loud on a true duplicate.** Before writing, check whether `docs/agents/adrs/YYYY-MM-DD-<slug>.md` already exists. If it does, **refuse to write**: no overwrite, no suffix, no counter. Demand a more specific slug, then retry.
 
 ### Phase 3 — Choose the title slug
 
 Title: present-tense, action-oriented, concrete. "Use Yjs for collaborative editing conflict resolution" — not "Collaborative editing" or "Considering options for sync."
 
-Slug: lowercase, hyphenated, ≤8 words, descriptive enough to be unique on its day. Filename: `YYYY-MM-DD-<slug>.md` (e.g., `2026-05-29-use-yjs-for-collaborative-editing.md`). This is the permanent name — written at creation, never renamed.
+Slug: lowercase, hyphenated, ≤8 words, descriptive enough to be unique on its day. Filename: `YYYY-MM-DD-<slug>.md` (e.g., `2026-05-29-use-yjs-for-collaborative-editing.md`).
 
 ### Phase 4 — Gather inputs
 
@@ -130,7 +128,7 @@ The dated filename exists now, so write the index entry now. Hand-append one row
 
 If the README is missing entirely (greenfield repo), create the skeleton table with a one-line header, then add this ADR's row.
 
-**Cross-reference convention.** When the new ADR (or any other artifact) refers to *another dated ADR*, cite it by **title + markdown link** — e.g. "see the [dated-naming decision](./YYYY-MM-DD-<slug>.md)" — not by a brittle date-slug string typed in prose. When referring to one of the **frozen integer ADRs** (`0001-0024`), keep the stable `ADR-00NN` form: the integer is still that file's permanent identifier. So new→new uses title+link, and new→old uses `ADR-00NN`.
+**Cross-reference convention.** Cite a dated ADR by **title + markdown link** — e.g. "see the [dated-naming decision](./YYYY-MM-DD-<slug>.md)" — never by a bare date-slug string in prose. Cite an integer-named ADR (`0001`–`0024`) as `ADR-00NN`.
 
 ### Phase 7 — Hand off
 

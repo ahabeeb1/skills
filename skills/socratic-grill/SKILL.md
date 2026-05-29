@@ -99,7 +99,7 @@ Never let an item exit as "we'll see." That's the failure mode the skill exists 
 
 ### Phase 4 — Produce the grill output
 
-Write a Grill Record to `docs/agents/specs/YYYY-MM-DD-<spec-slug>-grill.md` — the dated convention `decision-record` uses for ADRs, matching the dated spec it grills (the date and slug mirror the spec; the `-grill` suffix marks it as the grill record). The version is not in the filename; the record's `**Spec:**` link points at the dated spec, which carries the version in its frontmatter, so traceability flows through the link. Halt loud if the dated filename already exists. Existing `<slug>-grill.md` records are NOT renamed (freeze-old / date-new).
+Write a Grill Record to `docs/agents/specs/YYYY-MM-DD-<spec-slug>-grill.md`, mirroring the dated spec it grills (same date and slug, `-grill` suffix). Its `**Spec:**` link points at the spec, which carries the version in frontmatter. Halt loud if the dated filename already exists.
 
 Use `references/grill-output-template.md`:
 

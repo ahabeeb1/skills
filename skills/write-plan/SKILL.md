@@ -60,9 +60,9 @@ This skill cannot produce reliable output without the environment-binding cache.
 
 ### Phase 1 — Locate inputs and choose plan home
 
-ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/YYYY-MM-DD-<slug>.md` — dated at creation, slug is the uniqueness key (the same convention `decision-record` uses for ADRs). The slug matches the source ADR's slug (e.g., ADR `2026-05-29-use-yjs-for-collaborative-editing` → plan `2026-05-29-use-yjs-for-collaborative-editing.md`); the two dates may differ if the plan is written on a later day. The release version does NOT go in the filename — it goes in the plan's frontmatter `Version:` / `Release:` field, so spec→plan→release traceability survives.
+ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/YYYY-MM-DD-<slug>.md`, where the slug matches the source ADR's slug (e.g., ADR `2026-05-29-use-yjs-for-collaborative-editing` → plan `2026-05-29-use-yjs-for-collaborative-editing.md`). The release version goes in the plan's frontmatter `Version:` / `Release:` field, not the filename.
 
-If `docs/agents/plans/` doesn't exist, create it. Halt loud if the dated filename already exists (demand a more specific slug; no overwrite). If a plan with this slug already exists for the same feature, switch mode: UPDATE that plan in place; do NOT write a second. Existing `vX.Y.Z-<slug>.md` plans are NOT renamed (freeze-old / date-new).
+If `docs/agents/plans/` doesn't exist, create it. Halt loud if the dated filename already exists (demand a more specific slug). If a plan with this slug already exists for the same feature, switch mode: UPDATE that plan in place; do NOT write a second.
 
 ### Phase 2 — Group slices into phases
 

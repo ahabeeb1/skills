@@ -64,6 +64,19 @@ Record any gap as a doc-sync finding. Surface findings to the user; do not silen
 
 **Step 2b — CHANGELOG sell-test.** For each item you will write into the CHANGELOG, ask: does this entry explain *value to the user*, not just the change? The test: can a reader who hasn't seen the PR understand (a) what changed and (b) why it matters? If not, rewrite it before adding to CHANGELOG.md.
 
+**Step 2c — Supersession-link integrity gate.** When any ADR on this branch flips its Status to `Superseded`, the doc-sync audit asserts the supersession record is navigable and self-describing. The mechanism is dogfood scenario 36; this step runs it as the release-time gate and confirms a human observes the result before tagging:
+
+```bash
+bash tests/dogfood/36-supersession-link-integrity/check-supersession-integrity.sh
+```
+
+The scenario scans `docs/agents/adrs/*.md` for every record whose Status line names a Superseded state and enforces two assertions:
+
+- **Forward link.** The same record carries a forward markdown link (`](./<file>.md)`) to the superseding record, so a reader landing on a Superseded ADR reaches its replacement in one hop.
+- **Surviving half.** For a PARTIAL supersession (the Status text names a "half" / "partial" / "part"), the record names which half survives (in force / retained / unchanged), and the superseding record re-states the same half as retained. A partial supersession that drops the surviving-half statement leaves the corpus ambiguous about what is still binding.
+
+Exit 0 = the gate passes (and the case where no ADR is Superseded is a clean pass — the scan is near-free when no supersession is present). Exit nonzero = halt the release: add the missing forward link or surviving-half statement to the ADR, then re-run. This gate exists because a supersession recorded without a forward link or a surviving-half statement strands future readers on a stale decision with no path to the live one.
+
 ### Phase 3 — Write the CHANGELOG entry
 
 Open `CHANGELOG.md`. Insert a new `## [X.Y.Z] — YYYY-MM-DD` block above the previous latest release, following the Convention block exactly.

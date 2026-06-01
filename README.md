@@ -113,6 +113,8 @@ Two safety hooks ship with the plugin, both governed by ADR-0003 (warn-only or b
 
 Both hooks respect `HABEEBS_DISABLE_HOOKS=1` and a per-repo opt-out at `.claude/habeebs-allowed-branches`. After install, run `/hooks` to verify they loaded.
 
+**Developing the hooks themselves?** Hooks load from the *installed* plugin copy at session start, so an edit to `hooks/*.sh` in your checkout takes effect only after you reinstall/update the plugin and reload. Expect the previously-installed behavior until then — don't chase it as a bug.
+
 ---
 
 ## Installation

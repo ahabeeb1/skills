@@ -68,6 +68,8 @@ Worktrees are valuable when they isolate concurrent or multi-commit work — the
 
 **When in doubt, prefer worktree.** The cost of creating one is ~10 seconds; the cost of polluting the trunk or losing partial work to a race is much higher.
 
+**Editing this plugin's own `hooks/` or `skills/` in this repo?** The installed plugin copy is what runs at session time; an edit to a hook or skill in the checkout takes effect only after the plugin reinstalls and reloads. Expect the previously-installed behavior mid-slice — verify against the installed version before treating a stale hook/skill as a bug in your new code.
+
 State the decision in one line before Phase 1: e.g., `Phase 0: creating worktree at ../skills-slice-1 (slice is multi-commit; currently on main).` or `Phase 0: proceeding in current tree (single-commit trivial slice).`
 
 If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in the returned `cwd`.

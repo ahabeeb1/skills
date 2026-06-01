@@ -136,7 +136,28 @@ The `release` skill (ADR-0014 Slice 2) automates release tagging on the default 
 
 ---
 
+## Amendment — 2026-06-01 (v1.24.0): Rule 4 — resolve the predicate from the action's target
+
+**Cross-reference:** [chain-fidelity-executable-assertions](./2026-06-01-chain-fidelity-executable-assertions.md)
+
+The three rules above are unchanged. This amendment adds a **fourth design rule** governing how a block-only hook computes its predicate.
+
+### Rule 4 — resolve the block predicate from the action's target, not the hook's cwd
+
+A block-only hook MUST derive its decision input from the *thing being acted on*, never from the hook process's incidental launch directory. Concretely for the commit-block hook: resolve the branch from the command's target directory (parse a leading `cd <path> &&` or a `git -C <path>` form) and run the branch query against that directory; fall back to the hook cwd only when the command names no target.
+
+### Why this rule
+
+The commit-block hook previously resolved the current branch via `git branch --show-current` from the hook process's working directory — the main checkout, which sits on the default branch. When work happened in a sibling git worktree on a feature branch, the hook still saw the default branch and false-blocked every commit, even though the commit genuinely targeted a feature branch. The worktree workflow this plugin mandates (`using-worktrees`) was being broken by this plugin's own hook. The fix resolves the branch from the command's target directory; it shipped in v1.23.0 (commit `349bba4`) with an 8-case regression test (`tests/hooks/commit_block_worktree_test.sh`).
+
+This is a recognized bug class, not a one-off. Claude Code's own WorktreeCreate hook conflates the worktree root with the session cwd ([anthropics/claude-code#36556](https://github.com/anthropics/claude-code/issues/36556)); `pre-commit` ([#808](https://github.com/pre-commit/pre-commit/issues/808)) and `mise` hit the same worktree path-resolution footgun. The general fix in every case is "resolve from the action's true target, not the ambient launch context." Rule 4 makes that explicit so the next hook author does not reintroduce it.
+
+The three original rules are fully honored: Rule 4 changes only *how* the predicate is computed (block-only, never auto-fix — Rule 1; the resolution is a bash parse in the same multi-harness script — Rule 2; it reads command text + git refs and writes nothing — Rule 3).
+
+---
+
 ## Changelog
 
 - 2026-05-12 — Initial ADR, status Accepted (implementation lands in v1.6.0 per plan 0003).
 - 2026-05-18 — Amended in place: block predicate narrowed to allow unambiguous tag-only pushes on the default branch (v1.14.0, ADR-0015).
+- 2026-06-01 — Amended in place: added Rule 4 (resolve the block predicate from the action's target, not the hook's cwd); code shipped v1.23.0 (`349bba4`), doctrine locked v1.24.0.

@@ -109,6 +109,7 @@ If a trigger fires mid-execution, halt at the current phase gate. Don't push thr
 - 2026-06-01 — Initial plan written from `adrs/2026-06-01-chain-fidelity-executable-assertions.md`.
 - 2026-06-01 — Slice #1 (SP2 scenario 34) DONE at `8c34d25`. RED→GREEN→REFACTOR clean; subject-aware regex passes all 7 cases incl. live-corpus scan. Next: pgroup-1A = {#2, #3} parallel dispatch.
 - 2026-06-01 — pgroup-1A dispatched (disp-v1240-1a): Slice #2 (SP3 fixture-ID rule) DONE at `3816e4e`, Slice #3 (SP4 supersession check) DONE at `bc01f6d`. Both merged into feature branch (no conflict). Full suite 19 pass / 2 fail (19+29 pre-existing reds, confirmed not regressions). Phase 1 acceptance gate PASSED. Two findings: grill OQ-1 undercounted Superseded records (2 not 1 — ADR-0020 + ADR-0001); plan-template.md L5 has a pre-existing "set in v1.22.0" phrase outside scenario 34's scan scope. Next: Phase 2 (slices #4 + #5).
+- 2026-06-01 — Slice #4 DONE. Part A (ADR-0003 Rule 4 resolve-from-target) landed in prep commit `0708c54`; Part B (runtime-lag note in README + tdd-loop Phase 0) at `10385c6`. New prose passes scenario 34 + 26/27/28. All four build slices complete; Phase 2 remaining work is Slice #5 (release).
 
 ## References
 

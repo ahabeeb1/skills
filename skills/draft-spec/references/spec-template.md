@@ -57,6 +57,8 @@ Numbered in dependency order. Each slice cuts end-to-end. HITL = human-in-the-lo
 
 **Test strategy:** [Unit | Integration | E2E | Manual smoke] — at `path/to/test_file.ext`
 
+> Fixture identifiers are confirm-at-implementation. Write the test path against a placeholder (`tests/dogfood/<next-free-N>-<slug>/`, `adr-<slug>.md`); do not hard-code a scenario number, ADR slug, or file index as a literal. The implementer confirms against the live tree before creating the fixture.
+
 **Blocked by:** None | #N
 
 **Notes:** [Optional — anything that didn't fit above]

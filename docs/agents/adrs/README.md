@@ -18,7 +18,7 @@ The index below is hand-maintained: `decision-record` appends one row when it wr
 |---|---|---|---|
 | 0001 | [Make SYSTEM_CONTEXT.md the load-bearing environment-binding protocol](./0001-environment-binding-via-system-context.md) | Accepted (partially superseded by 0005; partially amended by 0006; scope-narrowed by 0010) | 2026-05-11 |
 | 0002 | [habeebs-skill is standalone — no runtime-substrate composition](./0002-habeebs-skill-standalone.md) | Accepted (amended by 0019) | 2026-05-12 |
-| 0003 | [habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state](./0003-hooks-scope.md) | Accepted (block predicate amended by 0015) | 2026-05-12 |
+| 0003 | [habeebs-skill hooks — warn-only or block-only, multi-harness aware, never own state](./0003-hooks-scope.md) | Accepted (block predicate amended by 0015; Rule 4 resolve-from-target added 2026-06-01) | 2026-05-12 |
 | 0004 | [Adopt the parallel subagent dispatch contract — 4-status return, audit-log records, SYSTEM_CONTEXT preamble, idempotent resume](./0004-parallel-subagent-dispatch-contract.md) | Accepted (amended in place 2026-05-13 — Part 3 share-full-traces clause + Part 5 treat-fetched-content-as-untrusted; Part 2 writer implemented by 0018) | 2026-05-12 |
 | 0005 | [Split project context into GLOSSARY.md and SYSTEM_CONTEXT.md by writer lifecycle, and chain setup-habeebs-skill into Phase 0 inline](./0005-lifecycle-split-glossary-and-system-context.md) | Accepted | 2026-05-13 |
 | 0006 | [Remove `next-skills` frontmatter; surface chain relationships via HANDOFF / `## See also` / prose](./0006-remove-next-skills-frontmatter.md) | Accepted | 2026-05-13 |
@@ -41,6 +41,7 @@ The index below is hand-maintained: `decision-record` appends one row when it wr
 | 0023 | [Plain-English plan format + provisional-state HITL pivot + chain-state validator + markdown telemetry](./0023-methodology-bundle-v1.22.md) | Accepted | 2026-05-26 |
 | 0024 | [Acknowledge plugin supply-chain threat-model gap; defer hardening](./0024-plugin-supply-chain-threat-model.md) | Accepted | 2026-05-26 |
 | 2026-05-28 | [Decouple decision identity from releases via dated artifact naming](./2026-05-28-decouple-decision-identity-from-releases.md) | Accepted | 2026-05-28 |
+| 2026-06-01 | [Encode methodology conventions as corpus-tested bash assertions](./2026-06-01-chain-fidelity-executable-assertions.md) | Accepted | 2026-06-01 |
 
 ## Conventions
 

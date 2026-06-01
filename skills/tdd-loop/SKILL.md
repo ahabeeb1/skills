@@ -68,6 +68,8 @@ Worktrees are valuable when they isolate concurrent or multi-commit work — the
 
 **When in doubt, prefer worktree.** The cost of creating one is ~10 seconds; the cost of polluting the trunk or losing partial work to a race is much higher.
 
+**Editing this plugin's own `hooks/` or `skills/` in this repo?** The installed plugin copy is what runs at session time; an edit to a hook or skill in the checkout takes effect only after the plugin reinstalls and reloads. Expect the previously-installed behavior mid-slice — verify against the installed version before treating a stale hook/skill as a bug in your new code.
+
 State the decision in one line before Phase 1: e.g., `Phase 0: creating worktree at ../skills-slice-1 (slice is multi-commit; currently on main).` or `Phase 0: proceeding in current tree (single-commit trivial slice).`
 
 If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in the returned `cwd`.
@@ -130,6 +132,8 @@ This is the pause/resume API: git is the durability layer. Killing the chain mid
 ### Phase 1 — RED: write the failing test
 
 Pick the slice. Read its acceptance criteria. Identify the test seam (unit / integration / e2e / manual smoke — already chosen in the spec).
+
+**Confirm fixture identifiers against the live tree before you create the fixture.** Test-fixture identifiers — dogfood scenario numbers, ADR slugs, file indices, sequence suffixes — are confirm-at-implementation values, never the literal the spec or plan wrote. The spec's number is a snapshot that drifts when a sibling slice lands first. Glob the live tree for the next free identifier (e.g. `ls tests/dogfood/ | grep -oE '^[0-9]+' | sort -n | tail -1`, then increment), and use that. If the number the spec named is already taken, the next free identifier wins; do not collide. The rule in one line: confirm against the live tree, never trust the spec literal.
 
 **Write the test file FIRST.** Before any production code. Before any scaffolding for the production code. The test must:
 

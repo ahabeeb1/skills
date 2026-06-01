@@ -94,6 +94,8 @@ For each slice, identify how it will be verified:
 
 The slice's first commit should be the failing test (RED phase from `tdd-loop`). Name the test file path in the spec.
 
+**Fixture identifiers are confirm-at-implementation, never spec literals.** Test-fixture identifiers — dogfood scenario numbers, ADR slugs, file indices, sequence suffixes — are values the implementer confirms against the live tree at implementation; do not hard-code them as literals in the spec. Write the test-strategy entry against a placeholder (`tests/dogfood/<next-free-N>-<slug>/`) and instruct the implementer to confirm against the live tree before creating the fixture. The number you see today drifts the moment another slice lands first.
+
 ### Phase 5 — Dependency ordering
 
 Number slices in implementation order. A slice depending on another must come after it. Express dependencies as `Blocked by: #N` references.

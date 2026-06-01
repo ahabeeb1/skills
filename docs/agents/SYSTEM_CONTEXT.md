@@ -1,7 +1,7 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-26
-**Refreshed by:** prior-art-research Phase 0 (v1.22.0 methodology-overhaul research run). Catch-up refresh — last write was 2026-05-25 (v1.20.0 audit run); two releases shipped since (v1.20.0 + v1.21.0). Counts updated: ADRs 20→22, skills 18→19, dogfood scenarios → 31 (5 baselines + 21-28 live + adversarial suites). Canonical writer per ADR-0005 single-writer invariant.
+**Last refreshed:** 2026-05-29
+**Refreshed by:** prior-art-research Phase 0 (v1.24.0 plugin-self-enhancement research run). Catch-up refresh — last write was 2026-05-26 (v1.22.0 run); two releases shipped since (v1.22.0 + v1.23.0). Counts updated: ADRs 22→25 (24 integer + 1 dated, two-era scheme now LIVE), dogfood scenarios 31→36 (added 30/31/32/33 + 21b; 21 removed), current release → v1.23.0, hooks recount → 6 .sh on disk. Canonical writer per ADR-0005 single-writer invariant.
 **Schema:** per ADR-0010 — non-re-derivable cross-session state only. Re-derivable sections (Stack / Deployment / Hot files / Tracked manifests) excluded.
 
 ## Scale envelope
@@ -9,10 +9,10 @@
 - **Users (MAU / DAU):** [unknown — public OSS, install count untracked]
 - **Skill count:** 19 in tree (v1.14.0 added `security-audit`, `release`, `devex-review`; v1.18.0 added `cross-session-detect`).
 - **Chain depth:** 8 core (research → spec → grill → record → plan → tdd → verify-output → release). `agent-factors-check` and `devex-review` are conditional extensions of grill. `security-audit` is a standalone slash-invokable skill. 5 primitives (parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging) + 2 meta (using-habeebs-skill, setup-habeebs-skill) + cross-session-detect. Every chain run executes at a depth tier — Quick / Balanced / Deep (ADR-0016).
-- **ADR count:** 24 (0001-0024). Recent batch: ADR-0021 (methodology folder cuts — amended 2026-05-25 to REVERSE the `dispatches/` + `conflicts/` deletions; `grill-records/` fold shipped), ADR-0022 (behavioral-only SKILL.md body + Pattern-D empirical-claim exception, shipped v1.21.0), ADR-0023 (v1.22.0 methodology bundle — plain-English plans + HITL pivot + chain-state validator + markdown telemetry, shipped v1.22.0), ADR-0024 (plugin supply-chain threat model — deferred hardening, shipped v1.22.0). Cross-amends: 0001 (by 0006/0010), 0002 (by 0019), 0003 (by 0015), 0004 (Part 5 untrusted-content rule), 0012 (template path relocation), 0013 (extended by 0016). **ADR-0020** is the live target of the current research run (release-driven late-binding integer scheme — under reconsideration in favor of dated naming).
-- **Current release:** v1.21.0 (behavioral-only SKILL.md body convention — 58 cruft hits across 11 files removed; Pattern-D empirical-claim exception codified; dogfood scenarios 26/27/28 prevent regression).
-- **Dogfood scenario count:** 31 live (5 baselines + 21-28 = 13 scenarios commonly cited as "all passing on main"; remainder are adversarial suites like 09-category-critic, 10-pgroup-dispatch, 17-security-audit fixtures).
-- **Hook count:** 4 active (SessionStart ghost-commit-detect, SessionStart peer-scan, PreToolUse[Bash] commits-to-default-block, PreToolUse[Edit|Write|NotebookEdit] peer-scan; plus 1 dormant pre-push.sh on disk). All conform to ADR-0003 (warn-only or block-only, stateless, multi-harness aware).
+- **ADR count:** 25 — **two-era naming scheme now LIVE** (ADR-0020 cutover): 24 frozen integer ADRs (0001-0024) + 1 dated ADR (`2026-05-28-decouple-decision-identity-from-releases.md`, the first dated ADR, shipped v1.23.0). New ADRs are dated `YYYY-MM-DD-<slug>.md` at creation; old integers frozen, never renamed; new↔old cross-refs by title+markdown-link. Recent batch: ADR-0022 (behavioral-only SKILL.md body + Pattern-D empirical-claim exception, shipped v1.21.0), ADR-0023 (v1.22.0 methodology bundle, shipped v1.22.0), ADR-0024 (plugin supply-chain threat model — deferred hardening, shipped v1.22.0), 2026-05-28-decouple-decision-identity (dated artifact naming; FULLY supersedes ADR-0020's late-binding-ID half, RE-STATES its Changesets version-bump half as in-force, shipped v1.23.0).
+- **Current release:** v1.23.0 (dated artifact naming — decision identity decoupled from releases; `assign-adr-ids.sh` + release Phase 3.5 deleted; Changesets version-bump machinery UNTOUCHED; commit-block hook root-cause fix `349bba4` resolves branch from command target dir; dogfood 30/31/32/33 + 21b prevent regression).
+- **Dogfood scenario count:** 36 live (5 baselines + 21b/22-33 + adversarial suites like 09-category-critic, 10-pgroup-dispatch, 17-security-audit fixtures). Known reds on main: 16 (session-summary-template) + 29 (chain-state-validator) — pre-existing, NOT regressions, untriaged.
+- **Hook count:** 6 .sh on disk: session-start.sh (ghost-commit-detect), session-start-peer-scan.sh, preventing-commits-to-default.sh (PreToolUse[Bash] block-only; v1.23.0 resolves branch from command target dir, not hook cwd), pretool-use-peer-scan.sh (PreToolUse[Edit|Write|NotebookEdit]), check-chain-state.sh (PostToolUse warn-only validator, v1.22.0), pre-push.sh (dormant). All conform to ADR-0003 (warn-only or block-only, stateless, multi-harness aware).
 
 ## Methodology / agent setup
 
@@ -48,6 +48,16 @@
 (none — flushed 2026-05-26 per `prior-art-research` Phase 7 flush rule at end of v1.22.0 methodology-overhaul research run; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-06-01 — topic: habeebs-skill self-enhancement (v1.24.0 chain-fidelity hardening) — Balanced-tier, 5 sub-problems, no steering**
+
+- No steering anchors supplied (scope locked via Phase 1 questions: all six candidates researched, one tight v1.24.0 cut requested).
+- Phase 2.5 critic: ADDITIONS PROPOSED (2) — false-positive blast radius + gate-interaction-vs-36-scenario-suite; both accepted, folded into one SP5 ("gate hardening = corpus-test-before-block discipline, not a feature"). Agent-product category declined by critic with reason (owned downstream by agent-factors-check/devex-review).
+- 6 candidates → 5 sub-problems: SP1 resolve-from-target hooks (#2+#4), SP2 archaeology-prose lint (#5), SP3 live-tree fixture-ID confirmation (#3), SP4 supersession-link integrity (#6+#1), SP5 gate-hardening discipline.
+- Key external findings: claude-code #36556 (WorktreeCreate `worktree_path` vs `cwd` conflation — first-party confirmation the cwd-vs-target bug is a recognized class; closed not-planned) + pre-commit #808 + mise #4853 = Pattern A "resolve-from-target." Vale/GitLab = tense-linting prior art for SP2 but runtime tool (ADR-0002 keeps us bash-only). Semgrep `pattern-not` + corpus-test-before-enable = SP5 discipline. log4brains/adr-tools = supersession is "link but don't validate" → SP4 integrity check is an ecosystem gap (mildly novel).
+- Tier note: auto-detect scored 2 (Balanced); shipping-speed-drop-to-Quick guard NOT applied because 5 sub-problems exceed Quick's single-sub-problem ceiling — held at Balanced (heuristic-not-hard-gate).
+- Phase 6 HITL pivot OUTCOME: Modie approved as-is → `/spec`. Sub-decisions (exact SP2 regex + warn-vs-block, SP4 scope, SP1 amend-in-place-vs-new-ADR, whether one dated ADR covers the bundle) deferred to `/grill`.
+- Verdict: v1.24.0 = SP2+SP3+SP4 executable-assertion bundle (each extends an existing ADR: 0022 body-lint family / spec-plan conventions / release doc-sync) + one-paragraph ADR-0003 "Rule 4 resolve-from-target" amendment (code already shipped v1.23.0 at `349bba4`). SP5 ships as discipline; #1 runtime-lag demotes to README line + tdd-loop Phase 0 note. Rejected: general Vale/CI prose linter (ADR-0002). Archive: `docs/agents/research/2026-06-01-v1.24.0-chain-fidelity-hardening-research.md`.
 
 **2026-05-28 — topic: dated artifact naming vs. release-driven late-binding integers (v1.23.0 candidate) — Deep-tier, 5 sub-problems**
 

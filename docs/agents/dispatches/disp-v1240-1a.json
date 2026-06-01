@@ -1,0 +1,45 @@
+{
+  "dispatch_id": "disp-v1240-1a",
+  "invoker": "parallel-dev (via tdd-loop Phase 0.5)",
+  "started_at": "2026-06-01T00:00:00Z",
+  "completed_at": "2026-06-01T00:00:00Z",
+  "parent_task": "v1.24.0 chain-fidelity hardening — pgroup-1A: SP3 fixture-ID late-binding rule (slice #2) + SP4 supersession-link integrity check (slice #3), dispatched in parallel from feature/v1.24.0-chain-fidelity HEAD 8c34d25",
+  "plan_ref": "docs/agents/plans/2026-06-01-chain-fidelity-executable-assertions.md",
+  "concurrency_used": 2,
+  "task_class": "write",
+  "independence_verification": {
+    "file_overlap": "PASS — slice #2 writes skills/draft-spec, skills/write-plan, skills/tdd-loop, tests/dogfood/35; slice #3 writes skills/release, tests/dogfood/36. Intersection empty.",
+    "state_dependency": "PASS — neither output feeds the other. Per grill Item 8, the fixture-ID rule slice #2 introduces is doctrine the implementer follows at creation, not a runtime gate slice #3 waits for.",
+    "resource_contention": "PASS — local markdown/bash edits only; no shared DB/API.",
+    "ordering_semantics": "PASS — scenario numbers 35 and 36 pre-assigned and confirmed free; completion order does not affect correctness.",
+    "implicit_shared_state": "PASS — both touch tests/dogfood/ but in separate new subdirectories (35 vs 36); the dogfood suite has no registry/index file (scenarios discovered by directory glob)."
+  },
+  "subagents": [
+    {
+      "subagent_name": "slice-2-fixture-id-late-binding",
+      "slice_id": "#2",
+      "status": "DONE",
+      "commit_shas": ["3816e4e"],
+      "worktree_path": "../skills-v1240-slice2",
+      "branch": "slice-2/fixture-id-late-binding",
+      "notes": "Added SP3 rule to 5 surfaces (3 SKILL.md + 2 templates). Canonical phrase 'confirm against the live tree'. Confirmed scenario 35 free first (ate the SP3 dogfood). Scenario 34 + 35 both green; 26/27/28 no regression. Minor non-blocking flag: plan-template.md line 5 carries a pre-existing 'set in v1.22.0' archaeology phrase, outside scenario 34's skills/*/SKILL.md scan scope — candidate if a future prose-lint widens to reference templates."
+    },
+    {
+      "subagent_name": "slice-3-supersession-link-integrity",
+      "slice_id": "#3",
+      "status": "DONE",
+      "commit_shas": ["bc01f6d"],
+      "worktree_path": "../skills-v1240-slice3",
+      "branch": "slice-3/supersession-link-integrity",
+      "notes": "Added doc-sync supersession gate (release SKILL.md Phase 2 Step 2c + doc-sync-procedure.md) + scenario 36 (6 cases incl. live ADR-0020 pair). Scenario 36 + 34 both green; 33 no regression. Two findings: (1) the live corpus has TWO Superseded records (ADR-0020 partial AND ADR-0001 partial), not one — grill OQ-1 undercounted; rarity argument holds, count is 2. (2) ADR-0023 has a YAML-template Status line inside a code fence; the scan correctly excludes it via code-fence-aware status extraction."
+    }
+  ],
+  "aggregate": {
+    "total_wall_ms": 324663,
+    "sequential_equivalent_ms": 558633,
+    "parallelism_gain": 1.72,
+    "outcome": "SUCCESS",
+    "verification": "Both slice branches merged into feature/v1.24.0-chain-fidelity (no conflicts — disjoint scopes). Full dogfood suite on merged HEAD d64b63e: 19 pass / 2 fail. The 2 fails (19-cross-session-conflict-detection, 29-chain-state-validator) are pre-existing reds confirmed RED on base 0708c54 — NOT regressions. New scenarios 34/35/36 all GREEN; must-not-regress set 22/23/25/26/27/28/33 all GREEN."
+  },
+  "re_dispatches": []
+}

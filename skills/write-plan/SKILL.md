@@ -150,6 +150,8 @@ Required sections in order:
 4. **Goal & success measure** — one sentence each
 5. **Phases** — each opens with narrative prose, then acceptance gate (numbered prose), then top risks (prose paragraph with Mitigation: lines), then rollback hook (one sentence)
 6. **Slice table** — one row per slice: ID, name, label (HITL:inline / HITL:approval-gate / HITL:per-file / AFK:full-auto), phase, pgroup, blocked-by, est, rollback
+
+**Fixture identifiers are confirm-at-implementation, never plan literals.** When a slice's rollback hook, test path, or acceptance gate references a test-fixture identifier — a dogfood scenario number, ADR slug, or file index — record it as a placeholder (`tests/dogfood/<next-free-N>-<slug>/`, `adr-<slug>.md`), not a hard-coded literal. The implementer must confirm against the live tree before creating the fixture, because the next free identifier drifts the moment a sibling slice lands first.
 7. **Dependency DAG** — Mermaid (preferred) or ASCII fallback
 8. **Parallelization map** — `pgroup-N` listing with one-line description per group
 9. **Revisit triggers** — bulleted list (this is the one bulleted list that survives; revisit triggers are inherently a discrete enumeration)

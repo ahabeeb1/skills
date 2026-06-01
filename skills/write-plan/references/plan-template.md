@@ -86,6 +86,8 @@ The slice list is the ONE table in the plan besides the status block. One row pe
 
 Labels follow the GLOSSARY definitions — `AFK:full-auto`, `HITL:inline`, `HITL:approval-gate`, `HITL:per-file` (see [GLOSSARY.md § Slice](../GLOSSARY.md)). The `pgroup` column lists the parallelization group per the GLOSSARY definition — slices in the same pgroup can run concurrently via `parallel-dev`.
 
+> Fixture identifiers are confirm-at-implementation. Where a row's Rollback or test path references a test-fixture identifier (dogfood scenario number, ADR slug, file index), record a placeholder (`tests/dogfood/<next-free-N>-<slug>/`, `adr-<slug>.md`), not a hard-coded literal. The implementer confirms against the live tree before creating the fixture.
+
 Estimate convention: **d** = ideal engineer-day.
 
 ## Dependency DAG

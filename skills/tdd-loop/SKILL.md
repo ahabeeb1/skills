@@ -131,6 +131,8 @@ This is the pause/resume API: git is the durability layer. Killing the chain mid
 
 Pick the slice. Read its acceptance criteria. Identify the test seam (unit / integration / e2e / manual smoke — already chosen in the spec).
 
+**Confirm fixture identifiers against the live tree before you create the fixture.** Test-fixture identifiers — dogfood scenario numbers, ADR slugs, file indices, sequence suffixes — are confirm-at-implementation values, never the literal the spec or plan wrote. The spec's number is a snapshot that drifts when a sibling slice lands first. Glob the live tree for the next free identifier (e.g. `ls tests/dogfood/ | grep -oE '^[0-9]+' | sort -n | tail -1`, then increment), and use that. If the number the spec named is already taken, the next free identifier wins; do not collide. The rule in one line: confirm against the live tree, never trust the spec literal.
+
 **Write the test file FIRST.** Before any production code. Before any scaffolding for the production code. The test must:
 
 1. Express ONE concrete acceptance criterion (one assertion per test — or close to it)

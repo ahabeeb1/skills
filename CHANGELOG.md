@@ -13,6 +13,10 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.24.0] — 2026-06-01
+
+- Chain-fidelity hardening — three new corpus-tested dogfood guards (scenario 34 self-referential-archaeology lint, 35 fixture-ID late-binding rule, 36 supersession-link integrity check) plus the ADR-0003 Rule 4 amendment (hooks resolve their block predicate from the action's target, not the hook's cwd — locking the v1.23.0 fix as doctrine) and a plugin-self-dev runtime-lag note. Each guard catches a convention that previously relied on a human remembering it; all markdown/bash, no new dependency (ADR-0002). New dated ADR 2026-06-01-chain-fidelity-executable-assertions.
+
 ## [1.23.0] — 2026-05-29
 
 - Decouple decision identity from releases — decision-record writes dated YYYY-MM-DD-<slug>.md ADRs at creation (slug is the uniqueness key, halt-loud on duplicate); the release-driven late-binding rename machinery is removed; convention extends to specs/plans/grill-records with version in frontmatter; the 24 integer ADRs stay frozen. Also fixes the commit-block hook to resolve the branch from a command's target worktree (was false-positive-blocking worktree commits).

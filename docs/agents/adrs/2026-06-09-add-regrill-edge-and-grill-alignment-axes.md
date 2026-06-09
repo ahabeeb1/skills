@@ -1,5 +1,5 @@
 ---
-Status: Proposed
+Status: Accepted
 Date-Created: 2026-06-09
 Last-Reviewed: 2026-06-09
 Superseded-By: null
@@ -9,7 +9,7 @@ Deciders: [Modie (project lead)]
 
 # Add a re-grill edge, slice-shape axis, and mental-model probes to the grill
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-06-09
 **Deciders:** Modie (project lead)
 **Tier:** Balanced
@@ -95,3 +95,4 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-06-09 — Initial ADR, status Proposed
+- 2026-06-09 — Status moved to Accepted, implementation started in slice #1

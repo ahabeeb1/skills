@@ -1,6 +1,6 @@
-# Ambiguity Axes — The 7 Dimensions
+# Ambiguity Axes — The 8 Dimensions
 
-When grilling a decision, pick the 2-4 axes most relevant to it. Don't drill all 7 unless the decision is genuinely high-impact across the board (e.g., the core data model).
+When grilling a decision, pick the 2-4 axes most relevant to it. Don't drill all 8 unless the decision is genuinely high-impact across the board (e.g., the core data model).
 
 ## 1. Performance
 
@@ -62,6 +62,17 @@ When grilling a decision, pick the 2-4 axes most relevant to it. Don't drill all
 - What alerts? On what conditions? Paged vs ticket?
 - Dashboards: what's the one chart that tells you "this is healthy"?
 - How do you debug a failure case post-hoc? What data do you need persisted?
+
+## 8. Slice shape
+
+Applies to the spec's slice table as one item — the work breakdown is a decision like any other, and it is the execution unit everything downstream consumes. Keep this a conversation: probe and challenge, never score.
+
+- Is each slice vertical — does it cut through every integration layer and demonstrate end-to-end value, or is it a layer ("build the database schema") dressed as a slice?
+- Which slice would you deprioritize or throw away first? If the answer is "none," has the decomposition actually separated value from filler?
+- Are the slices roughly equal-sized? What makes the biggest one safe to attempt in a single session?
+- Is each HITL gate earning its place — what concrete mid-slice input does the human provide? If you can't name it, why isn't the slice AFK?
+- What justifies the ordering — does slice N actually unblock slice N+1, or is the dependency speculative?
+- Which slices could run concurrently, and what shared file or state makes the rest sequential?
 
 ---
 

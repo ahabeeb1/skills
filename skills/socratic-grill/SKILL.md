@@ -49,13 +49,14 @@ Collect every ambiguous item from the inputs:
 2. Decisions marked "tentatively" or "to be confirmed"
 3. Any item in the user's prose using hedging language
 4. Decisions where the spec lists a choice but no reasoning
+5. The spec's slice table — always enters the inventory as one standing item, grilled on the slice-shape axis (vertical-ness, deprioritization, sizing, HITL placement, ordering, parallelizability)
 
 Show the user the list and ask if you missed anything. The list IS the grilling agenda.
 
 **Inherit the tier.** Read the `**Tier:**` field from the spec header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)); echo it into the Grill Record header. The tier scales *how much* grilling runs, never *whether* a real ambiguity gets resolved:
 
-- **Quick** — the grill runs *only if* the inventory above is non-empty. If it is empty, there is nothing to resolve; record "no open items — grill skipped" and hand off. If it is non-empty, run one focused round on exactly those items (skip the proactive 7-axis sweep of already-decided choices). A non-empty inventory is *always* grilled, even at Quick — that is `tier-scale.md` invariant 1.
-- **Balanced** — full 7-axis grill (Phase 2 as written).
+- **Quick** — the grill runs *only if* the inventory above is non-empty. If it is empty, there is nothing to resolve; record "no open items — grill skipped" and hand off. If it is non-empty, run one focused round on exactly those items (skip the proactive 8-axis sweep of already-decided choices). A non-empty inventory is *always* grilled, even at Quick — that is `tier-scale.md` invariant 1.
+- **Balanced** — full 8-axis grill (Phase 2 as written).
 - **Deep** — full grill, multiple rounds where an item stays unresolved.
 
 This holds under a user override: forcing `--quick` does not let a spec with open questions skip the grill.
@@ -70,7 +71,7 @@ If the spec is a generic CRUD / web / mobile app with no LLM orchestration, skip
 
 For each item, work through the dimensions in `references/ambiguity-axes.md`. Not all axes apply to every decision — pick the relevant 2-4 per item and dig in.
 
-The seven axes:
+The eight axes:
 
 1. **Performance** — what's the budget? Where does it bind? What happens at 10x load?
 2. **Failure modes** — what breaks? How? What does the user see? How do you recover?
@@ -79,6 +80,7 @@ The seven axes:
 5. **Migration** — how do you get from current state to target state? Roll back?
 6. **Reversibility** — if this turns out wrong, how do you undo it? What's the blast radius?
 7. **Observability** — how do you know it's working in production? When it breaks, how do you find out?
+8. **Slice shape** — is each slice vertical and right-sized? Which one would you throw away? Is every HITL gate earning its place? Does the ordering reflect real dependencies?
 
 **Grilling style:**
 

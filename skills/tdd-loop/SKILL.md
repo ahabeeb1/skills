@@ -227,11 +227,39 @@ If 5a, 5b, or 5c surfaces something material, fix in this slice's commit chain. 
 After passing both review stages, before starting the next slice, ask:
 
 1. Did the slice deliver end-to-end visible value? (If no, the slice was horizontal — flag it)
-2. Did any open questions surface during implementation? (If yes, capture them — re-run `socratic-grill` if material)
+2. Did any open questions surface during implementation? (If material, take the re-grill edge below — don't absorb the ambiguity, and don't re-run a full grill)
 3. Did the implementation reveal an architectural seam the spec missed? (If yes, possible `deep-modules` candidate; possible ADR update)
 4. Did an unexpected failure mode surface during RED that you didn't predict? (If yes, hand off to `systematic-debugging` rather than absorbing it.)
 
 Then move to the next slice in dependency order. If multiple AFK slices are ready, `parallel-dev` can dispatch them concurrently (each into its own worktree via `using-worktrees`).
+
+## The re-grill edge — when implementation contradicts the spec
+
+Sometimes the slice is fine but the spec decision underneath it isn't — RED can't express the acceptance criterion, GREEN reveals an unstated constraint, or review surfaces a contradiction. Don't guess a reading and don't absorb it: halt the slice through the re-grill edge.
+
+**Halt.** Emit `BLOCKED` with `suggested_action: "re-grill"` and a learning payload of exactly these fields:
+
+- `blocked_slice` — the slice number
+- `blocked_decision` — the spec decision at fault, quoted verbatim
+- `expected_vs_observed` — what the spec implied vs what implementation revealed
+- `evidence` — test output / file references
+- `attempted_resolutions` — what was tried before halting
+- `scope_classification` — `spec-wide` or `slice-local`; governs sibling handling per `parallel-dev`'s halt-scope rule
+- `salvaged_sibling_results` — finished sibling outcomes worth feeding the round (empty when running sequentially)
+
+**Surface it as a fixed-format halt block** — what blocked, the payload summary, and exactly two exits:
+
+```
+## Slice halted — re-grill required
+
+Blocked decision: <quoted from the spec>
+<payload summary, all 7 fields>
+
+Exits: (1) inline spec patch (minor, per the grill's blast-radius rule)
+       (2) ADR escalation (substantial)
+```
+
+**Resolve and resume.** Invoke `socratic-grill`'s scoped re-grill round with the payload. When it returns — patched spec or amended ADR — the halted slice re-enters RED against the clarified criterion.
 
 ## Anti-patterns this skill guards against
 

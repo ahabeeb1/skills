@@ -131,6 +131,16 @@ If the grill surfaced a fundamental architectural rethink (rare but possible), h
 HANDOFF: re-research needed — the grill revealed a fundamental issue with the chosen architecture. Re-invoke `prior-art-research` with the new constraint: [constraint].
 ```
 
+## Scoped re-grill rounds
+
+`tdd-loop` halts a slice with `suggested_action: "re-grill"` when implementation reveals that a spec decision is ambiguous or contradicted. The round that resolves it is scoped, not a full grill:
+
+- **Fresh context.** Run the round in fresh context seeded only by the learning payload and the named decision — accumulated implementation context is noise here, not signal.
+- **Named-decision scope.** Grill only the blocked decision (pick 2-4 axes), never the whole spec. Conditional extensions re-fire under the **domain-touch rule**: only the extension whose domain the blocked decision touches, applied to that one item — never a full proactive sweep.
+- **Resolve by blast radius.** The fix is **minor** iff it changes no other slice's acceptance criteria, adds no slice, and touches neither the spec's Architecture section nor its Concrete picks — apply it as an inline spec patch. Anything else is **substantial**: hand off to `decision-record` for an ADR amendment or supersession.
+- **Always on the record.** Write the round to `docs/agents/specs/YYYY-MM-DD-<spec-slug>-regrill.md` (date = the day of the round), with a header link back to the original grill record. The spec moved; the record says why.
+- **Resume.** Hand control back to the halted slice; it re-enters RED against the clarified criterion. In-flight siblings follow `parallel-dev`'s halt-scope rule.
+
 ## Anti-patterns this skill guards against
 
 - **Manufactured ambiguity.** If there's only one reasonable answer, don't grill — accept it and move on.

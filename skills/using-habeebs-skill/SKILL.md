@@ -25,6 +25,8 @@ decision-record       → captures the result as an ADR
 write-plan            → phased delivery doc with acceptance gates + rollback hooks (skip if trivial)
          ↓
 tdd-loop              → implements with red-green-refactor over vertical slices
+         │   ↳ re-grill edge — implementation-revealed spec ambiguity halts the slice
+         │     into a scoped socratic-grill round (inline patch or ADR escalation), then resumes
          ↓
 deep-modules          → refactor pass to deepen modules and remove shallow layers
          ↓

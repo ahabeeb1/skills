@@ -69,7 +69,7 @@ Pull from upstream skill outputs:
 
 - **Research recommendation** — for Context and Alternatives sections
 - **Spec** — for the actual chosen architecture
-- **Grill record** — for accepted trade-offs and revisit triggers
+- **Grill record** — for accepted trade-offs and revisit triggers; when it carries a **User mental model** section, pull its door classifications (and recorded undo costs) into the Consequences section
 - **Tier** — the `**Tier:**` field from the spec / grill record header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)).
 
 If any upstream artifact is missing, halt and ask the user to provide it (or run the upstream skill first).

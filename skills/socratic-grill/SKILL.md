@@ -49,13 +49,22 @@ Collect every ambiguous item from the inputs:
 2. Decisions marked "tentatively" or "to be confirmed"
 3. Any item in the user's prose using hedging language
 4. Decisions where the spec lists a choice but no reasoning
+5. The spec's slice table — always enters the inventory as one standing item, grilled on the slice-shape axis (vertical-ness, deprioritization, sizing, HITL placement, ordering, parallelizability)
 
 Show the user the list and ask if you missed anything. The list IS the grilling agenda.
 
+**Mental-model probes.** The inventory checks the spec's clarity; these probes check the USER's expectations — indirectly, by making them produce artifacts of understanding rather than affirm it. Ask them as part of Phase 1, count scaled by tier (Quick 1 / Balanced 2 / Deep 3, in this priority order):
+
+1. **Premortem** — "It's six months after this shipped and it failed. What happened?" Restate the answer's inverse as success criteria.
+2. **Door classification** — "Take the highest-impact decision in this spec: one-way or two-way door?" Every "two-way" label gets exactly one follow-up — "what's the undo cost, concretely?" — and the answer is recorded. One follow-up, then accept; don't pile on.
+3. **Concrete example** — "Walk me through one concrete example of the riskiest behavior: real input, real expected output." A rule the user can't exemplify is a rule they don't yet hold.
+
+Echo the answers into the grill record's **User mental model** section — `write-plan` reads its success criteria as acceptance-gate candidates and `decision-record` reads its door labels into ADR consequences.
+
 **Inherit the tier.** Read the `**Tier:**` field from the spec header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)); echo it into the Grill Record header. The tier scales *how much* grilling runs, never *whether* a real ambiguity gets resolved:
 
-- **Quick** — the grill runs *only if* the inventory above is non-empty. If it is empty, there is nothing to resolve; record "no open items — grill skipped" and hand off. If it is non-empty, run one focused round on exactly those items (skip the proactive 7-axis sweep of already-decided choices). A non-empty inventory is *always* grilled, even at Quick — that is `tier-scale.md` invariant 1.
-- **Balanced** — full 7-axis grill (Phase 2 as written).
+- **Quick** — the grill runs *only if* the inventory above is non-empty. If it is empty, there is nothing to resolve; record "no open items — grill skipped" and hand off. If it is non-empty, run one focused round on exactly those items (skip the proactive 8-axis sweep of already-decided choices). A non-empty inventory is *always* grilled, even at Quick — that is `tier-scale.md` invariant 1.
+- **Balanced** — full 8-axis grill (Phase 2 as written).
 - **Deep** — full grill, multiple rounds where an item stays unresolved.
 
 This holds under a user override: forcing `--quick` does not let a spec with open questions skip the grill.
@@ -70,7 +79,7 @@ If the spec is a generic CRUD / web / mobile app with no LLM orchestration, skip
 
 For each item, work through the dimensions in `references/ambiguity-axes.md`. Not all axes apply to every decision — pick the relevant 2-4 per item and dig in.
 
-The seven axes:
+The eight axes:
 
 1. **Performance** — what's the budget? Where does it bind? What happens at 10x load?
 2. **Failure modes** — what breaks? How? What does the user see? How do you recover?
@@ -79,6 +88,7 @@ The seven axes:
 5. **Migration** — how do you get from current state to target state? Roll back?
 6. **Reversibility** — if this turns out wrong, how do you undo it? What's the blast radius?
 7. **Observability** — how do you know it's working in production? When it breaks, how do you find out?
+8. **Slice shape** — is each slice vertical and right-sized? Which one would you throw away? Is every HITL gate earning its place? Does the ordering reflect real dependencies?
 
 **Grilling style:**
 
@@ -120,6 +130,16 @@ If the grill surfaced a fundamental architectural rethink (rare but possible), h
 ```
 HANDOFF: re-research needed — the grill revealed a fundamental issue with the chosen architecture. Re-invoke `prior-art-research` with the new constraint: [constraint].
 ```
+
+## Scoped re-grill rounds
+
+`tdd-loop` halts a slice with `suggested_action: "re-grill"` when implementation reveals that a spec decision is ambiguous or contradicted. The round that resolves it is scoped, not a full grill:
+
+- **Fresh context.** Run the round in fresh context seeded only by the learning payload and the named decision — accumulated implementation context is noise here, not signal.
+- **Named-decision scope.** Grill only the blocked decision (pick 2-4 axes), never the whole spec. Conditional extensions re-fire under the **domain-touch rule**: only the extension whose domain the blocked decision touches, applied to that one item — never a full proactive sweep.
+- **Resolve by blast radius.** The fix is **minor** iff it changes no other slice's acceptance criteria, adds no slice, and touches neither the spec's Architecture section nor its Concrete picks — apply it as an inline spec patch. Anything else is **substantial**: hand off to `decision-record` for an ADR amendment or supersession.
+- **Always on the record.** Write the round to `docs/agents/specs/YYYY-MM-DD-<spec-slug>-regrill.md` (date = the day of the round), with a header link back to the original grill record. The spec moved; the record says why.
+- **Resume.** Hand control back to the halted slice; it re-enters RED against the clarified criterion. In-flight siblings follow `parallel-dev`'s halt-scope rule.
 
 ## Anti-patterns this skill guards against
 

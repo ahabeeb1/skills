@@ -68,6 +68,8 @@ If `docs/agents/plans/` doesn't exist, create it. Halt loud if the dated filenam
 
 A phase is a set of slices that ship behind ONE acceptance gate. The gate is a binary, user-observable criterion — not a tasks-done count.
 
+When the grill record carries a **User mental model** section, read its success criteria first — they are the user's own definition of shipped-and-working and the strongest acceptance-gate candidates.
+
 Good gates:
 - "User can create and load a doc round-trip in production for 100% of canary cohort"
 - "p95 read latency < 80ms on production traffic for 24h"

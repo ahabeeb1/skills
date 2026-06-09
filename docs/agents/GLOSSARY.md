@@ -47,6 +47,24 @@ A vertical work item that cuts through ALL integration layers end-to-end (tracer
 
 **Synonyms to AVOID:** "task" (ambiguous — tasks live in the TaskCreate tool, slices live in specs), "ticket" (tickets are the issue-tracker representation of a slice, not the slice itself), "horizontal slice" (forbidden — that's the anti-pattern `vertical-slice` exists to prevent).
 
+### Slice-shape axis
+
+The 8th ambiguity axis in `socratic-grill`: the spec's slice table enters the Phase 1 inventory as one standing item and gets grilled on vertical-ness, deprioritization, sizing, HITL placement, ordering justification, and parallelizability. Conversation-shaped by design — probes and judgment, never a pass/fail rubric.
+
+**Examples in code:** `skills/socratic-grill/references/ambiguity-axes.md` § 8, dogfood `tests/dogfood/37-slice-shape-axis/`
+**Synonyms to AVOID:** "definition of ready" (a checklist stage-gate — the calcification failure mode this axis deliberately avoids).
+
+### Re-grill
+
+The sanctioned backward edge from implementation to the grill. When a slice reveals that a spec decision is ambiguous or contradicted, `tdd-loop` halts with `BLOCKED` + `suggested_action: "re-grill"`, and a **scoped re-grill round** resolves the one named decision in fresh context — exiting as an inline spec patch (minor, by the blast-radius rule) or an ADR amendment (substantial), always recorded in a dated `-regrill` record back-linked to the original grill record.
+
+**Sub-concepts:**
+- **Learning payload** — the 7-field handoff a halted slice gives the round: `blocked_slice`, `blocked_decision`, `expected_vs_observed`, `evidence`, `attempted_resolutions`, `scope_classification`, `salvaged_sibling_results`.
+- **Halt scope** — `parallel-dev`'s sibling rule for a re-grill halt: `spec-wide` pauses in-flight siblings at their next checkpoint (pause-all is the default when the cause is ambiguous); `slice-local` lets them run; finished sibling results are salvaged into the payload as evidence.
+
+**Examples in code:** `skills/tdd-loop/SKILL.md` § "The re-grill edge", `skills/socratic-grill/SKILL.md` § "Scoped re-grill rounds", dogfood `tests/dogfood/39-regrill-edge/`
+**Synonyms to AVOID:** "re-plan" (re-planning re-sequences slices; re-grill resolves one ambiguous decision), "rollback" (nothing is reverted — the round moves the spec forward on the record).
+
 ### ADR
 
 Architectural Decision Record. A numbered immutable markdown file under `docs/agents/adrs/NNNN-<slug>.md` capturing a non-trivial architectural decision (Nygard format). Written by `decision-record`. Read by `prior-art-research` as Tier-0 internal precedent.

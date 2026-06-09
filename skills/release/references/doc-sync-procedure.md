@@ -10,7 +10,7 @@ For every file changed on this branch (`git diff --name-only main...HEAD`), chec
 
 | Changed artifact | Doc surface to check |
 |---|---|
-| `skills/<name>/SKILL.md` (new skill) | `commands/<name>.md` exists; `## See also` cross-references callers; `## Origins` present if idea-ported |
+| `skills/<name>/SKILL.md` (new skill) | `commands/<name>.md` exists; `## See also` cross-references callers; attribution preserved (HTML comment or introducing commit) if idea-ported |
 | `skills/<name>/SKILL.md` (modified skill) | If contract changed (output template, handoff, phase added): ADR exists or is proposed |
 | `docs/agents/adrs/<n>-<slug>.md` (new ADR) | Referenced from at least one skill's `## See also`; added to `docs/agents/adrs/README.md` index |
 | `docs/agents/adrs/<n>-<slug>.md` (Status → Superseded) | Forward markdown link to the superseding record present; for a PARTIAL supersession, both records name the surviving half (see Supersession-link integrity below) |

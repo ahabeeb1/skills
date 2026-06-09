@@ -5,14 +5,15 @@ This plugin gives Claude a research-grounded engineering methodology. When the u
 ## The chain
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop
+prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release
                                        ↓
                              agent-factors-check (only if the spec is an agent product)
+                             devex-review (only if the spec is a developer-facing product)
 ```
 
 Each skill produces output that the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
 
-`write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` is a conditional extension of `socratic-grill` — it only fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product.
+`write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` and `devex-review` are conditional extensions of `socratic-grill` — the first fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product, the second when the spec is for a developer-facing product (CLI / SDK / library / plugin / framework); both can fire on the same spec. `release` is the terminal link after `tdd-loop` goes GREEN — `verify-output` gates each tdd-loop commit along the way.
 
 **Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
 

@@ -55,7 +55,7 @@ Before writing the CHANGELOG, audit what was shipped:
 
 **Step 2a — Coverage map.** For every new or changed skill, command, ADR, and plan file on this branch (`git diff --name-only main...HEAD`), check:
 
-- Does the skill have an `## Origins` section (if idea-ported)?
+- If the skill is idea-ported, is attribution preserved (HTML-commented line in the body, or the introducing commit message)?
 - Is the command file present in `commands/`?
 - Is the ADR cross-referenced from the relevant skill's `## See also`?
 - Is the plan file referenced from the relevant spec?

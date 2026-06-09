@@ -53,6 +53,14 @@ Collect every ambiguous item from the inputs:
 
 Show the user the list and ask if you missed anything. The list IS the grilling agenda.
 
+**Mental-model probes.** The inventory checks the spec's clarity; these probes check the USER's expectations — indirectly, by making them produce artifacts of understanding rather than affirm it. Ask them as part of Phase 1, count scaled by tier (Quick 1 / Balanced 2 / Deep 3, in this priority order):
+
+1. **Premortem** — "It's six months after this shipped and it failed. What happened?" Restate the answer's inverse as success criteria.
+2. **Door classification** — "Take the highest-impact decision in this spec: one-way or two-way door?" Every "two-way" label gets exactly one follow-up — "what's the undo cost, concretely?" — and the answer is recorded. One follow-up, then accept; don't pile on.
+3. **Concrete example** — "Walk me through one concrete example of the riskiest behavior: real input, real expected output." A rule the user can't exemplify is a rule they don't yet hold.
+
+Echo the answers into the grill record's **User mental model** section — `write-plan` reads its success criteria as acceptance-gate candidates and `decision-record` reads its door labels into ADR consequences.
+
 **Inherit the tier.** Read the `**Tier:**` field from the spec header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)); echo it into the Grill Record header. The tier scales *how much* grilling runs, never *whether* a real ambiguity gets resolved:
 
 - **Quick** — the grill runs *only if* the inventory above is non-empty. If it is empty, there is nothing to resolve; record "no open items — grill skipped" and hand off. If it is non-empty, run one focused round on exactly those items (skip the proactive 8-axis sweep of already-decided choices). A non-empty inventory is *always* grilled, even at Quick — that is `tier-scale.md` invariant 1.

@@ -11,6 +11,16 @@
 
 ---
 
+## User mental model
+
+(From the Phase 1 mental-model probes — count varies by tier.)
+
+- **Success criteria** (premortem inverse): [What must be true for the user to call this shipped-and-working]
+- **Door classifications:** [Decision → one-way | two-way, with the recorded concrete undo cost for every two-way label]
+- **Premortem risks worth tracking:** [Failure narratives the user volunteered that aren't already revisit triggers]
+
+---
+
 ## Grilling agenda
 
 [The list of open questions / ambiguous decisions that went in.]

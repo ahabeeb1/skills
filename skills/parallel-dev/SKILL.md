@@ -225,7 +225,14 @@ The subagent completed its task but noticed something the dispatcher should see 
 
 ### `BLOCKED`
 
-The subagent could not complete the task. Required: `blocker` field with a one-line description and `suggested_action ∈ {"edit-spec-and-redispatch", "investigate-manually", "escalate-to-maintainer"}`. The dispatcher halts the pgroup, surfaces the structured BLOCKED message to the user, and does NOT re-dispatch automatically — the user decides next steps.
+The subagent could not complete the task. Required: `blocker` field with a one-line description and `suggested_action ∈ {"edit-spec-and-redispatch", "investigate-manually", "escalate-to-maintainer", "re-grill"}`. The dispatcher halts the pgroup, surfaces the structured BLOCKED message to the user, and does NOT re-dispatch automatically — the user decides next steps.
+
+**Halt scope for `re-grill`.** When the suggested action is `re-grill` (implementation revealed an ambiguous or contradicted spec decision — see `tdd-loop`'s re-grill edge), the dispatcher classifies the blocker's cause before touching siblings:
+
+- **`spec-wide`** (the blocked decision feeds other slices in flight) — in-flight siblings pause at their next checkpoint. Pause, never terminate: worktree isolation makes the pause lossless, and partial work survives for the resume.
+- **`slice-local`** (the blocker is confined to the halted slice) — siblings run to completion; only the halted slice waits on the round.
+- **Ambiguous cause defaults to spec-wide** (pause-all). The lead may explicitly classify `slice-local` to let siblings run, and owns that call.
+- **Salvage rule:** siblings that already finished land their results in the re-grill payload's `salvaged_sibling_results` — finished work is evidence for the round, never discarded wholesale.
 
 ### `NEEDS_CONTEXT`
 

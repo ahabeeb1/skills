@@ -1,7 +1,7 @@
 # SYSTEM_CONTEXT
 
-**Last refreshed:** 2026-05-29
-**Refreshed by:** prior-art-research Phase 0 (v1.24.0 plugin-self-enhancement research run). Catch-up refresh — last write was 2026-05-26 (v1.22.0 run); two releases shipped since (v1.22.0 + v1.23.0). Counts updated: ADRs 22→25 (24 integer + 1 dated, two-era scheme now LIVE), dogfood scenarios 31→36 (added 30/31/32/33 + 21b; 21 removed), current release → v1.23.0, hooks recount → 6 .sh on disk. Canonical writer per ADR-0005 single-writer invariant.
+**Last refreshed:** 2026-06-09
+**Refreshed by:** prior-art-research Phase 0 (Grill 2.0 research run). Catch-up refresh — no environment-fact deltas since 2026-05-29; sole manifest change was the post-v1.24 housekeeping commit (`bb006f4`: CLAUDE.md chain-diagram extension to `release` + devex-review conditional; release doc-sync checklist updated to post-Origins attribution convention). All counts verified unchanged (19 skills, 26 ADRs, v1.24.0 current, 6 hooks). Canonical writer per ADR-0005 single-writer invariant.
 **Schema:** per ADR-0010 — non-re-derivable cross-session state only. Re-derivable sections (Stack / Deployment / Hot files / Tracked manifests) excluded.
 
 ## Scale envelope
@@ -48,6 +48,17 @@
 (none — flushed 2026-05-26 per `prior-art-research` Phase 7 flush rule at end of v1.22.0 methodology-overhaul research run; last outcome below)
 
 ## Last reconciliation outcome
+
+**2026-06-09 — topic: Grill 2.0 full-workflow alignment upgrade (v1.25.0 candidate) — Balanced-tier, 5 sub-problems**
+
+- Anchor "peer methodology gates": Honored — KEP (no-backward-edge negative example, issue #2960), Rust RFC amendment cap, superpowers executing-plans halt rule, Shape Up betting table all load-bearing.
+- Anchor "requirements-elicitation / shared-mental-model": Honored — Example Mapping + premortem (Klein/HBR) + one-way/two-way doors are the SP3 backbone.
+- Anchor "agentic re-plan loops": Honored with override — anchor implies autonomous re-planning; convergent evidence (superpowers hard prohibition, Anthropic fresh-context-restart rule) says halt-to-human with structured re-grill instead.
+- Look-at internal grill records: Honored — 12 records mined (not the 5 estimated at invocation); 9/12 contain ad-hoc slice-shape grilling; v1.20.0 PT-4 is the proof-case; all 3 mental-model misses were caught late by user pushback.
+- Avoid "runtime substrate": Honored — all three amendments are markdown + existing 4-status vocabulary.
+- Phase 2.5 critic: ADDITIONS PROPOSED (3) — accepted SP4 (risk-proportional ceremony scaling) + SP5 (concurrent-slice halt semantics); rejected SP6 (template-contract evolution) with reason (grill records are write-once, never re-parsed; consumers ship same release).
+- Phase 6 HITL pivot OUTCOME: Modie approved as-is → `/spec`. Sub-decisions (axis-vs-phase placement, suggested_action-vs-5th-status, amendment boundary, sibling-halt default, probe record section, extension re-fire) deferred to `/grill`.
+- Verdict: three markdown-only amendments — slice-shape 8th ambiguity axis; first-class re-grill edge (`suggested_action: "re-grill"` on BLOCKED, forward-step in fresh context, dated back-linked grill record, fail-fast sibling scope rule with salvage); three indirect mental-model probes tier-scaled in count (Quick 1 / Balanced 2 / Deep 3). Archive: `docs/agents/research/2026-06-09-grill-2.0-alignment-research.md`.
 
 **2026-06-01 — topic: habeebs-skill self-enhancement (v1.24.0 chain-fidelity hardening) — Balanced-tier, 5 sub-problems, no steering**
 

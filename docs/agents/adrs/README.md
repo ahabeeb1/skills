@@ -42,6 +42,7 @@ The index below is hand-maintained: `decision-record` appends one row when it wr
 | 0024 | [Acknowledge plugin supply-chain threat-model gap; defer hardening](./0024-plugin-supply-chain-threat-model.md) | Accepted | 2026-05-26 |
 | 2026-05-28 | [Decouple decision identity from releases via dated artifact naming](./2026-05-28-decouple-decision-identity-from-releases.md) | Accepted | 2026-05-28 |
 | 2026-06-01 | [Encode methodology conventions as corpus-tested bash assertions](./2026-06-01-chain-fidelity-executable-assertions.md) | Accepted | 2026-06-01 |
+| 2026-06-09 | [Add a re-grill edge, slice-shape axis, and mental-model probes to the grill](./2026-06-09-add-regrill-edge-and-grill-alignment-axes.md) | Proposed | 2026-06-09 |
 
 ## Conventions
 

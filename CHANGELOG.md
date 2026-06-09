@@ -13,6 +13,10 @@ Versioning is [SemVer](https://semver.org/):
 
 Each release gets a git tag `vX.Y.Z` and a GitHub release with notes mirrored from this file.
 
+## [1.25.0] — 2026-06-09
+
+- Grill 2.0 — the grill now aligns user and agent across the whole workflow: it interrogates the slice decomposition (slice-shape 8th ambiguity axis; the spec's slice table is a standing Phase 1 inventory item), verifies the user's expectations with tier-scaled mental-model probes (premortem / door-classification with undo-cost follow-up / concrete example — Quick 1 / Balanced 2 / Deep 3 — landing in a "User mental model" record section that `write-plan` and `decision-record` consume), and gains a first-class re-grill edge so implementation-revealed spec ambiguity halts into a scoped round instead of being guessed away (`tdd-loop` BLOCKED + `suggested_action: "re-grill"` with a 7-field learning payload; the blast-radius rule splits inline spec patches from ADR escalation; `parallel-dev`'s halt-scope rule pauses or salvages in-flight siblings). **Why:** the three alignment blind spots — slice defects caught by luck, mid-flight spec drift handled by improvisation, user-expectation misses surfacing as late pushback — each had documented incidents across 12 grill records. New dated ADR 2026-06-09-add-regrill-edge-and-grill-alignment-axes; dogfood 37/38/39.
+
 ## [1.24.0] — 2026-06-01
 
 - Chain-fidelity hardening — three new corpus-tested dogfood guards (scenario 34 self-referential-archaeology lint, 35 fixture-ID late-binding rule, 36 supersession-link integrity check) plus the ADR-0003 Rule 4 amendment (hooks resolve their block predicate from the action's target, not the hook's cwd — locking the v1.23.0 fix as doctrine) and a plugin-self-dev runtime-lag note. Each guard catches a convention that previously relied on a human remembering it; all markdown/bash, no new dependency (ADR-0002). New dated ADR 2026-06-01-chain-fidelity-executable-assertions.

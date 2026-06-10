@@ -1,5 +1,5 @@
 ---
-Status: Proposed
+Status: Active
 Date-Created: 2026-06-10
 Last-Reviewed: 2026-06-10
 Superseded-By: null
@@ -18,7 +18,7 @@ We're making the chain loop-capable: `/tdd --loop` will run a whole plan overnig
 |---|---|
 | ADR | [`adrs/2026-06-10-loop-harness-fresh-context-outer-loop`](../adrs/2026-06-10-loop-harness-fresh-context-outer-loop.md) |
 | Tier | Deep (inherited from spec) |
-| Status | Proposed |
+| Status | Active |
 | Owner | Modie (HITL at phase gates) + AFK fleet |
 
 ## Goal
@@ -121,6 +121,7 @@ This plan should be reopened — and `socratic-grill` re-run on the affected sec
 ## Change log
 
 - 2026-06-10 — Initial plan written from [`adrs/2026-06-10-loop-harness-fresh-context-outer-loop`](../adrs/2026-06-10-loop-harness-fresh-context-outer-loop.md).
+- 2026-06-10 — Phase 1 GATE PASSED. pgroup-1A (#1, #2, #4) landed via disp-v1260-1a (merges 06044ab/981a2f3/7de9131): scenarios 40 (8/8), 41 (10/10), 42 (10/10) green; regression 39 green; context-starved reviewer PASS (16 criteria, 0 findings). Status → Active. Known-red note: live pre-existing red is scenario 16, not the 19/29 SYSTEM_CONTEXT lists (slice-4 stash-baseline finding).
 
 ## References
 

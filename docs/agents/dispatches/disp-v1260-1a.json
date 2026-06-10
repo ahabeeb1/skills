@@ -1,0 +1,72 @@
+{
+  "dispatch_id": "disp-v1260-1a",
+  "invoker": "parallel-dev (via tdd-loop Phase 0.5)",
+  "started_at": "2026-06-10T13:30:00Z",
+  "completed_at": "2026-06-10T13:45:00Z",
+  "parent_task": "loop-harness v1.26.0 Phase 1 foundations — pgroup-1A: slice #1 failure-triage rule (tdd-loop) + slice #2 context-starved reviewer (parallel-dev) + slice #4 run-file format reference, dispatched in parallel from feat/loop-harness HEAD 8cf7023",
+  "plan_ref": "docs/agents/plans/2026-06-10-loop-harness-fresh-context-outer-loop.md",
+  "concurrency_used": 3,
+  "task_class": "write",
+  "independence_verification": {
+    "file_overlap": "PASS — slice #1 writes skills/tdd-loop/SKILL.md + tests/dogfood/40; slice #2 writes skills/parallel-dev/SKILL.md + tests/dogfood/41; slice #4 writes docs/agents/references/run-file-format.md + skills/parallel-dev/references/dispatch-record-template.md (assigned exclusively to #4) + tests/dogfood/42. Intersection empty.",
+    "state_dependency": "PASS — slice #5 consumes all three, but none of the three feeds another; each defines an independent contract surface.",
+    "resource_contention": "PASS — local markdown/bash edits only; no shared DB/API.",
+    "ordering_semantics": "PASS — completion order irrelevant; merge order arbitrary (1, 2, 4 chosen).",
+    "implicit_shared_state": "RESOLVED — all three needed a next-free dogfood scenario number; concurrent live-tree globbing would race to the same N. Dispatcher confirmed live-tree max (39) at dispatch and pre-assigned disjoint IDs: #1→40, #2→41, #4→42."
+  },
+  "subagents": [
+    {
+      "subagent_name": "slice-1-failure-triage",
+      "slice_id": "#1",
+      "status": "DONE",
+      "commit_shas": ["f59a1d2"],
+      "duration_ms": 404632,
+      "total_tokens": 85401,
+      "worktree_path": "../skills-slice-1",
+      "branch": "slice-1-failure-triage",
+      "notes": "Triage rule added to tdd-loop (3 routes, same-error-twice string rule, history-less defaults, budget 2, verify-output 1-fix-attempt, re-grill payload untouched). Scenario 40: 8/8. Regression 39: pass."
+    },
+    {
+      "subagent_name": "slice-2-reviewer-dispatch",
+      "slice_id": "#2",
+      "status": "DONE",
+      "commit_shas": ["918a0c5"],
+      "duration_ms": 367235,
+      "total_tokens": 82391,
+      "worktree_path": "../skills-slice-2",
+      "branch": "slice-2-reviewer-dispatch",
+      "notes": "Reviewer dispatch added to parallel-dev (read-task class, input triple, context-starvation explicit, severity tiers, one fix round, evidence-not-oracle, defined-here-consumed-by-both, AFK Critical hard-block). Both-sided fixtures 41a planted-violation + 41b clean-control. Scenario 41: 10/10. Regressions: pass."
+    },
+    {
+      "subagent_name": "slice-4-run-file",
+      "slice_id": "#4",
+      "status": "DONE",
+      "commit_shas": ["a6eb3fd"],
+      "duration_ms": 781199,
+      "total_tokens": 88932,
+      "worktree_path": "../skills-slice-4",
+      "branch": "slice-4-run-file",
+      "notes": "run-file-format.md reference created (dispatches/ second record class per grill decision, frontmatter fields, #15047 session guard, ADR-0003 writer rule, ADR-0019 staleness shape, 7+3 halt report, RUN_SUMMARY with /tdd --resume, format freeze) + conforming fixture + 7-line dispatch-record-template addendum. Scenario 42: 10/10. FINDING: full-sweep shows the live pre-existing red is scenario 16 (session-summary-template), verified pre-existing via git-stash baseline; SYSTEM_CONTEXT's '19+29' known-reds note is stale (19 passes here). Not introduced by this slice."
+    }
+  ],
+  "aggregate": {
+    "total_wall_ms": 781199,
+    "sequential_equivalent_ms": 1553066,
+    "parallelism_gain": 1.99,
+    "outcome": "SUCCESS",
+    "verification": "All three branches merged into feat/loop-harness (no conflicts — disjoint scopes; merge commits 06044ab, 981a2f3, 7de9131). Merged-tree verification: scenarios 40 (8/8), 41 (10/10), 42 (10/10) GREEN; regression 39 check-regrill-edge (8/8) + check-halt-scope (3/3) GREEN."
+  },
+  "re_dispatches": [],
+  "reviewer": {
+    "contract": "skills/parallel-dev/SKILL.md reviewer dispatch (landed in this very pgroup; dogfooded on it)",
+    "input_triple": "diff 8cf7023..7de9131 + slice 1/2/4 acceptance criteria + bounding SHAs",
+    "verdict": "PASS",
+    "criteria_checked": 16,
+    "findings": [],
+    "invariants": {
+      "regrill_payload_untouched": true,
+      "four_status_untouched": true
+    },
+    "note": "PASS recorded as evidence, not oracle — deterministic scenario assertions (40/41/42 + 39 regression) remain the verification floor."
+  }
+}

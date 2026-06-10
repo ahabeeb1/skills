@@ -1,7 +1,7 @@
 # Implementation Spec: Loop harness — self-correcting autonomous development loops
 
 **Slug:** `loop-harness`
-**Status:** Draft
+**Status:** Grilled ([grill record](./2026-06-09-loop-harness-grill.md))
 **Version:** v1.26.0 (candidate — assigned at release per changeset convention)
 **Tier:** Deep (inherited from research)
 **Spec'd from:** [docs/agents/research/2026-06-09-loop-harness-research.md](../research/2026-06-09-loop-harness-research.md)
@@ -54,20 +54,22 @@ plan work-list ──► loop driver (tdd-loop Phase 0.5 promoted)
 - **Fixed retry budgets will occasionally truncate an almost-converged fix loop** (aider #3450 class); accepted until field evidence demands configurability.
 - **Reviewer PASS is evidence, not proof** — deterministic assertions remain the verification floor.
 
-## Open questions (feed `socratic-grill`)
+## Open questions (resolved — see [grill record](./2026-06-09-loop-harness-grill.md))
 
-Run `socratic-grill` before implementation:
+All 10 resolved on 2026-06-10:
 
-- [ ] **(One-way door)** ADR-0004 amendment vehicle (amend-in-place vs new dated ADR) and the changed-input rule wording — who judges "materially changed"? N=2 vs 1-with-changed-input-only?
-- [ ] **(One-way door)** ADR-0003 Stop-hook carve-out deferral — does any v1 surface genuinely need hook-enforced continuation the model can't talk past?
-- [ ] Confirmation-gate provisional list — which of the 4 confirmation gates (fixture-ID confirm, verify-output H1–H6 ANNOTATE, spec-compliance review, version-bump confirm) run provisionally in v1, per gate?
-- [ ] Reviewer placement and authority — per-slice in tdd-loop Phase 5 vs per-dispatch in parallel-dev; does a Critical finding hard-block in AFK mode given no overnight override?
-- [ ] Run-file directory — new runtime writer path (ADR-0021 classification, `.gitkeep`) vs extending `docs/agents/dispatches/`?
-- [ ] Outer-loop invocation surface — `/tdd --loop` flag vs new wrapper skill; how the iteration ceiling is supplied and recorded?
-- [ ] History-less first-failure default — novel failure: assertion-shaped → structural, error-shaped → one retry. Confirm the default?
-- [ ] Waiting ≠ stuck — does same-error-twice need a wait-exemption (OpenHands #5355 class), or is budget 2 forgiving enough?
-- [ ] Discharging the Grill 2.0 revisit trigger — confirm the autonomous-re-plan re-affirmation and record it in that ADR's changelog so the fired trigger is formally closed.
-- [ ] Reviewer falsifiability — what dogfood scenario would prove the reviewer catches what assertions + writer self-review miss?
+- [x] **(One-way door)** ADR-0004 amendment vehicle → amend Part 1 in place, N=2, **dispatcher judges** "materially changed"; unchanged input escalates immediately.
+- [x] **(One-way door)** ADR-0003 Stop-hook carve-out → deferral confirmed (trigger unchanged in Revisit triggers).
+- [x] Confirmation-gate provisional list → fixture-ID confirm, verify-output ANNOTATE, spec-compliance review run provisionally; **version-bump confirm parks**.
+- [x] Reviewer placement → defined in `parallel-dev`, consumed by both skills; **Critical findings hard-block in AFK**.
+- [x] Run-file directory → **extends `docs/agents/dispatches/`** (user decision; widened record contract, no new writer path).
+- [x] Invocation surface → **`/tdd --loop`**; ceiling default 2× open slices, `--max-iterations` override, recorded in run-file frontmatter.
+- [x] History-less first-failure default → confirmed as specced.
+- [x] Wait-exemption → deferred; revisit trigger added below.
+- [x] Grill 2.0 trigger discharge → re-affirmation confirmed (halt handling changed, halt authority unchanged); Slice 6 carries the changelog entry.
+- [x] Reviewer falsifiability → both-sided dogfood test (planted violation caught + clean control passes); encoded in Slice 2 AC 5.
+
+New decision surfaced: **`/tdd --resume <run-id>`** morning-after resume command (Slice 5 AC; RUN_SUMMARY names it).
 
 ---
 
@@ -106,12 +108,14 @@ Numbered in dependency order. Each slice cuts end-to-end. HITL = human-in-the-lo
 
 **Blocked by:** None
 
+**Notes:** Grill decision — `parallel-dev` defines the reviewer contract; both `parallel-dev` and `tdd-loop` loop mode consume it (the loop dispatches a reviewer per slice via the same contract). Critical findings hard-block in AFK mode: the slice parks with a halt report, no overnight override.
+
 ### Slice 3 — NEEDS_CONTEXT bounded multi-retry (AFK)
 
 **Description:** The ADR-0004 Part 1 amendment lands (re-dispatch up to 2, each requiring materially changed input; unchanged input escalates immediately as `BLOCKED`) and parallel-dev's return-contract wording updates to match. Closes gap 5.
 
 **Acceptance criteria:**
-- [ ] ADR-0004 amended via the vehicle the grill decides, with the changed-input rule and who judges it.
+- [ ] ADR-0004 Part 1 amended **in place** (changelog entry, no supersession): re-dispatch bound N=2, each re-dispatch requires materially changed input, **the dispatcher judges** "materially changed" (it composed the original input and can diff it).
 - [ ] `parallel-dev/SKILL.md` NEEDS_CONTEXT row reflects the new bound and the immediate-escalation rule for unchanged input.
 - [ ] Dogfood: fixture where a second re-dispatch with unchanged input escalates to `BLOCKED` immediately rather than dispatching.
 
@@ -124,11 +128,11 @@ Numbered in dependency order. Each slice cuts end-to-end. HITL = human-in-the-lo
 **Description:** Defines the loop's only new artifact class: a per-run tracked markdown file with frontmatter bookkeeping (iteration count, per-slice retry counters, last-error hash, session/worktree binding), a RUN_SUMMARY morning-read section, and the structured halt report (re-grill 7-field payload extended with cause / evidence / options). Covers SP6 + SP7.
 
 **Acceptance criteria:**
-- [ ] A reference doc defines the run-file format: frontmatter fields enumerated, directory (per grill decision), ADR-0021 runtime-writer-path classification, advisory-only semantics, staleness contract in the ADR-0019 shape.
+- [ ] A reference doc defines the run-file format: frontmatter fields enumerated, **lives in `docs/agents/dispatches/` as a new record class** (grill decision — the dispatch-record contract widens to cover run files; no new directory, no new ADR-0021 classification needed since dispatches/ already carries it), advisory-only semantics, staleness contract in the ADR-0019 shape.
 - [ ] Session/worktree scoping rule: a session-identity field checked before any resume touches the file (the #15047 guard).
 - [ ] Skill-written only — hooks never write it (ADR-0003 Rule 3 untouched); stated in the reference doc.
 - [ ] Halt-report format: the existing 7 re-grill fields + `cause`, `evidence`, `options` — one format for every halt class (re-grill, budget exhaustion, reviewer block, parked gate).
-- [ ] RUN_SUMMARY format: per-slice status table, halts queued with their reports, provisional actions awaiting ratification.
+- [ ] RUN_SUMMARY format: per-slice status table, halts queued with their reports, provisional actions awaiting ratification; the halt section names the resume command (`/tdd --resume <run-id>`).
 
 **Test strategy:** Dogfood scenario — at `tests/dogfood/<next-free-N>-run-file-format/` (confirm N at implementation); executable assertions on a fixture run file.
 
@@ -139,8 +143,9 @@ Numbered in dependency order. Each slice cuts end-to-end. HITL = human-in-the-lo
 **Description:** tdd-loop Phase 0.5 is promoted to an iteration driver (invocation surface per grill): re-inspect, dispatch the next pending slice in fresh context, repeat until plan-done-or-BLOCKED, ceiling = 2× open slices. The tiered halt policy maps the existing HITL gate classification to AFK behavior: decision gates and structured halts park scope (via `scope_classification`) into a halt report; confirmation gates proceed provisionally, gated on green checks and logged for ratification. Closes gap 4 and resolves SP5.
 
 **Acceptance criteria:**
-- [ ] `tdd-loop/SKILL.md` loop mode: driver algorithm (inspect → dispatch fresh → verify → next), iteration ceiling = 2× open slices recorded in the run file, terminal states `DONE` / `BLOCKED`-with-halt-report — no third exit.
-- [ ] Halt-policy table enumerating every HITL gate the loop can reach, each labeled park or provisional per the grill's per-gate decisions.
+- [ ] `tdd-loop/SKILL.md` loop mode invoked as **`/tdd --loop`**: driver algorithm (inspect → dispatch fresh → verify → next), iteration ceiling defaults to 2× open slices with a `--max-iterations N` override, effective ceiling recorded in run-file frontmatter, terminal states `DONE` / `BLOCKED`-with-halt-report — no third exit.
+- [ ] **`/tdd --resume <run-id>`**: reads the run file, finds parked slices, replays each halt report as seed context, re-enters RED on the parked slice — resume-by-inspection, no state beyond the run file + git.
+- [ ] Halt-policy table enumerating every HITL gate the loop can reach: decision gates and structured halts park; fixture-ID confirm, verify-output ANNOTATE concerns, and spec-compliance review run **provisionally** (gated on green checks, logged for ratification); **version-bump confirm parks** (grill's per-gate decisions).
 - [ ] Re-grill halts park scope per `scope_classification` and never self-resolve; the loop writes the halt report and moves to unaffected slices or terminates per the scope.
 - [ ] Each iteration updates the run file; run end (either terminal state) writes the RUN_SUMMARY.
 - [ ] Dogfood: a 2-slice plan fixture loops to plan-done; a planted-ambiguity fixture parks with a well-formed halt report and untouched sibling scope.
@@ -181,6 +186,8 @@ AFK slices with no shared dependencies can run via `parallel-dev`:
 - Group B (parallel): #3, #5 — disjoint surfaces (`parallel-dev`+ADR vs `tdd-loop`+run file)
 - Sequential: #6
 
+**Severability under scope pressure** (grill decision, informs write-plan ordering): Slice 3 defers first (the loop ships on the existing 1-retry contract; #3 slots into a patch release), then #2, then #4. Slices 1 + 5 are the spine — not severable.
+
 ## Revisit triggers
 
 - Retry budgets repeatedly hit on legitimately converging fixes → make budgets configurable (aider's exact trajectory).
@@ -188,6 +195,7 @@ AFK slices with no shared dependencies can run via `parallel-dev`:
 - Credible non-Claude loop-harness evidence contradicts fresh-per-slice → re-open the F1 fork.
 - A real need for hook-enforced in-slice determinism emerges → take the deferred ADR-0003 carve-out (ADR-0019-shaped sub-clauses + `stop_hook_active` + session-ID guard are mandatory minimums).
 - The 2026-06-15 headless credit-pool change materially alters fresh-session economics.
+- Field evidence of a legitimate long-wait failure being misclassified as structural (OpenHands #5355 class) → add the same-error-twice wait-exemption (deferred at grill).
 
 ---
 

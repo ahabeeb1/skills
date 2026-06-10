@@ -27,6 +27,9 @@ write-plan            → phased delivery doc with acceptance gates + rollback h
 tdd-loop              → implements with red-green-refactor over vertical slices
          │   ↳ re-grill edge — implementation-revealed spec ambiguity halts the slice
          │     into a scoped socratic-grill round (inline patch or ADR escalation), then resumes
+         │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan:
+         │     failure-triage routes fixes, tiered halt policy parks human-judgment scope into
+         │     halt reports + RUN_SUMMARY; parked work resumes via /tdd --resume <run-id>
          ↓
 deep-modules          → refactor pass to deepen modules and remove shallow layers
          ↓

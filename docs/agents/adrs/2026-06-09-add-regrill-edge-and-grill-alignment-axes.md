@@ -96,3 +96,4 @@ This ADR should be reopened if any of:
 
 - 2026-06-09 — Initial ADR, status Proposed
 - 2026-06-09 — Status moved to Accepted, implementation started in slice #1
+- 2026-06-10 — Revisit trigger "a future release adds unattended/headless chain execution" FIRED (the [loop-harness decision](./2026-06-10-loop-harness-fresh-context-outer-loop.md) adds exactly that) and is hereby DISCHARGED: the Deep-tier re-research re-affirmed the autonomous-re-plan rejection on four-vendor fail-closed convergence. AFK loops change halt *handling* — re-grill halts now park scope into a structured halt report queued in the RUN_SUMMARY instead of stopping the whole run — but halt *authority* is unchanged: re-grill rounds remain human-mediated and never self-resolve.

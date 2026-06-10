@@ -65,6 +65,41 @@ The sanctioned backward edge from implementation to the grill. When a slice reve
 **Examples in code:** `skills/tdd-loop/SKILL.md` § "The re-grill edge", `skills/socratic-grill/SKILL.md` § "Scoped re-grill rounds", dogfood `tests/dogfood/39-regrill-edge/`
 **Synonyms to AVOID:** "re-plan" (re-planning re-sequences slices; re-grill resolves one ambiguous decision), "rollback" (nothing is reverted — the round moves the spec forward on the record).
 
+### Loop run
+
+One invocation of `tdd-loop`'s loop mode (`/tdd --loop`): the driver iterates fresh-context slice dispatches against the active plan — inspect → dispatch fresh → verify → next — until the plan is done or a halt parks it, bounded by the iteration ceiling (default 2× open slices; `--max-iterations` override). Exactly two terminal states: `DONE` or `BLOCKED`-with-halt-report. Bookkept in a **run file**; ends by writing a RUN_SUMMARY. Parked work resumes with `/tdd --resume <run-id>`.
+
+**Examples in code:** `skills/tdd-loop/SKILL.md` § "Loop mode", dogfood `tests/dogfood/44-outer-loop/`
+**Synonyms to AVOID:** "session" (a loop run may span sessions via resume; a session may host many runs), "Stop-hook loop" (the rejected alternative — the loop is plan-driven, never hook-enforced).
+
+### Failure-triage rule
+
+`tdd-loop`'s classify-then-route rule for any verification failure: **transient-shaped** → one fresh-context re-run; **structural** (assertion-shaped, or same-error-twice by string comparison) → auto-invoke `systematic-debugging` in fresh context with an evidence payload; **spec-implicated** → the re-grill edge. Per-slice retry budget of 2, a convention serving as a termination guarantee, not a tuned optimum.
+
+**Examples in code:** `skills/tdd-loop/SKILL.md` § "The failure-triage rule", dogfood `tests/dogfood/40-failure-triage/`
+**Synonyms to AVOID:** "retry logic" (retry is only one of the three routes), "error handling" (the rule routes between skills; it doesn't handle anything itself).
+
+### Run file
+
+The per-run tracked markdown file (`docs/agents/dispatches/run-<run-id>.md`) carrying a loop run's mutable bookkeeping — iteration count, per-slice retry counters, last-error hash, session/worktree identity — plus the RUN_SUMMARY and queued halt reports. The second record class in `docs/agents/dispatches/` beside dispatch-record JSON. Advisory only (git refs and dispatch records are the durability layer), skill-written only (hooks never write it), and session-identity-guarded before any resume touches it.
+
+**Examples in code:** `docs/agents/references/run-file-format.md`, dogfood `tests/dogfood/42-run-file-format/`
+**Synonyms to AVOID:** "checkpoint file" (resume is by inspection of git + run file, never by replaying a checkpoint), "state file" (the ADR-0003 forbidden artifact is a *hook-owned* state file; the run file is skill-written and advisory).
+
+### Halt report
+
+The structured record a parked halt writes into the run file: the re-grill learning payload's 7 fields extended with `cause`, `evidence-summary`, and `options` — one format for every halt class (re-grill, budget exhaustion, reviewer block, parked gate). RUN_SUMMARY queues halt reports for the morning read; each names the resume command.
+
+**Examples in code:** `docs/agents/references/run-file-format.md` § halt report, dogfood `tests/dogfood/42-run-file-format/`
+**Synonyms to AVOID:** "error report" (a halt is often not an error — a parked decision gate is healthy fail-closed behavior), "incident" (incidents get postmortems; halts get morning ratification).
+
+### Provisional execution
+
+How a confirmation gate behaves inside a loop run: the loop proceeds past the gate, gated on green checks, and logs the action in the run file for morning ratification. Three gates run provisionally (fixture-ID confirm, `verify-output` ANNOTATE-mode concerns, spec-compliance review); version-bump confirm parks instead. Decision gates and structured halts never run provisionally — they **park**: scope is set aside with a halt report and the run continues on unaffected slices per `scope_classification`. Halt *handling* is what provisional execution changes; halt *authority* stays human.
+
+**Examples in code:** `skills/tdd-loop/SKILL.md` § tiered halt policy
+**Synonyms to AVOID:** "auto-approve" (nothing is approved — ratification is deferred, not skipped), "skip the gate" (the gate's checks still run; only the human confirmation is deferred).
+
 ### ADR
 
 Architectural Decision Record. A numbered immutable markdown file under `docs/agents/adrs/NNNN-<slug>.md` capturing a non-trivial architectural decision (Nygard format). Written by `decision-record`. Read by `prior-art-research` as Tier-0 internal precedent.

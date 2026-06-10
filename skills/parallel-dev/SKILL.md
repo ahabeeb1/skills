@@ -165,6 +165,7 @@ While subagents run, the dispatcher is idle (or can do bookkeeping). When notifi
 - Capture timing per subagent (`duration_ms`, `total_tokens`) — this is the only chance
 - **Capture commit SHA(s) returned by each artifact-producing subagent** — these populate the dispatch record's audit trail
 - Verify each subagent's output against its spec's verification step
+- For write-task dispatches, route each `DONE` through the reviewer (see `## Reviewer dispatch` below) before treating the work as verified
 - Note any subagent that failed, returned partial results, or deviated from spec
 
 **Don't lose partial successes.** If 4 of 5 subagents succeeded, keep their work (the commits are already in the tree). Re-dispatch only the failed one with a clearer spec (or fall back to sequential).
@@ -248,6 +249,26 @@ The subagent's input was incomplete or ambiguous and it cannot proceed without m
 | `NEEDS_CONTEXT` | Re-dispatch once, then escalate | Silent on first re-dispatch; BLOCKED-shape on escalation |
 
 Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep-tier synthesis) MUST honor this matrix. Free-form text returns are non-compliant; the contract is machine-readable.
+
+## Reviewer dispatch (context-starved)
+
+After a write-task subagent returns `DONE`, the dispatcher sends the work to a reviewer running in fresh context. The reviewer is a **read-task-class dispatch**: it writes nothing, so there is no merge surface and read-task rules apply (no worktree, no commit discipline).
+
+**Input triple — nothing else.** The reviewer receives exactly three things: the diff, the slice spec, and the bounding commit SHAs. The context-starvation rule is explicit: the reviewer NEVER sees the writer's conversation or reasoning. A reviewer that inherits the writer's context inherits the writer's blind spots; starvation is what makes the review independent.
+
+**Finding constraints — gaps, not style.** Findings are limited to correctness gaps and stated-requirements gaps (the slice spec's acceptance criteria). Style preference, naming taste, and unprompted refactor suggestions are out of scope. Severity tiers:
+
+| Severity | Effect |
+|---|---|
+| Critical | Blocks progression |
+| Important | Blocks progression |
+| Minor | Recorded in the dispatch record; never blocks |
+
+**One fix round.** Each Critical/Important finding gets exactly one writer fix round. A finding surviving its fix round escalates to `BLOCKED` — this composes with `tdd-loop`'s same-finding-twice rule: the same finding is never attempted twice.
+
+**PASS is evidence, not an oracle.** A reviewer PASS is recorded as evidence in the dispatch record. In narrative weight it sits above the writer's self-review — fresh eyes outrank the author's — but it NEVER replaces deterministic assertions; the executable checks remain the verification floor.
+
+**Ownership.** `parallel-dev` DEFINES this reviewer contract; both `parallel-dev` and `tdd-loop`'s loop mode CONSUME it (the loop dispatches a reviewer per slice via this same contract). In AFK mode a Critical finding hard-blocks — no overnight override; the slice parks with a halt report.
 
 ## Sub-patterns
 

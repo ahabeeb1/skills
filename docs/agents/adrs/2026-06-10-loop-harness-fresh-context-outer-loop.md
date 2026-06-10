@@ -1,5 +1,5 @@
 ---
-Status: Proposed
+Status: Accepted
 Date-Created: 2026-06-10
 Last-Reviewed: 2026-06-10
 Superseded-By: null
@@ -9,7 +9,7 @@ Deciders: [Modie (owner), Claude (chain run)]
 
 # Adopt a fresh-context-per-slice loop harness with classify-then-route triage and tiered fail-closed halts
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-06-10
 **Deciders:** Modie (owner), Claude (chain run)
 **Tier:** Deep
@@ -101,3 +101,4 @@ This ADR should be reopened if any of:
 ## Changelog
 
 - 2026-06-10 — Initial ADR, status Proposed
+- 2026-06-10 — Status moved to Accepted; implementation started (pgroup-1A dispatched, disp-v1260-1a); all 6 slices landed same day

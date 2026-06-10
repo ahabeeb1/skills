@@ -215,7 +215,7 @@ Before declaring the slice complete, run TWO independent passes. Skipping either
 
 - `DONE` → proceed to Phase 4 COMMIT.
 - `DONE_WITH_CONCERNS` → read the concerns, decide deliberately; ANNOTATE mode is the default and does NOT block. Proceed to commit (or fix and re-run if the concerns are worth addressing).
-- `BLOCKED` → severe slop found (half-finished impl, unreachable code, declared-and-unused). The commit is halted. Fix the concerns and re-run Pass 5c, OR commit with `--override <ref>` if the stub is intentional and tracked (the override is recorded in the commit message and is `git log`-auditable).
+- `BLOCKED` → severe slop found (half-finished impl, unreachable code, declared-and-unused). The commit is halted. Fix the concerns and re-run Pass 5c — the fix attempt is bounded by the failure-triage rule below (one fresh-context attempt, then halt) — OR commit with `--override <ref>` if the stub is intentional and tracked (the override is recorded in the commit message and is `git log`-auditable).
 - `NEEDS_CONTEXT` → an ambiguous case the skill couldn't decide. Surface to the user, resolve, re-run.
 
 Pass 5c is invoked in ANNOTATE mode by default. Projects that want stricter enforcement configure `verify-output --gate` in their setup (moderate slop becomes blocking).
@@ -260,6 +260,22 @@ Exits: (1) inline spec patch (minor, per the grill's blast-radius rule)
 ```
 
 **Resolve and resume.** Invoke `socratic-grill`'s scoped re-grill round with the payload. When it returns — patched spec or amended ADR — the halted slice re-enters RED against the clarified criterion.
+
+## The failure-triage rule — when verification fails
+
+Any verification failure — an unexpected RED in Phases 2–4 (a test that should pass doesn't, or a previously-green test breaks) or a verify-output `BLOCKED` in Pass 5c — hits triage before anything is retried. Classify on cheap signals (the shape of the failure text, the failure history) — never on a deep investigation; investigation is what the structural route is for. Three routes:
+
+- **Transient-shaped** (error-shaped output with no assertion mismatch — flaky timing, environment hiccup, nondeterministic ordering): exactly one fresh-context re-run of the failing step. A second failure means it wasn't transient — re-triage with history; the same-error-twice rule below makes it structural.
+- **Structural** (assertion-shaped failure, OR same-error-twice): auto-invoke `systematic-debugging` in fresh context with an evidence payload — the test output, the diff, and the attempted fix. Never blind-retry an assertion failure: identical input produces identical output.
+- **Spec-implicated** (the failure traces to a spec decision, not the code): route through the existing re-grill edge above, unchanged — the same 7-field learning payload, the same fixed-format halt block. Triage adds routing in front of the edge, not a new halt surface.
+
+**Same-error-twice rule.** Record each failure's text. On the next failure, string-compare it against the recorded last failure: a repeat is structural — the re-run already proved it isn't transient.
+
+**History-less first failure.** With no recorded failure to compare against, default by shape: assertion-shaped → structural (straight to systematic-debugging); error-shaped → one retry.
+
+**Retry budget.** Each slice gets a retry budget of exactly 2 — a convention, not a tuned optimum (revisit if budgets repeatedly truncate converging fixes). Exhaustion emits `BLOCKED` with a halt payload; never keep cycling past the budget.
+
+**verify-output `BLOCKED` (Pass 5c).** Gets exactly 1 fresh-context fix attempt. The same finding surviving the fix → halt — never a second identical attempt; a surviving finding is the same-error-twice rule firing on a review finding.
 
 ## Anti-patterns this skill guards against
 

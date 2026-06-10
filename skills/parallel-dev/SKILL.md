@@ -237,7 +237,7 @@ The subagent could not complete the task. Required: `blocker` field with a one-l
 
 ### `NEEDS_CONTEXT`
 
-The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches once with the corrected input, then escalates as `BLOCKED` if the corrected dispatch also returns `NEEDS_CONTEXT`.
+The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches up to 2 times (ADR-0004 Part 1, amended 2026-06-10), each re-dispatch requiring materially changed input — the dispatcher judges "materially changed", because it composed the original input and can diff it against the corrected one. A re-dispatch attempt with unchanged input escalates immediately as `BLOCKED` instead of dispatching; the same escalation fires when the bound is exhausted (the 2nd re-dispatch also returns `NEEDS_CONTEXT`). The bound is a termination guarantee documented as convention, not a tuned optimum.
 
 ### Status handling matrix
 
@@ -246,7 +246,7 @@ The subagent's input was incomplete or ambiguous and it cannot proceed without m
 | `DONE` | Advance | Silent (or quiet success line) |
 | `DONE_WITH_CONCERNS` | Advance | Warning with `notes` |
 | `BLOCKED` | Halt pgroup | Structured BLOCKED message |
-| `NEEDS_CONTEXT` | Re-dispatch once, then escalate | Silent on first re-dispatch; BLOCKED-shape on escalation |
+| `NEEDS_CONTEXT` | Re-dispatch up to 2× with materially changed input (dispatcher judges); unchanged input or exhausted bound → escalate as `BLOCKED` | Silent on re-dispatches; BLOCKED-shape on escalation |
 
 Sub-skills that consume `parallel-dev` outputs (today: `tdd-loop` Phase 0.5, `prior-art-research` Deep-tier synthesis) MUST honor this matrix. Free-form text returns are non-compliant; the contract is machine-readable.
 

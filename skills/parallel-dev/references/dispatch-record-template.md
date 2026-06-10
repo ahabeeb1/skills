@@ -149,6 +149,14 @@ The dispatcher is the **single writer**. No skill reads dispatch records during 
 
 Dispatch records older than 30 days are eligible for pruning via `/sync` cleanup pass (TODO in v1.8.0+ when the volume actually accumulates). Until then, retain all records — they are the audit trail for `socratic-grill` to use when re-grilling a slice that failed in the past.
 
+### Second record class — loop-run files
+
+`docs/agents/dispatches/` hosts two record classes: the per-pgroup dispatch
+JSON above, and per-run loop bookkeeping files
+(`run-<run-id>.md`, written by `tdd-loop` loop mode). The run-file format —
+frontmatter fields, halt report, RUN_SUMMARY — is defined in
+[`docs/agents/references/run-file-format.md`](../../../docs/agents/references/run-file-format.md).
+
 ---
 
 ## Markdown audit shape (legacy — kept for reference, NOT the authoritative record)

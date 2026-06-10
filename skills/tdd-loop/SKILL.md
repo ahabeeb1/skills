@@ -78,6 +78,8 @@ If the decision is "yes," hand off to `using-worktrees` now; resume Phase 1 in t
 
 (Runs only when an active plan exists at `docs/agents/plans/<slug>.md`. Skipped when there's no active plan or the plan has been flagged Done.)
 
+Under `/tdd --loop` this phase is each iteration's inspect step — see [§ Loop mode](#loop-mode--tdd---loop) below. Without the flag it runs once, exactly as written here.
+
 **No plan is an expected state, not a degraded one.** A **Quick**-tier chain (see the `**Tier:**` field on the spec — [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)) deliberately skips `write-plan`; `tdd-loop` then runs the spec's slice order directly, sequentially. Do not emit a setup warning or hunt for a missing plan — fall through to Phase 1. `tdd-loop` itself always runs in full at every tier; the tier scales the *design* that precedes implementation, never the TDD rigor.
 
 **Step 1 — Inspect the active plan.** Read the slice table and parallelization map. Identify the next unfinished pgroup in dependency order. Determine its size.
@@ -112,7 +114,7 @@ This is the pause/resume API: git is the durability layer. Killing the chain mid
 | `DONE` | Mark slice complete in the plan; advance |
 | `DONE_WITH_CONCERNS` | Mark slice complete; **emit a warning to the user** with the `notes` field content; append `notes` to the dispatch record at `docs/agents/dispatches/<dispatch-id>.json` |
 | `BLOCKED` | Halt the pgroup; surface the **structured BLOCKED message** (`{type, subagent, slice_id, reason, suggested_action}`) to the user; do NOT auto-re-dispatch |
-| `NEEDS_CONTEXT` | Re-dispatch the slice ONCE with the corrected input (typically: a clarification to the spec or a fix to the input contract); if the re-dispatch also returns `NEEDS_CONTEXT`, escalate as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
+| `NEEDS_CONTEXT` | Re-dispatch the slice with corrected input (typically: a clarification to the spec or a fix to the input contract), up to 2 re-dispatches total (the amended ADR-0004 Part 1 bound). Each re-dispatch requires materially changed input — the dispatcher judges "materially changed" (it composed the original input and can diff it). Unchanged input, or exhausting the bound, escalates immediately as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
 
 **Step 5 — Loop or descend.**
 
@@ -276,6 +278,37 @@ Any verification failure — an unexpected RED in Phases 2–4 (a test that shou
 **Retry budget.** Each slice gets a retry budget of exactly 2 — a convention, not a tuned optimum (revisit if budgets repeatedly truncate converging fixes). Exhaustion emits `BLOCKED` with a halt payload; never keep cycling past the budget.
 
 **verify-output `BLOCKED` (Pass 5c).** Gets exactly 1 fresh-context fix attempt. The same finding surviving the fix → halt — never a second identical attempt; a surviving finding is the same-error-twice rule firing on a review finding.
+
+## Loop mode — `/tdd --loop`
+
+`/tdd --loop` promotes Phase 0.5 from resume mechanism to iteration driver: point it at the active plan, walk away, and it runs the plan's work-list to a terminal state. Without the flag, none of this section applies — `tdd-loop` runs single-pass Phase 0.5 exactly as written above.
+
+**Driver algorithm.** Each iteration: **inspect** (Phase 0.5's idempotent resume — git refs + the plan, no other state) → **dispatch** the next pending slice or pgroup → **verify** (deterministic assertions → reviewer per `parallel-dev` § Reviewer dispatch → `verify-output` Pass 5c) → **update the run file** → next. Repeat until the plan is done or a halt ends the run. Every slice is dispatched in fresh context — the driver's own context never carries slice work; repo artifacts (spec, plan, run file, git) carry everything between iterations.
+
+**Run file.** Each iteration updates the per-run bookkeeping file defined in [`docs/agents/references/run-file-format.md`](../../docs/agents/references/run-file-format.md) — location, frontmatter fields, halt-report and RUN_SUMMARY formats all live there, never here.
+
+**Iteration ceiling.** Defaults to 2× open slices; `--max-iterations N` overrides. Either way the effective ceiling is recorded in run-file frontmatter (the `iteration_ceiling` field per run-file-format.md), so the run file alone answers how much budget remains.
+
+**Terminal states — exactly two.** `DONE` (plan complete) or `BLOCKED` with a halt report; no third exit — ceiling exhaustion, reviewer block, re-grill, and parked gates all terminate as the second. Run end, in either terminal state, writes the RUN_SUMMARY per run-file-format.md.
+
+**Failure routing.** A verification failure inside the loop hits the failure-triage rule above — its transient / structural / spec-implicated routes are the loop's inner edges. The loop adds no retry rules of its own; budgets and thresholds live in the triage rule only.
+
+### Tiered halt policy
+
+Every HITL gate the loop can reach, classified **park** (write a halt report, queue for the human) or **provisional** (proceed, log for morning ratification):
+
+| Gate | Class | AFK behavior |
+|---|---|---|
+| Decision gates (HITL-labeled slices, phase acceptance-gate failures) and structured halts (budget exhaustion, reviewer Critical finding) | **Park** | Halt report per run-file-format.md; the run continues on unaffected slices per `scope_classification`, or terminates if spec-wide |
+| Re-grill halt (spec-implicated failure) | **Park** | Parks scope per `scope_classification`; re-grill halts **never self-resolve** — halt authority stays human (the Grill 2.0 re-affirmation); the loop writes the halt report and moves to unaffected slices, or terminates when the scope is spec-wide |
+| Fixture-ID confirm (Phase 1) | **Provisional** | Proceed gated on green checks; logged in the run file for morning ratification |
+| verify-output ANNOTATE-mode concerns (Pass 5c `DONE_WITH_CONCERNS`) | **Provisional** | Same — proceed on green checks, logged for ratification |
+| Spec-compliance review (Pass 5a) | **Provisional** | Same — proceed on green checks, logged for ratification |
+| Version-bump confirm | **Park** | Release-facing; the human ratifies versioning — never provisional |
+
+### Resume — `/tdd --resume <run-id>`
+
+The morning-after command. It reads the run file and checks the **session-identity** field FIRST, before touching anything else in the file (the #15047 guard per run-file-format.md — a mismatch halts with the file untouched). Then it finds the parked slices, replays each halt report as seed context, and re-enters RED on the parked slice against the resolved decision. Resume-by-inspection: no state beyond the run file + git.
 
 ## Anti-patterns this skill guards against
 

@@ -237,7 +237,7 @@ The subagent could not complete the task. Required: `blocker` field with a one-l
 
 ### `NEEDS_CONTEXT`
 
-The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches up to 2 times (ADR-0004 Part 1, amended 2026-06-10), each re-dispatch requiring materially changed input — the dispatcher judges "materially changed", because it composed the original input and can diff it against the corrected one. A re-dispatch attempt with unchanged input escalates immediately as `BLOCKED` instead of dispatching; the same escalation fires when the bound is exhausted (the 2nd re-dispatch also returns `NEEDS_CONTEXT`). The bound is a termination guarantee documented as convention, not a tuned optimum.
+The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches up to 2 times (the dispatch contract's Part 1 bound, amended 2026-06-10 — see `references/dispatch-record-template.md`), each re-dispatch requiring materially changed input — the dispatcher judges "materially changed", because it composed the original input and can diff it against the corrected one. A re-dispatch attempt with unchanged input escalates immediately as `BLOCKED` instead of dispatching; the same escalation fires when the bound is exhausted (the 2nd re-dispatch also returns `NEEDS_CONTEXT`). The bound is a termination guarantee documented as convention, not a tuned optimum.
 
 ### Status handling matrix
 

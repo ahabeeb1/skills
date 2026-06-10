@@ -114,7 +114,7 @@ This is the pause/resume API: git is the durability layer. Killing the chain mid
 | `DONE` | Mark slice complete in the plan; advance |
 | `DONE_WITH_CONCERNS` | Mark slice complete; **emit a warning to the user** with the `notes` field content; append `notes` to the dispatch record at `docs/agents/dispatches/<dispatch-id>.json` |
 | `BLOCKED` | Halt the pgroup; surface the **structured BLOCKED message** (`{type, subagent, slice_id, reason, suggested_action}`) to the user; do NOT auto-re-dispatch |
-| `NEEDS_CONTEXT` | Re-dispatch the slice with corrected input (typically: a clarification to the spec or a fix to the input contract), up to 2 re-dispatches total (the amended ADR-0004 Part 1 bound). Each re-dispatch requires materially changed input — the dispatcher judges "materially changed" (it composed the original input and can diff it). Unchanged input, or exhausting the bound, escalates immediately as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
+| `NEEDS_CONTEXT` | Re-dispatch the slice with corrected input (typically: a clarification to the spec or a fix to the input contract), up to 2 re-dispatches total (the dispatch contract's amended Part 1 bound). Each re-dispatch requires materially changed input — the dispatcher judges "materially changed" (it composed the original input and can diff it). Unchanged input, or exhausting the bound, escalates immediately as `BLOCKED` with `suggested_action: "edit-spec-and-redispatch"` |
 
 **Step 5 — Loop or descend.**
 

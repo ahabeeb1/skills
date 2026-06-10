@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "habeebs-skill",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "description": "Research-grounded engineering methodology for Claude Code. Find how the best teams shipped what you're building, spec it, grill the ambiguity out, lock the decision as an ADR, write the phased plan with acceptance gates, implement via TDD over vertical slices with deep-modules discipline, then anti-slop verify before commit. Composable skill chain: prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → verify-output → release, with parallel-dev, deep-modules, vertical-slice, using-worktrees, systematic-debugging, agent-factors-check, devex-review, security-audit, and setup-habeebs-skill as supporting primitives.",
   "author": {
     "name": "Modie (Habeeb)"

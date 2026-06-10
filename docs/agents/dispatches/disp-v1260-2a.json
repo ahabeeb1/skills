@@ -1,0 +1,62 @@
+{
+  "dispatch_id": "disp-v1260-2a",
+  "invoker": "parallel-dev (via tdd-loop Phase 0.5)",
+  "started_at": "2026-06-10T13:55:00Z",
+  "completed_at": "2026-06-10T14:10:00Z",
+  "parent_task": "loop-harness v1.26.0 Phase 2 — pgroup-2A: slice #3 NEEDS_CONTEXT bound widening (ADR-0004 in-place amendment + parallel-dev sync) + slice #5 outer-loop driver + tiered halt policy (tdd-loop), dispatched in parallel from feat/loop-harness HEAD 84758ac",
+  "plan_ref": "docs/agents/plans/2026-06-10-loop-harness-fresh-context-outer-loop.md",
+  "concurrency_used": 2,
+  "task_class": "write",
+  "independence_verification": {
+    "file_overlap": "PASS — slice #3 writes docs/agents/adrs/0004-*.md + skills/parallel-dev/SKILL.md + tests/dogfood/43; slice #5 writes skills/tdd-loop/SKILL.md + tests/dogfood/44. Intersection empty. The tdd-loop Phase 0.5 NEEDS_CONTEXT row (which references the bound #3 amends) was assigned to #5 because #5 owns that file.",
+    "state_dependency": "PASS (managed) — #5's row sync and #3's ADR amendment encode the same content, but both write from the locked grill decision (Item 1), not from each other's output; neither read the other's diff.",
+    "resource_contention": "PASS — local markdown/bash edits only.",
+    "ordering_semantics": "PASS — merge order arbitrary (3 then 5 chosen); scenario numbers 43/44 pre-assigned from live-tree max 42.",
+    "implicit_shared_state": "PASS — separate new dogfood subdirectories; no registry/index file."
+  },
+  "subagents": [
+    {
+      "subagent_name": "slice-3-needs-context",
+      "slice_id": "#3",
+      "status": "DONE",
+      "commit_shas": ["1229d83"],
+      "duration_ms": 677074,
+      "total_tokens": 97066,
+      "worktree_path": "../skills-slice-3",
+      "branch": "slice-3-needs-context",
+      "notes": "ADR-0004 Part 1 amended in place following the Part 3 share-full-traces precedent (indented bolded clause + header extension + dated 2026-06-10 changelog line citing the loop-harness decision). parallel-dev NEEDS_CONTEXT section + matrix row synced. Scenario 43: 7/7. Regressions (41, 39, 11): pass. Correctly left tdd-loop's stale ONCE row to slice #5 per constraints."
+    },
+    {
+      "subagent_name": "slice-5-outer-loop",
+      "slice_id": "#5",
+      "status": "DONE",
+      "commit_shas": ["e3c91fe"],
+      "duration_ms": 766304,
+      "total_tokens": 106124,
+      "worktree_path": "../skills-slice-5",
+      "branch": "slice-5-outer-loop",
+      "notes": "Loop mode added to tdd-loop: /tdd --loop driver, fresh-context dispatch, ceiling 2x + --max-iterations recorded in run file, two terminal states, tiered halt-policy table (3 provisional gates, version-bump parks, re-grill never self-resolves), /tdd --resume with session-identity-first guard, triage referenced not restated, Phase 0.5 NEEDS_CONTEXT row synced to the 2-bound. Formats consumed from run-file-format.md by link. Scenario 44: 9/9. Regressions (40, 39x2, 41, 42, 35, 11): pass."
+    }
+  ],
+  "aggregate": {
+    "total_wall_ms": 766304,
+    "sequential_equivalent_ms": 1443378,
+    "parallelism_gain": 1.88,
+    "outcome": "SUCCESS",
+    "verification": "Both branches merged into feat/loop-harness (no conflicts; merges 0774643, 2492acb). Merged-tree verification: scenarios 43 (7/7) + 44 (9/9) GREEN; full regression set 40/41/42/39-regrill/39-halt-scope GREEN."
+  },
+  "re_dispatches": [],
+  "reviewer": {
+    "contract": "skills/parallel-dev/SKILL.md reviewer dispatch",
+    "input_triple": "diff 84758ac..2492acb + slice 3/5 acceptance criteria + bounding SHAs",
+    "verdict": "PASS",
+    "criteria_checked": 9,
+    "findings": [],
+    "invariants": {
+      "adr_amendment_in_place": true,
+      "formats_consumed_by_link": true,
+      "halt_authority_human": true
+    },
+    "note": "PASS recorded as evidence, not oracle — scenarios 43/44 + regression suite remain the verification floor."
+  }
+}

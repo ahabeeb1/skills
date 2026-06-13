@@ -48,12 +48,6 @@ Is this a developer-facing product? **Yes** / No — [one-line reason. If No, th
 
 - **D<n>** — [Reason. e.g., "spec is an internal SDK consumed by one team; D5 docs-as-experienced is N/A by design."]
 
-## Status
-
-`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`
-
-[One line explaining the status if not DONE.]
-
 ## Recommendation back to socratic-grill
 
 - [ ] Resume grilling with **N** new questions interleaved into the existing agenda

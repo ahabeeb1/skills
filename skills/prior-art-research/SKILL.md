@@ -71,7 +71,7 @@ Ask questions plainly. Do not preface them with explanations of why you're askin
 If the user already has hunches about *which design space* to look at — keywords, technique names, architectures they want considered first, or things they explicitly want to avoid — capture that in the same message they answer 3-5. Three slots, all optional, all free-text:
 
 - **Anchor:** terms or techniques to bias queries toward (e.g., "token bucket, sliding-window", "CRDT", "Stripe Idempotency-Key pattern")
-- **Look at:** specific projects/teams/architectures to fetch first (e.g., "see how Linear's sync engine handles this", "the BeanBot retrieval layer")
+- **Look at:** specific projects/teams/architectures to fetch first (e.g., "see how Linear's sync engine handles this", "our internal billing service's retry layer")
 - **Avoid:** out-of-scope terms or anti-patterns (e.g., "no Redis", "skip Kafka", "not interested in serverless")
 
 Steering is **optional anchoring, not prescription**. If the user provides anchors that conflict with strong evidence found in Phase 4-5, the agent must override the anchor and explain why in Phase 6 (see `references/steering-hints.md`). Decomposition still runs autonomously in Phase 2; anchors weight Phase 4 query construction and source ranking, they do not replace the Phase 2 sub-problem split.
@@ -85,7 +85,7 @@ If the user's initial prompt already answers some of these, skip those and only 
 Before going external, grep the open repo for related patterns:
 - Search file names: `grep -ri "<feature_keyword>" --include="*.md" docs/ ADR-* 2>/dev/null`
 - Search for existing ADRs in `docs/agents/adrs/`, `docs/architecture/`, or `docs/decisions/`
-- For Modie specifically: also check sibling repos referenced in CLAUDE.md (BeanBot, salahi.app, AEGIS) if accessible
+- Also check any sibling/adjacent repos the consuming repo's `CLAUDE.md` or `docs/agents/SYSTEM_CONTEXT.md` names as internal precedent, if accessible
 
 If you find internal prior art, surface it FIRST in the case studies section as a Tier 0 source. Don't skip this step even when external research feels easier — your own past decisions are higher-signal than any blog post.
 
@@ -362,10 +362,6 @@ Phase 4-5: Dispatches 4 subagents in parallel. Each fetches 3-5 sources. CRDT su
 Phase 6: Synthesizes. Recommends Yjs (CRDT with strong offline support) + Hocuspocus server + Postgres for snapshots + WebSocket primary transport with SSE fallback. Alternatives: Automerge (different perf profile), server-authoritative OT (Google Docs model — much more code).
 
 Phase 7: Hands off — many open questions for `socratic-grill`.
-
-## Internal sources note
-
-For Modie specifically: BeanBot, salahi.app, and the AEGIS/BOL automation projects are personal-precedent sources. When researching anything that touches NL2SQL, RAG, prayer time aggregation, OCR pipelines, or ECS Fargate patterns, search the local repos for prior solutions BEFORE going external. Your own ADRs are Tier 0.
 
 ## See also
 

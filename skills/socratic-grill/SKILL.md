@@ -69,11 +69,11 @@ Echo the answers into the grill record's **User mental model** section — `writ
 
 This holds under a user override: forcing `--quick` does not let a spec with open questions skip the grill.
 
-**Domain extension — agent products:** If the spec describes building an agent / assistant / copilot / chatbot / LLM workflow / RAG system (anything where an LLM call is on the critical path), invoke `agent-factors-check` before Phase 2. It returns 6–13 additional Socratic questions targeting the gaps the standard 7 axes don't cover (tool-call schemas, state unification, pause/resume APIs, human-as-tool, trigger surfaces, pre-fetch). Interleave those into the agenda.
+**Domain extension — agent products:** If the spec describes building an agent / assistant / copilot / chatbot / LLM workflow / RAG system (anything where an LLM call is on the critical path), invoke `agent-factors-check` before Phase 2. It returns 6–13 additional Socratic questions targeting the gaps the standard axes don't cover (tool-call schemas, state unification, pause/resume APIs, human-as-tool, trigger surfaces, pre-fetch). Interleave those into the agenda.
 
 If the spec is a generic CRUD / web / mobile app with no LLM orchestration, skip the factor check. At the **Quick** tier, skip the proactive factor sweep too — but if an item already in the inventory touches an agent factor, grill it directly.
 
-**Domain extension — developer-facing products:** If the spec describes a developer-facing product — a CLI, SDK, library API, plugin, or developer framework — invoke `devex-review` before Phase 2. It returns one Socratic question per developer-experience gap (onboarding friction, first-time-developer roleplay, API/CLI ergonomics, error-message quality, docs-as-experienced, upgrade friction) — gaps the standard 7 axes don't cover. Interleave those into the agenda. Both domain extensions can fire on the same spec (e.g. a developer-facing SDK that also orchestrates LLM calls). Skip `devex-review` for non-developer-facing specs (internal CRUD, end-user web/mobile apps).
+**Domain extension — developer-facing products:** If the spec describes a developer-facing product — a CLI, SDK, library API, plugin, or developer framework — invoke `devex-review` before Phase 2. It returns one Socratic question per developer-experience gap (onboarding friction, first-time-developer roleplay, API/CLI ergonomics, error-message quality, docs-as-experienced, upgrade friction) — gaps the standard axes don't cover. Interleave those into the agenda. Both domain extensions can fire on the same spec (e.g. a developer-facing SDK that also orchestrates LLM calls). Skip `devex-review` for non-developer-facing specs (internal CRUD, end-user web/mobile apps).
 
 ### Phase 2 — Grill each item against the ambiguity axes
 
@@ -164,6 +164,6 @@ HANDOFF: re-research needed — the grill revealed a fundamental issue with the 
 - `prior-art-research` — fallback if grilling reveals a fundamental architectural problem
 - `decision-record` — downstream; captures grilled decisions as ADRs
 - `agent-factors-check` — domain extension invoked from Phase 1 when the spec is for an agent product
-- `references/ambiguity-axes.md` — the 7 dimensions to grill on
+- `references/ambiguity-axes.md` — the 8 dimensions to grill on
 - `references/grill-output-template.md` — output format
 - `docs/agents/references/tier-scale.md` — the tier this grill inherits and how it scales the grill

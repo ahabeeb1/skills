@@ -265,7 +265,7 @@ for f in docs/agents/adrs/*.md docs/agents/plans/*.md; do
 done
 ```
 
-If any warnings print, surface them to the user as a single block. Modie reads the warnings and decides whether to land an update PR (same shape as chore PR #47 today). The release continues regardless — dormancy is signal, not blockage.
+If any warnings print, surface them to the user as a single block. The maintainer reads the warnings and decides whether to land an update PR. The release continues regardless — dormancy is signal, not blockage.
 
 **Why this exists.** ADRs and plans drift across releases. Without a release-time check, decisions land in `Status: Proposed` and stay there silently. Per v1.22.0 Piece 5 — `Last-Reviewed:` carries deliberate-review semantics (NOT auto-bumped on every commit), so a stale `Last-Reviewed:` is meaningful signal.
 

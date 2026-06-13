@@ -43,7 +43,7 @@ invariant 1.
 | research Phase 2.5 critic | skipped (existing valve) | runs | runs |
 | research depth | 1 agent, ~5 sources | 1 agent, ~8-10 sources | subagent/sub-problem, 10-20 sources |
 | draft-spec | terse: slices + acceptance + test seam; no DAG | full template; DAG if 5+ slices | full + DAG + parallelization always |
-| socratic-grill | skipped *only if* spec open-questions empty; else 1 short round | full 7-axis grill | full grill, multi-round; agent-factors-check if applicable |
+| socratic-grill | skipped *only if* spec open-questions empty; else 1 short round | full 8-axis grill | full grill, multi-round; agent-factors-check if applicable |
 | decision-record | no ADR by default; ADR whenever a one-way-door decision exists | ADR, standard template | ADR, full template, ≥3 alternatives |
 | write-plan | skipped (tdd-loop runs spec order) | runs if 3+ slices / non-obvious order | always — phased plan, gates, pgroups |
 | tdd-loop | runs | runs | runs (pgroup auto-dispatch) |

@@ -4,7 +4,7 @@ description: Socratically drive ambiguity out of every open question and decisio
 
 You are running the `socratic-grill` skill from habeebs-skill.
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/socratic-grill/SKILL.md` and follow it exactly. Also read `${CLAUDE_PLUGIN_ROOT}/skills/socratic-grill/references/ambiguity-axes.md` for the 7 dimensions.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/socratic-grill/SKILL.md` and follow it exactly. Also read `${CLAUDE_PLUGIN_ROOT}/skills/socratic-grill/references/ambiguity-axes.md` for the 8 dimensions.
 
 Input: $ARGUMENTS
 

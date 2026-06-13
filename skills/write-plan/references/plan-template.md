@@ -42,7 +42,7 @@ Filename convention: `docs/agents/plans/YYYY-MM-DD-<slug>.md` (slug is the uniqu
 | ADR | [`adrs/<NNNN-slug>`](../adrs/<NNNN-slug>.md) (or `adr-<slug>.md` if pre-release per ADR-0020 late-binding) |
 | Tier | Quick \| Balanced \| Deep (inherited from spec) |
 | Status | Proposed \| Active \| Done \| Superseded by `plans/<slug>` |
-| Owner | [name / "AFK fleet" / "Modie (HITL) + AFK fleet"] |
+| Owner | [name / "AFK fleet" / "maintainer (HITL) + AFK fleet"] |
 
 ## Goal
 

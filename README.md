@@ -78,7 +78,7 @@ Each step produces a durable in-repo artifact that the next step consumes. The c
 | **`/grill`** | Socratic questioning until every open question is resolved | When the spec has implicit assumptions or unresolved decisions |
 | **`/record`** | Captures the chosen architecture as an ADR (Nygard format) | After `/grill`, before implementation |
 | **`/plan`** | Phased delivery doc with binary acceptance gates, dependency DAG, parallelization map, rollback hooks | When ≥3 slices or ordering isn't obvious |
-| **`/tdd`** | Red-green-refactor TDD per slice, with two-stage review (spec compliance + code quality) | When the spec is locked |
+| **`/tdd`** | Red-green-refactor TDD per slice, with two-stage review (spec compliance + code quality). `--loop` flag runs all slices continuously with fresh context per slice, failure-triage on RED, and tiered halt policy | When the spec is locked |
 | **`/release`** | Version bump + CHANGELOG entry + doc-sync audit + PR body + tag-push | After all slices land |
 
 ### Supporting primitives

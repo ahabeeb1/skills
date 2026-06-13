@@ -44,6 +44,8 @@ This repo is configured for the habeebs-skill chain. The methodology files are:
 - **ADRs:** `docs/agents/adrs/` (see `README.md` for index)
 - **Specs:** `docs/agents/specs/`
 - **Plans:** `docs/agents/plans/`
+- **Chain-shared references:** `docs/agents/references/` (cross-cutting helpers per ADR-0009: `tier-scale.md`, `grill-extension-protocol.md`, `system-context-staleness-check.md`, `run-file-format.md`, `trigger-firing-eval.md`)
+- **Postmortems:** `docs/agents/postmortems/` (event-driven per ADR-0011)
 - **Dispatches:** `docs/agents/dispatches/`
 
 **Directory classification:** `docs/agents/dispatches/` and `docs/agents/conflicts/` are *runtime writer paths* (written by `parallel-dev` and `cross-session-detect` respectively), not authored methodology directories — they stay on disk with `.gitkeep` regardless of file count. The "earn existence by file count" rule applies only to authored directories (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`). See [ADR-0021](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the distinction.
@@ -59,6 +61,7 @@ If you find yourself doing any of these, stop and re-read the relevant skill:
 - Researching after deciding (research is upstream of decisions, not downstream)
 - Recommending FAANG-scale solutions to non-FAANG-scale problems
 - Letting the chain stall in research without producing a spec
+- Letting a lighter tier skip a triggered quality gate (open questions still grill; one-way doors still get an ADR)
 
 ## Quote and copyright discipline
 

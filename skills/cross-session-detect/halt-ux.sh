@@ -34,7 +34,7 @@ do_dispatch() {
   echo "" >&2
   echo "[habeebs-skill] Conflict detected with peer session: $peer_session_id" >&2
   if [ -n "$conflict_files" ]; then
-    echo "Conflicting files: $(echo "$conflict_files" | tr ',' ', ')" >&2
+    echo "Conflicting files: $(echo "$conflict_files" | sed 's/,/, /g')" >&2
   fi
   echo "" >&2
 

@@ -73,7 +73,7 @@ When a subagent returns `BLOCKED`, the dispatcher surfaces a structured message 
   "subagent": "string — subagent_name from the input schema",
   "slice_id": "string — e.g. '#5' from the active plan, when applicable; otherwise null",
   "reason": "string — copy of the subagent's `blocker` field",
-  "suggested_action": "edit-spec-and-redispatch | investigate-manually | escalate-to-maintainer"
+  "suggested_action": "edit-spec-and-redispatch | investigate-manually | escalate-to-maintainer | re-grill"
 }
 ```
 
@@ -82,6 +82,7 @@ The `suggested_action` enum tells the user what kind of intervention helps:
 - **`edit-spec-and-redispatch`** — the spec / task instructions were incomplete; user edits and re-runs the chain. Most common.
 - **`investigate-manually`** — the blocker is environmental (missing tool, broken dependency, infra issue). User investigates outside the chain.
 - **`escalate-to-maintainer`** — the blocker is structural (a habeebs-skill bug, a contract mismatch, an unresolved ADR question). User opens an issue or pings the maintainer.
+- **`re-grill`** — implementation revealed a spec ambiguity that needs a scoped `socratic-grill` round before the slice can proceed (the re-grill edge; see `tdd-loop`). When set, the record also carries the re-grill learning payload: `scope_classification` (the halt scope) and `salvaged_sibling_results` (sibling-slice work preserved across the fail-fast halt).
 
 If the subagent did not surface a `suggested_action` in its return, the dispatcher defaults to `investigate-manually` and notes the absence.
 
@@ -147,7 +148,7 @@ The dispatcher is the **single writer**. No skill reads dispatch records during 
 
 ### Retention
 
-Dispatch records older than 30 days are eligible for pruning via `/sync` cleanup pass (TODO in v1.8.0+ when the volume actually accumulates). Until then, retain all records — they are the audit trail for `socratic-grill` to use when re-grilling a slice that failed in the past.
+Dispatch records older than 30 days are eligible for pruning via a `/sync` cleanup pass once volume accumulates (not yet implemented). Until then, retain all records — they are the audit trail for `socratic-grill` to use when re-grilling a slice that failed in the past.
 
 ### Second record class — loop-run files
 
@@ -212,4 +213,4 @@ The pre-v1.7.0 markdown dispatch summary remains useful for human-readable audit
 - `skills/parallel-dev/SKILL.md` § Return contract — canonical 4-status semantics
 - `skills/parallel-dev/SKILL.md` § Sub-patterns — hypothesis-probe variant
 - `docs/agents/adrs/0004-parallel-subagent-dispatch-contract.md` — the binding ADR
-- `skills/parallel-dev/agents/source-fetcher.md` / `pattern-extractor.md` / `synthesizer.md` — agent prompts that honor this contract
+- `agents/source-fetcher.md` / `agents/pattern-extractor.md` / `agents/synthesizer.md` — agent prompts (at repo root `agents/`, not under `skills/parallel-dev/`) that honor this contract

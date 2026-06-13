@@ -18,7 +18,7 @@ The plan is NOT:
 
 **Trigger on:**
 
-- `decision-record` produced `HANDOFF: implementation ready`
+- `decision-record` produced `HANDOFF: plan ready`
 - The user says "write the plan", "what's the rollout", "map this out", "phase this", "give me the plan"
 - `vertical-slice` produced 3+ slices and ordering/parallelization isn't obvious
 - Before `parallel-dev` dispatches a batch of 3+ AFK slices (the plan is the parallel-dispatch contract)

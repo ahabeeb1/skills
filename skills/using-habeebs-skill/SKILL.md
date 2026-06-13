@@ -1,6 +1,6 @@
 ---
 name: using-habeebs-skill
-description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the research → spec → grill → record → plan → tdd flow. Do not use for tasks unrelated to the chain.
+description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the research → spec → grill → record → plan → tdd → release flow. Do not use for tasks unrelated to the chain.
 ---
 
 # Using habeebs-skill
@@ -18,20 +18,21 @@ prior-art-research    → finds production patterns, recommends an approach
 draft-spec            → turns recommendation into an implementation spec
          ↓
 socratic-grill        → drives ambiguity out of decisions
-         │   ↳ agent-factors-check (conditional — only if the spec is an agent/copilot/LLM-workflow product)
+         │   ↳ agent-factors-check (conditional — agent / copilot / LLM-workflow / RAG specs)
+         │   ↳ devex-review        (conditional — CLI / SDK / library / plugin / framework specs)
          ↓
 decision-record       → captures the result as an ADR
          ↓
 write-plan            → phased delivery doc with acceptance gates + rollback hooks (skip if trivial)
          ↓
 tdd-loop              → implements with red-green-refactor over vertical slices
+         │   ↳ deep-modules — runs at the REFACTOR step of each slice (not a separate phase)
+         │   ↳ verify-output — anti-slop gate run between GREEN and each commit
          │   ↳ re-grill edge — implementation-revealed spec ambiguity halts the slice
          │     into a scoped socratic-grill round (inline patch or ADR escalation), then resumes
          │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan:
          │     failure-triage routes fixes, tiered halt policy parks human-judgment scope into
          │     halt reports + RUN_SUMMARY; parked work resumes via /tdd --resume <run-id>
-         ↓
-deep-modules          → refactor pass to deepen modules and remove shallow layers
          ↓
 release               → version bump, CHANGELOG, PR body, tag-push — terminal chain link
 ```
@@ -41,6 +42,10 @@ release               → version bump, CHANGELOG, PR body, tag-push — termina
 1. **Phase 6.4 in `prior-art-research`** — after the recommendation is composed, before the archive is written. The earliest pivot point. User picks (a) approve as-is, (b) approve with free-text edits, or (c) reject + re-research with new scope. Halting here costs one user message; halting after `/plan` costs spec + grill + ADR + plan tokens. See `prior-art-research/SKILL.md` Phase 6.4 for the mechanics.
 2. **`socratic-grill` open questions** — every OQ from the spec gets pressure-tested with the user; resolutions feed back into the spec as amendments.
 3. **HITL slices in plans** — slices labelled `HITL:approval-gate`, `HITL:per-file`, or `HITL:inline` require the user mid-implementation (see GLOSSARY.md § Slice for the variant semantics).
+
+## Depth tiers — every chain run picks one
+
+Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep** (ADR-0016; canonical reference [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs; it never scales decision *quality*: a real open question always reaches `socratic-grill` and a one-way-door decision always gets an ADR, even under `--quick`. State the tier to the user with a task-based reason (sub-problems, ambiguity, constraints), never a token/cost/time justification.
 
 ## HANDOFF lines — navigation, not state transfer
 

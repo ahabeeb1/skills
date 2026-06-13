@@ -19,6 +19,7 @@ tdd-loop,deep-modules
 tdd-loop,parallel-dev
 tdd-loop,systematic-debugging
 tdd-loop,decision-record
+tdd-loop,release
 using-worktrees,tdd-loop
 using-worktrees,parallel-dev
 vertical-slice,tdd-loop

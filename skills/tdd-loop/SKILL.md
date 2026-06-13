@@ -336,6 +336,11 @@ These are signs the slice is wrong, not that TDD is wrong:
 - **Mid-loop:** `deep-modules` is invoked at the REFACTOR step
 - **Parallel dispatch:** `parallel-dev` runs AFK slices concurrently, dispatching pgroups defined by `write-plan`
 - **Downstream:** as slices complete, mark the slice "Done" in the plan; when all slices in a phase are done, evaluate the phase gate before starting the next phase's slices
+- **Terminal:** when the last slice in the plan is GREEN (and verify-output passed), the chain's implementation phase is complete. Emit the release handoff so `release` becomes the next hop:
+
+```
+HANDOFF: release ready — all slices GREEN and verify-output clean. Invoke `release` to bump the version, write the CHANGELOG entry + PR body, run the doc-sync audit, and tag-push.
+```
 
 ## See also
 

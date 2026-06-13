@@ -2,9 +2,12 @@
 
 Canonical reference for the **tier** that governs how much of the chain
 (`prior-art-research → draft-spec → socratic-grill → decision-record →
-write-plan → tdd-loop`) runs for a given feature. Established by
+write-plan → tdd-loop → release`) runs for a given feature. Established by
 [ADR-0016](../adrs/0016-chain-wide-depth-tier.md). Chain skills link here
-instead of restating the scale.
+instead of restating the scale. The tier scales the *design* depth that
+precedes implementation; `tdd-loop`, `verify-output`, and `release` always
+run in full regardless of tier (they inherit the `Tier:` header only to scale
+their own optional ceremony, never their rigor).
 
 ## The two invariants
 

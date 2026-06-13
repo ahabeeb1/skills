@@ -7,17 +7,24 @@ When you, the agent, are invoked inside a project that has installed or vendored
 ## The chain
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → tdd-loop
+prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release
+                                       ↓
+                             agent-factors-check (only if the spec is an agent product)
+                             devex-review        (only if the spec is a developer-facing product)
 ```
 
+`write-plan` is skip-able when the slice list is trivial and ordering is obvious. `verify-output` gates each `tdd-loop` commit, and `deep-modules` runs at `tdd-loop`'s refactor step — neither is a separate sequential phase. `release` is the terminal link after `tdd-loop` goes GREEN.
+
 Each skill produces output the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
+
+Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep** (ADR-0016; see `docs/agents/references/tier-scale.md`). `prior-art-research` picks it and every downstream skill inherits it; the tier scales effort, never decision quality.
 
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** Users almost never say "research." They say "I want to build X." Read between the lines.
-- **Don't skip phases for speed.** If you are tempted to jump straight to writing code, you are missing the point of this methodology.
+- **Don't skip phases for speed — pick a lighter tier instead.** If you are tempted to jump straight to writing code, you are missing the point of this methodology.
 - **Internal precedent first.** Check local repos before going external. The user's own prior art is Tier 0.
-- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice` are not standalone — they support the chain.
+- **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain.
 
 ## What this is NOT
 
@@ -28,7 +35,7 @@ Each skill produces output the next skill consumes. The handoff lines at the bot
 
 ## Agent skills
 
-This repo is configured for habeebs-skill v1.8+. The methodology files are:
+This repo is configured for the habeebs-skill chain. The methodology files are:
 
 - **Domain glossary:** `docs/agents/GLOSSARY.md`
 - **Issue tracker:** `docs/agents/issue-tracker.md`
@@ -39,7 +46,7 @@ This repo is configured for habeebs-skill v1.8+. The methodology files are:
 - **Plans:** `docs/agents/plans/`
 - **Dispatches:** `docs/agents/dispatches/`
 
-**Directory classification:** Two of these surfaces are *runtime writer paths*, not authored methodology directories — `docs/agents/dispatches/` (written by `parallel-dev` Phase 7.5 when a pgroup completes) and `docs/agents/conflicts/` (written by `cross-session-detect/audit.sh` when a session conflict is detected). Their on-disk emptiness in git snapshots reflects runtime-path sparsity, not dormancy. Pattern G's "earn existence by file count" rule applies only to authored directories (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`); runtime writer paths remain on disk with `.gitkeep` regardless of file count. See [ADR-0021's 2026-05-26 Clarification](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the full distinction.
+**Directory classification:** `docs/agents/dispatches/` and `docs/agents/conflicts/` are *runtime writer paths* (written by `parallel-dev` and `cross-session-detect` respectively), not authored methodology directories — they stay on disk with `.gitkeep` regardless of file count. The "earn existence by file count" rule applies only to authored directories (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`). See [ADR-0021](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the distinction.
 
 When invoking habeebs-skills in this repo, read these files first. They define how `vertical-slice` publishes issues, what labels to use, what vocabulary to apply, and where decision records live. Per ADR-0005, `GLOSSARY.md` is the human-authored half of the two-file context layout; `SYSTEM_CONTEXT.md` is the tool-authored half (written by Phase 0).
 

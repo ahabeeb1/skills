@@ -15,7 +15,7 @@ A self-contained markdown file under `skills/<name>/SKILL.md` with optional refe
 
 ### Chain
 
-The ordered sequence of skills that compose into a methodology run: `prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop`. One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
+The ordered sequence of skills that compose into a methodology run: `prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release`. One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
 
 **Sub-concepts:**
 - **Phase 0** — `prior-art-research`'s pre-Phase-1 reconnaissance pass; the single writer of `SYSTEM_CONTEXT.md` per ADR-0001.

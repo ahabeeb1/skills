@@ -45,7 +45,7 @@ release               → version bump, CHANGELOG, PR body, tag-push — termina
 
 ## Depth tiers — every chain run picks one
 
-Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep** (ADR-0016; canonical reference [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs; it never scales decision *quality*: a real open question always reaches `socratic-grill` and a one-way-door decision always gets an ADR, even under `--quick`. State the tier to the user with a task-based reason (sub-problems, ambiguity, constraints), never a token/cost/time justification.
+Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep** (canonical reference [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs; it never scales decision *quality*: a real open question always reaches `socratic-grill` and a one-way-door decision always gets an ADR, even under `--quick`. State the tier to the user with a task-based reason (sub-problems, ambiguity, constraints), never a token/cost/time justification.
 
 ## HANDOFF lines — navigation, not state transfer
 

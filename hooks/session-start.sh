@@ -72,11 +72,16 @@ if [ -z "$warning" ]; then
 fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# Emit JSON to stdout (Anthropic spec: additionalContext is injected into session)
+# Emit JSON to stdout in the documented SessionStart shape.
+#
+# Per the Claude Code hook contract, context is injected via
+# hookSpecificOutput.additionalContext with hookEventName: "SessionStart".
+# (A bare top-level {"additionalContext": ...} is also accepted for SessionStart,
+# but the nested form is the documented standard and avoids ambiguity.)
 # ────────────────────────────────────────────────────────────────────────────
 # Escape any embedded double-quotes in the warning (paranoia — the message is
 # constructed entirely from numeric counts + literals, so this is belt + braces).
 warning_escaped=$(printf '%s' "$warning" | sed 's/"/\\"/g')
 
-printf '{"additionalContext": "[habeebs-skill] %s"}\n' "$warning_escaped"
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[habeebs-skill] %s"}}\n' "$warning_escaped"
 exit 0

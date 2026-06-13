@@ -73,6 +73,12 @@ assert_empty() {
   fi
 }
 
+# Build the SessionStart stdin payload the real harness delivers (session_id as
+# JSON on stdin — NOT an env var).
+hook_payload() { # $1=session_id
+  printf '{"hook_event_name":"SessionStart","session_id":"%s"}' "$1"
+}
+
 # ---- Setup: tmp git repo ----
 TMP=$(mktemp -d -t slice28-XXXXXX)
 
@@ -131,7 +137,7 @@ SELF_SESSION="self-session-001"
 # Test 1: zero peers -> no output, exit 0
 # =========================================================================
 echo "[1] zero peers -> no output"
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 with no peers"
 # The hook may write its own sidecar — output should have no peer warning
@@ -146,7 +152,7 @@ bash "$SIDECAR" end --session-id "$SELF_SESSION" 2>/dev/null || true
 echo "[2] one live peer -> warn output"
 PEER_A="peer-session-aaa"
 bash "$SIDECAR" write --session-id "$PEER_A" --pid "$LIVE_PID"
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 with live peer"
 assert_contains "$OUT" "$PEER_A" "output names peer session ID"
@@ -160,7 +166,7 @@ bash "$SIDECAR" end --session-id "$SELF_SESSION" 2>/dev/null || true
 # =========================================================================
 echo "[3] opt-in hint present"
 # Peer A still exists from test 2
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | bash "$SUT" 2>&1)
 assert_contains "$OUT" "pretool_use" "output mentions pretool_use opt-in"
 
 # Clean up
@@ -188,7 +194,7 @@ cat > "$SIDECAR_DIR/${PEER_DEAD}.json" <<EOF
   "mtime_iso": "$NOW_ISO"
 }
 EOF
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 with dead peer"
 assert_not_contains "$OUT" "$PEER_DEAD" "dead peer not warned about"
@@ -202,7 +208,7 @@ bash "$SIDECAR" end --session-id "$SELF_SESSION" 2>/dev/null || true
 echo "[5] HABEEBS_DISABLE_HOOKS=1 -> silent exit"
 # Re-create a live peer so we'd normally see output
 bash "$SIDECAR" write --session-id "$PEER_A" --pid "$LIVE_PID"
-OUT=$(HABEEBS_DISABLE_HOOKS=1 HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | HABEEBS_DISABLE_HOOKS=1 bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 when disabled"
 assert_empty "$OUT" "no output when disabled"
@@ -211,7 +217,7 @@ assert_empty "$OUT" "no output when disabled"
 # Test 6: HABEEBS_SKIP=session-start -> no output
 # =========================================================================
 echo "[6] HABEEBS_SKIP=session-start -> silent exit"
-OUT=$(HABEEBS_SKIP="session-start" HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | HABEEBS_SKIP="session-start" bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 when skipped"
 assert_empty "$OUT" "no output when skipped"
@@ -222,7 +228,7 @@ assert_empty "$OUT" "no output when skipped"
 echo "[7] multiple live peers"
 PEER_B="peer-session-bbb"
 bash "$SIDECAR" write --session-id "$PEER_B" --pid "$LIVE_PID"
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" bash "$SUT" 2>&1)
+OUT=$(hook_payload "$SELF_SESSION" | bash "$SUT" 2>&1)
 assert_contains "$OUT" "$PEER_A" "first peer listed"
 assert_contains "$OUT" "$PEER_B" "second peer listed"
 
@@ -238,7 +244,7 @@ echo "[8] exit code always 0"
 # Already tested in every case above; this is the summary assertion.
 # Create a peer and verify exit 0 explicitly once more.
 bash "$SIDECAR" write --session-id "$PEER_A" --pid "$LIVE_PID"
-bash "$SUT" >/dev/null 2>&1
+hook_payload "$SELF_SESSION" | bash "$SUT" >/dev/null 2>&1
 # No HABEEBS_SESSION_ID means hook generates its own — should still exit 0
 RC=$?
 assert_eq "0" "$RC" "exit 0 without session ID env"
@@ -252,7 +258,7 @@ bash "$SIDECAR" end --session-id "$PEER_A" 2>/dev/null || true
 echo "[9] hook writes own sidecar"
 # Clear all sidecars
 rm -rf "$SIDECAR_DIR"
-HABEEBS_SESSION_ID="test-self-write" bash "$SUT" >/dev/null 2>&1
+hook_payload "test-self-write" | bash "$SUT" >/dev/null 2>&1
 if [ -f "$SIDECAR_DIR/test-self-write.json" ]; then
   pass "own sidecar written by hook"
 else

@@ -66,14 +66,15 @@ Status: Grilled
 # Test Feature
 EOF
 
-# Run the hook from the fixture repo
-OUTPUT=$(bash "$HOOK" 2>&1 >/dev/null) || OUTPUT="$OUTPUT (hook exit=$?)"
+# Run the hook from the fixture repo. Warnings now ride hookSpecificOutput JSON
+# on stdout (PostToolUse stderr is debug-log-only per the hook contract).
+OUTPUT=$(bash "$HOOK" 2>/dev/null) || OUTPUT="$OUTPUT (hook exit=$?)"
 RC=$?
 
 # Hook MUST exit 0 (warn-only)
 [ "$RC" -eq 0 ] || fail "(b) hook exited non-zero ($RC); MUST be 0 per ADR-0003"
 
-# Hook MUST have warned about missing grill
+# Hook MUST have warned about missing grill (inside additionalContext)
 echo "$OUTPUT" | grep -q "test-feature.md is Status: Grilled" || \
   fail "(b) hook didn't warn about missing grill record. Output: $OUTPUT"
 
@@ -94,7 +95,7 @@ Status: Draft
 # Test Feature Draft
 EOF
 
-OUTPUT=$(bash "$HOOK" 2>&1 >/dev/null) || true
+OUTPUT=$(bash "$HOOK" 2>/dev/null) || true
 RC=$?
 
 [ "$RC" -eq 0 ] || fail "(c) hook exited non-zero ($RC)"
@@ -120,7 +121,7 @@ Status: Grilled
 # Would normally warn but disabled
 EOF
 
-OUTPUT=$(HABEEBS_DISABLE_HOOKS=1 bash "$HOOK" 2>&1 >/dev/null) || true
+OUTPUT=$(HABEEBS_DISABLE_HOOKS=1 bash "$HOOK" 2>/dev/null) || true
 RC=$?
 
 [ "$RC" -eq 0 ] || fail "(d) hook exited non-zero ($RC)"

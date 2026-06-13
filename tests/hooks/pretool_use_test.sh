@@ -43,6 +43,12 @@ assert_empty() {
   if [ -z "$1" ]; then pass "$2"; else fail "$2 (expected empty, got='$1')"; fi
 }
 
+# Build the PreToolUse stdin payload the real harness delivers (tool_name /
+# session_id / tool_input.file_path as JSON on stdin — NOT env vars).
+hook_payload() { # $1=tool_name $2=session_id $3=file_path
+  printf '{"hook_event_name":"PreToolUse","tool_name":"%s","session_id":"%s","tool_input":{"file_path":"%s"}}' "$1" "$2" "$3"
+}
+
 TMP=$(mktemp -d -t slice37-XXXXXX)
 
 if [ ! -f "$SUT" ]; then
@@ -99,7 +105,7 @@ mkdir -p "$TMP/.claude"
 cat > "$TMP/.claude/habeebs-policy.json" <<'EOF'
 { "pretool_use": false }
 EOF
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" HABEEBS_TOOL_NAME="Edit" HABEEBS_TOOL_INPUT_FILE="file-a.txt" bash "$SUT" 2>&1)
+OUT=$(hook_payload "Edit" "$SELF_SESSION" "file-a.txt" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 when pretool_use false"
 assert_empty "$OUT" "no output when pretool_use false"
@@ -111,7 +117,7 @@ echo "[2] pretool_use: true, no peers"
 cat > "$TMP/.claude/habeebs-policy.json" <<'EOF'
 { "pretool_use": true }
 EOF
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" HABEEBS_TOOL_NAME="Edit" HABEEBS_TOOL_INPUT_FILE="file-a.txt" bash "$SUT" 2>&1)
+OUT=$(hook_payload "Edit" "$SELF_SESSION" "file-a.txt" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 with no peers"
 
@@ -143,10 +149,11 @@ echo "our edit" > file-a.txt
 git add file-a.txt
 git -c commit.gpgsign=false commit -q -m "we edit file-a"
 
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" HABEEBS_TOOL_NAME="Edit" HABEEBS_TOOL_INPUT_FILE="file-a.txt" bash "$SUT" 2>&1)
+OUT=$(hook_payload "Edit" "$SELF_SESSION" "file-a.txt" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 (annotate-and-allow, never blocks)"
 assert_contains "$OUT" "peer" "output mentions peer"
+assert_contains "$OUT" "additionalContext" "annotation rides hookSpecificOutput.additionalContext"
 
 # =========================================================================
 # Test 4: output never contains "deny"
@@ -158,7 +165,7 @@ assert_not_contains "$OUT" "deny" "output does not contain deny"
 # Test 5: ignores Read tool
 # =========================================================================
 echo "[5] ignores Read tool"
-OUT=$(HABEEBS_SESSION_ID="$SELF_SESSION" HABEEBS_TOOL_NAME="Read" HABEEBS_TOOL_INPUT_FILE="file-a.txt" bash "$SUT" 2>&1)
+OUT=$(hook_payload "Read" "$SELF_SESSION" "file-a.txt" | bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 for Read tool"
 assert_empty "$OUT" "no output for Read tool"
@@ -171,7 +178,7 @@ bash "$SIDECAR" end --session-id "$PEER_A" 2>/dev/null || true
 # =========================================================================
 echo "[6] HABEEBS_SKIP=pretool-use -> bypass"
 bash "$SIDECAR" write --session-id "$PEER_A" --pid "$LIVE_PID"
-OUT=$(HABEEBS_SKIP="pretool-use" HABEEBS_SESSION_ID="$SELF_SESSION" HABEEBS_TOOL_NAME="Edit" HABEEBS_TOOL_INPUT_FILE="file-a.txt" bash "$SUT" 2>&1)
+OUT=$(hook_payload "Edit" "$SELF_SESSION" "file-a.txt" | HABEEBS_SKIP="pretool-use" bash "$SUT" 2>&1)
 RC=$?
 assert_eq "0" "$RC" "exit 0 when skipped"
 assert_empty "$OUT" "no output when skipped"

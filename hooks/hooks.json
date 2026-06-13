@@ -1,12 +1,12 @@
 {
-  "description": "habeebs-skill hooks — warn-only SessionStart (ghost-commit detection + peer-scan), block-only PreToolUse on Bash (commits to default branch), warn-only PostToolUse on Edit|Write|NotebookEdit (chain-state validator). All follow ADR-0003: warn-or-block only, multi-harness aware, stateless. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable.",
+  "description": "habeebs-skill hooks (5 registrations): SessionStart x2 — ghost-commit detection + cross-session peer-scan (warn-only); PreToolUse on Bash — block commits/pushes to the default branch; PreToolUse on Edit|Write|NotebookEdit — peer-overlap annotation (warn-only); PostToolUse on Edit|Write|NotebookEdit — chain-state validator (warn-only). All follow ADR-0003: warn-or-block only, multi-harness aware, stateless; context surfaces via hookSpecificOutput.additionalContext. Honor HABEEBS_DISABLE_HOOKS=1 for emergency disable; HABEEBS_SKIP=<hook> for per-invocation skip.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
             "timeout": 10
           }
         ]
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start-peer-scan.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-peer-scan.sh\"",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/preventing-commits-to-default.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/preventing-commits-to-default.sh\"",
             "timeout": 5
           }
         ]
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pretool-use-peer-scan.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pretool-use-peer-scan.sh\"",
             "timeout": 10
           }
         ]
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-chain-state.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-chain-state.sh\"",
             "timeout": 10
           }
         ]

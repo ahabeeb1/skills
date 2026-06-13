@@ -1,6 +1,7 @@
 ---
 name: category-completeness-critic
 description: Coverage critic subagent dispatched between Phase 2 (decompose) and Phase 4 (search) of `prior-art-research`. Receives the proposed sub-problem decomposition and proposes missing categories the planner likely overlooked. Bounded at 1 iteration. Directly addresses the failure mode where a single-agent planner misses entire categories (hooks, agents, runtime substrate, observability, security, etc.) and the chain blindly proceeds against an incomplete decomposition.
+tools: Read, Grep, Glob
 ---
 
 # Category-Completeness Critic (subagent prompt)

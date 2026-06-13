@@ -179,4 +179,3 @@ This skill's return contract matches the parallel-dev dispatch contract:
 - [`deep-modules`](../deep-modules/SKILL.md) — adjacent; fires at the refactor step (earlier in tdd-loop), targets interface shape rather than code shape
 - [`references/slop-heuristics.md`](references/slop-heuristics.md) — the 7 heuristics this skill applies
 - [`docs/agents/postmortems/`](../../docs/agents/postmortems/) — when verify-output keeps missing a failure class, postmortems are the canonical place to document the new category and propose a rule for the next release. Static pre-commit check (this skill) and post-incident error analysis (postmortems) are complementary loops, not peers.
-- `CLAUDE.md` at repo root — canonical source for H1-H4

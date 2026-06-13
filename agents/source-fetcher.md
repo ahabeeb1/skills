@@ -1,6 +1,7 @@
 ---
 name: source-fetcher
 description: Research subagent that fetches and extracts patterns from one assigned source-tier slice. Dispatched by `prior-art-research` in the Deep tier (one source-fetcher per sub-problem × source-tier) and by any future skill that needs targeted production-pattern extraction. Self-contained — operates against a sub-problem + tier list and returns structured records without writing files.
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 # Source Fetcher (subagent prompt)

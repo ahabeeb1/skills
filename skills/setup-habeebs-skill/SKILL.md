@@ -141,7 +141,7 @@ If `AGENTS.md` / `CLAUDE.md` already exist with the block, update its contents r
 
 **Goal:** populate `docs/agents/SYSTEM_CONTEXT.md` so downstream chain skills don't halt on first invocation. Setup is the bootstrap entry point that *invokes* Phase 0; Phase 0 is the sole writer (single-writer invariant preserved by construction).
 
-Invoke `prior-art-research` Phase 0 reconnaissance now. Phase 0 walks `references/recon-checklist.md`, probes every applicable manifest, and writes (or refreshes) `docs/agents/SYSTEM_CONTEXT.md`.
+Invoke `prior-art-research` Phase 0 reconnaissance now. Phase 0 walks `prior-art-research`'s own `references/recon-checklist.md`, probes every applicable manifest, and writes (or refreshes) `docs/agents/SYSTEM_CONTEXT.md`.
 
 **Idempotency** — Phase 0's existing cache-check logic decides what to do:
 

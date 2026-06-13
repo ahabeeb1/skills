@@ -195,4 +195,4 @@ Capturing this is valuable — it confirms the check ran, which prevents the "no
 - `decision-record` — captures significant deepenings as ADRs
 - `setup-habeebs-skill` — sets up GLOSSARY.md and ADR directory this skill reads
 - `references/LANGUAGE.md` — architectural vocabulary
-- `references/deletion-test-examples.md` — worked examples of the deletion test
+- § The deletion test in more detail (above) — worked examples of the deletion test

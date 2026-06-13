@@ -215,5 +215,5 @@ If any item fails, refine the slice before publishing.
 - `parallel-dev` — dispatches parallelizable AFK slice groups
 - `socratic-grill` — resolves the human input on HITL slices
 - `setup-habeebs-skill` — configures the issue tracker and triage labels this skill uses
-- `references/slice-checklist.md` — quality bar for each slice
+- § Slice quality checklist (above) — quality bar for each slice
 - `references/hitl-vs-afk.md` — when to label which

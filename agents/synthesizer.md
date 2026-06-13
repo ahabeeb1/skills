@@ -1,6 +1,7 @@
 ---
 name: synthesizer
 description: Research subagent that aggregates N sub-problem reports (each containing source records + pattern records) into a single recommendation following the `prior-art-research` output template. Dispatched in a fresh context to dodge lead-agent context exhaustion. Surfaces contradictions as open questions; never silently smooths them. Final stop before handoff to `draft-spec`.
+tools: Read, Grep, Glob
 ---
 
 # Synthesizer (subagent prompt)

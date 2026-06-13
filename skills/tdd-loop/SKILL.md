@@ -29,7 +29,7 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 ## The core loop
 
 ```
-[Phase 0: decide worktree] → [Phase 0.5: plan inspection — pgroup auto-dispatch + idempotent resume] → RED → GREEN → REFACTOR → 2-stage REVIEW → COMMIT → next slice
+[Phase 0: decide worktree] → [Phase 0.5: plan inspection — pgroup auto-dispatch + idempotent resume] → RED → GREEN → REFACTOR → 3-stage REVIEW → COMMIT → next slice
 ```
 
 Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
@@ -177,9 +177,33 @@ If you find issues:
 
 If the code is already clean, skip the refactor. Don't refactor for the sake of refactoring.
 
-### Phase 4 — COMMIT
+### Phase 4 — Three-stage review
 
-Commit the slice. One commit per slice (or one commit per (RED, GREEN, REFACTOR) sub-step if your team prefers). The commit must include:
+Before committing, run THREE independent passes. Skipping any is the most common quality regression after RED/GREEN. Review precedes COMMIT (Phase 5) — never the reverse.
+
+**Pass 4a — Spec-compliance review:** open the slice's spec entry side-by-side with the diff. For each acceptance criterion, name the exact line(s) of code or test that satisfies it. If you can't, the slice doesn't meet the spec — return to GREEN (or revise the spec if the criterion is now wrong). The output is one bullet per criterion mapped to a code reference.
+
+**Pass 4b — Code-quality review:** run the `deep-modules` skill against the new code (already part of REFACTOR; do it again here as a final check before commit). Verify there's no:
+
+- Shallow pass-through layer added without need
+- Duplicated logic with a sibling slice's code
+- Naming that fights the domain glossary
+- Helper that's used in exactly one place and should be inlined
+
+**Pass 4c — Anti-slop review (verify-output):** stage the slice's diff (`git add` the relevant files) and invoke [`verify-output`](../verify-output/SKILL.md). The skill scans for the seven slop heuristics (unjustified comments, defensive validation past trusted boundaries, half-finished implementations, dead code, repeated boilerplate, feature creep, backward-compat shims for unshipped code). 4-status return:
+
+- `DONE` → proceed to Phase 5 COMMIT.
+- `DONE_WITH_CONCERNS` → read the concerns, decide deliberately; ANNOTATE mode is the default and does NOT block. Proceed to commit (or fix and re-run if the concerns are worth addressing).
+- `BLOCKED` → severe slop found (half-finished impl, unreachable code, declared-and-unused). The commit is halted. Fix the concerns and re-run Pass 4c — the fix attempt is bounded by the failure-triage rule below (one fresh-context attempt, then halt) — OR commit with `--override <ref>` if the stub is intentional and tracked (the override is recorded in the commit message and is `git log`-auditable).
+- `NEEDS_CONTEXT` → an ambiguous case the skill couldn't decide. Surface to the user, resolve, re-run.
+
+Pass 4c is invoked in ANNOTATE mode by default. Projects that want stricter enforcement configure `verify-output --gate` in their setup (moderate slop becomes blocking).
+
+If 4a, 4b, or 4c surfaces something material, fix in this slice's commit chain. Don't push the cleanup to "later."
+
+### Phase 5 — COMMIT
+
+Only after all three review passes are clean, commit the slice. One commit per slice (or one commit per (RED, GREEN, REFACTOR) sub-step if your team prefers). The commit must include:
 
 - The test file(s)
 - The production code
@@ -200,33 +224,9 @@ What's NOT in this slice (and that's OK):
 - <thing intentionally deferred>
 ```
 
-### Phase 5 — Two-stage review
-
-Before declaring the slice complete, run TWO independent passes. Skipping either is the most common quality regression after RED/GREEN.
-
-**Pass 5a — Spec-compliance review:** open the slice's spec entry side-by-side with the diff. For each acceptance criterion, name the exact line(s) of code or test that satisfies it. If you can't, the slice doesn't meet the spec — return to GREEN (or revise the spec if the criterion is now wrong). The output is one bullet per criterion mapped to a code reference.
-
-**Pass 5b — Code-quality review:** run the `deep-modules` skill against the new code (already part of REFACTOR; do it again here as a final check before commit). Verify there's no:
-
-- Shallow pass-through layer added without need
-- Duplicated logic with a sibling slice's code
-- Naming that fights the domain glossary
-- Helper that's used in exactly one place and should be inlined
-
-**Pass 5c — Anti-slop review (verify-output):** stage the slice's diff (`git add` the relevant files) and invoke [`verify-output`](../verify-output/SKILL.md). The skill scans for the seven slop heuristics (unjustified comments, defensive validation past trusted boundaries, half-finished implementations, dead code, repeated boilerplate, feature creep, backward-compat shims for unshipped code). 4-status return:
-
-- `DONE` → proceed to Phase 4 COMMIT.
-- `DONE_WITH_CONCERNS` → read the concerns, decide deliberately; ANNOTATE mode is the default and does NOT block. Proceed to commit (or fix and re-run if the concerns are worth addressing).
-- `BLOCKED` → severe slop found (half-finished impl, unreachable code, declared-and-unused). The commit is halted. Fix the concerns and re-run Pass 5c — the fix attempt is bounded by the failure-triage rule below (one fresh-context attempt, then halt) — OR commit with `--override <ref>` if the stub is intentional and tracked (the override is recorded in the commit message and is `git log`-auditable).
-- `NEEDS_CONTEXT` → an ambiguous case the skill couldn't decide. Surface to the user, resolve, re-run.
-
-Pass 5c is invoked in ANNOTATE mode by default. Projects that want stricter enforcement configure `verify-output --gate` in their setup (moderate slop becomes blocking).
-
-If 5a, 5b, or 5c surfaces something material, fix in this slice's commit chain. Don't push the cleanup to "later."
-
 ### Phase 6 — Check in and advance
 
-After passing both review stages, before starting the next slice, ask:
+After the commit lands (all three review passes were clean), before starting the next slice, ask:
 
 1. Did the slice deliver end-to-end visible value? (If no, the slice was horizontal — flag it)
 2. Did any open questions surface during implementation? (If material, take the re-grill edge below — don't absorb the ambiguity, and don't re-run a full grill)
@@ -265,7 +265,7 @@ Exits: (1) inline spec patch (minor, per the grill's blast-radius rule)
 
 ## The failure-triage rule — when verification fails
 
-Any verification failure — an unexpected RED in Phases 2–4 (a test that should pass doesn't, or a previously-green test breaks) or a verify-output `BLOCKED` in Pass 5c — hits triage before anything is retried. Classify on cheap signals (the shape of the failure text, the failure history) — never on a deep investigation; investigation is what the structural route is for. Three routes:
+Any verification failure — an unexpected RED in Phases 2–4 (a test that should pass doesn't, or a previously-green test breaks) or a verify-output `BLOCKED` in Pass 4c — hits triage before anything is retried. Classify on cheap signals (the shape of the failure text, the failure history) — never on a deep investigation; investigation is what the structural route is for. Three routes:
 
 - **Transient-shaped** (error-shaped output with no assertion mismatch — flaky timing, environment hiccup, nondeterministic ordering): exactly one fresh-context re-run of the failing step. A second failure means it wasn't transient — re-triage with history; the same-error-twice rule below makes it structural.
 - **Structural** (assertion-shaped failure, OR same-error-twice): auto-invoke `systematic-debugging` in fresh context with an evidence payload — the test output, the diff, and the attempted fix. Never blind-retry an assertion failure: identical input produces identical output.
@@ -277,13 +277,13 @@ Any verification failure — an unexpected RED in Phases 2–4 (a test that shou
 
 **Retry budget.** Each slice gets a retry budget of exactly 2 — a convention, not a tuned optimum (revisit if budgets repeatedly truncate converging fixes). Exhaustion emits `BLOCKED` with a halt payload; never keep cycling past the budget.
 
-**verify-output `BLOCKED` (Pass 5c).** Gets exactly 1 fresh-context fix attempt. The same finding surviving the fix → halt — never a second identical attempt; a surviving finding is the same-error-twice rule firing on a review finding.
+**verify-output `BLOCKED` (Pass 4c).** Gets exactly 1 fresh-context fix attempt. The same finding surviving the fix → halt — never a second identical attempt; a surviving finding is the same-error-twice rule firing on a review finding.
 
 ## Loop mode — `/tdd --loop`
 
 `/tdd --loop` promotes Phase 0.5 from resume mechanism to iteration driver: point it at the active plan, walk away, and it runs the plan's work-list to a terminal state. Without the flag, none of this section applies — `tdd-loop` runs single-pass Phase 0.5 exactly as written above.
 
-**Driver algorithm.** Each iteration: **inspect** (Phase 0.5's idempotent resume — git refs + the plan, no other state) → **dispatch** the next pending slice or pgroup → **verify** (deterministic assertions → reviewer per `parallel-dev` § Reviewer dispatch → `verify-output` Pass 5c) → **update the run file** → next. Repeat until the plan is done or a halt ends the run. Every slice is dispatched in fresh context — the driver's own context never carries slice work; repo artifacts (spec, plan, run file, git) carry everything between iterations.
+**Driver algorithm.** Each iteration: **inspect** (Phase 0.5's idempotent resume — git refs + the plan, no other state) → **dispatch** the next pending slice or pgroup → **verify** (deterministic assertions → reviewer per `parallel-dev` § Reviewer dispatch → `verify-output` Pass 4c) → **update the run file** → next. Repeat until the plan is done or a halt ends the run. Every slice is dispatched in fresh context — the driver's own context never carries slice work; repo artifacts (spec, plan, run file, git) carry everything between iterations.
 
 **Run file.** Each iteration updates the per-run bookkeeping file defined in [`docs/agents/references/run-file-format.md`](../../docs/agents/references/run-file-format.md) — location, frontmatter fields, halt-report and RUN_SUMMARY formats all live there, never here.
 
@@ -302,8 +302,8 @@ Every HITL gate the loop can reach, classified **park** (write a halt report, qu
 | Decision gates (HITL-labeled slices, phase acceptance-gate failures) and structured halts (budget exhaustion, reviewer Critical finding) | **Park** | Halt report per run-file-format.md; the run continues on unaffected slices per `scope_classification`, or terminates if spec-wide |
 | Re-grill halt (spec-implicated failure) | **Park** | Parks scope per `scope_classification`; re-grill halts **never self-resolve** — halt authority stays human (the Grill 2.0 re-affirmation); the loop writes the halt report and moves to unaffected slices, or terminates when the scope is spec-wide |
 | Fixture-ID confirm (Phase 1) | **Provisional** | Proceed gated on green checks; logged in the run file for morning ratification |
-| verify-output ANNOTATE-mode concerns (Pass 5c `DONE_WITH_CONCERNS`) | **Provisional** | Same — proceed on green checks, logged for ratification |
-| Spec-compliance review (Pass 5a) | **Provisional** | Same — proceed on green checks, logged for ratification |
+| verify-output ANNOTATE-mode concerns (Pass 4c `DONE_WITH_CONCERNS`) | **Provisional** | Same — proceed on green checks, logged for ratification |
+| Spec-compliance review (Pass 4a) | **Provisional** | Same — proceed on green checks, logged for ratification |
 | Version-bump confirm | **Park** | Release-facing; the human ratifies versioning — never provisional |
 
 ### Resume — `/tdd --resume <run-id>`
@@ -348,7 +348,7 @@ HANDOFF: release ready — all slices GREEN and verify-output clean. Invoke `rel
 - `decision-record` — locks the architecture this skill implements
 - `write-plan` — sequences slices into phases with acceptance gates; defines the order this skill executes in
 - `deep-modules` — invoked at the refactor step
-- `verify-output` — invoked at Pass 5c between two-stage review and commit; anti-slop pass
+- `verify-output` — invoked as Pass 4c, the anti-slop pass of the Phase 4 review (before the Phase 5 commit)
 - `parallel-dev` — dispatches parallel TDD loops on independent slices
 - [`using-habeebs-skill` § "When sessions grow long — summary-and-flush"](../using-habeebs-skill/SKILL.md) — long tdd-loop runs (20+ slices in one conversation) are the most likely Compress-at-overflow site; flush via the 7-section summary template at [`../using-habeebs-skill/references/session-summary-template.md`](../using-habeebs-skill/references/session-summary-template.md)
 - `vertical-slice` — defines what makes a slice implementable

@@ -9,7 +9,7 @@
 #
 # Test cases:
 #   (a) a triage rule exists and covers both failure surfaces
-#       (unexpected RED in Phases 2-4, verify-output BLOCKED in Pass 5c)
+#       (unexpected RED in Phases 2-4, verify-output BLOCKED in Pass 4c)
 #   (b) the three routes are named with their actions: transient -> one
 #       fresh-context re-run; structural -> systematic-debugging; spec-implicated
 #       -> the re-grill edge
@@ -42,8 +42,8 @@ pass() { echo "PASS: $1"; }
 grep -qiE 'failure-triage|triage rule' "$TDD" || fail "(a) no failure-triage rule in tdd-loop"
 grep -qiE 'unexpected RED.*phases? 2.{1,4}4|phases? 2.{1,4}4.*unexpected RED' "$TDD" \
   || fail "(a) triage does not cover unexpected RED in Phases 2-4"
-grep -qiE 'verify-output.*BLOCKED.*(pass |phase )?5c|(pass |phase )5c.*verify-output.*BLOCKED' "$TDD" \
-  || fail "(a) triage does not cover verify-output BLOCKED in Pass 5c"
+grep -qiE 'verify-output.*BLOCKED.*(pass |phase )?4c|(pass |phase )4c.*verify-output.*BLOCKED' "$TDD" \
+  || fail "(a) triage does not cover verify-output BLOCKED in Pass 4c"
 pass "(a) triage rule covers both failure surfaces"
 
 # ---------------------------------------------------------------------------

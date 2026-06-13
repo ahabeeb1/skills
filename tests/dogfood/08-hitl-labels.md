@@ -157,9 +157,9 @@ UI work; design is spec'd. Mechanical.
 - "HITL — DBA approval for migration" → reason indicates out-of-band approver → `HITL:approval-gate`.
 - "HITL — review at slice complete" → ambiguous, defaults to `HITL:inline` (no out-of-band signal).
 
-**Weakness surfaced:** The third case ("review at slice complete") highlights an unrelated pattern — review at slice END is not what HITL labels are for. HITL is mid-slice gating. End-of-slice review is the two-stage review in `tdd-loop` Phase 5. This isn't a vocabulary bug — it's a labeling-discipline issue.
+**Weakness surfaced:** The third case ("review at slice complete") highlights an unrelated pattern — review at slice END is not what HITL labels are for. HITL is mid-slice gating. End-of-slice review is the three-stage review in `tdd-loop` Phase 5. This isn't a vocabulary bug — it's a labeling-discipline issue.
 
-**Recommendation:** Add to hitl-vs-afk.md "Borderline cases" section: "End-of-slice review is NOT HITL. End-of-slice review happens in `tdd-loop` Phase 5 (two-stage review). HITL labels mid-slice gates only." → **Will edit before v1.4.0 ships.**
+**Recommendation:** Add to hitl-vs-afk.md "Borderline cases" section: "End-of-slice review is NOT HITL. End-of-slice review happens in `tdd-loop` Phase 5 (three-stage review). HITL labels mid-slice gates only." → **Will edit before v1.4.0 ships.**
 
 ---
 

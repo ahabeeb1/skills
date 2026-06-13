@@ -1,9 +1,12 @@
 ---
-name: plan
 description: Turn a locked ADR + sliced spec into a phased delivery plan with acceptance gates and rollback hooks. Delegates to the write-plan skill.
 ---
 
-Invoke the `write-plan` skill from `skills/write-plan/SKILL.md`.
+You are running the `write-plan` skill from habeebs-skill.
+
+Read `${CLAUDE_PLUGIN_ROOT}/skills/write-plan/SKILL.md` and follow it exactly. Also read `${CLAUDE_PLUGIN_ROOT}/skills/write-plan/references/plan-template.md` for the output format.
+
+Plan target (ADR / spec path or slug): $ARGUMENTS
 
 Expected inputs (the skill halts if any are missing):
 - ADR from `decision-record` (locked)

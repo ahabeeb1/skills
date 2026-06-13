@@ -2,7 +2,7 @@
 
 Appended to the active grill record by `devex-review`. Lives inline in the grill document or as a sibling `<slug>-devex-review.md` if the grill is long.
 
-Copy from here. Replace bracketed placeholders. Delete dimensions that are N/A (state why in the table).
+Copy from here. Replace bracketed placeholders. Keep all rows; mark a non-applicable dimension `N/A` in the status column and give the design reason in the Skip notes section below — don't delete rows.
 
 ---
 

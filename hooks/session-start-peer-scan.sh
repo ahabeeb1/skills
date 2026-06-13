@@ -35,8 +35,24 @@ if [ ! -f "$SIDECAR" ]; then
   exit 0
 fi
 
-# ---- session ID ----
-session_id="${HABEEBS_SESSION_ID:-}"
+# ---- read the hook payload from stdin (the harness pipes JSON here) ----
+# Guard against a TTY/closed stdin so the hook never blocks on `cat`.
+if [ -t 0 ]; then
+  payload=""
+else
+  payload=$(cat 2>/dev/null || true)
+fi
+
+# ---- session ID: stdin payload first, env fallback, then a synthetic ID ----
+session_id=""
+if [ -n "$payload" ]; then
+  session_id=$(printf '%s' "$payload" | node -e '
+    let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{
+      let o={};try{o=JSON.parse(s)||{}}catch{}
+      process.stdout.write(String(o.session_id||""));
+    });' 2>/dev/null) || session_id=""
+fi
+session_id="${session_id:-${HABEEBS_SESSION_ID:-}}"
 if [ -z "$session_id" ]; then
   session_id="session-$(date +%s)-$$"
 fi
@@ -92,9 +108,9 @@ while IFS= read -r peer_id; do
   fi
 done <<< "$peers"
 
-# ---- emit warn-only JSON ----
+# ---- emit warn-only JSON in the documented SessionStart shape ----
 warning="Active peer session(s) detected on this repo:\\n${peer_lines}Enable pretool_use: true in .claude/habeebs-policy.json to catch in-session collisions."
 warning_escaped=$(printf '%s' "$warning" | sed 's/"/\\"/g')
 
-printf '{"additionalContext": "[habeebs-skill] %s"}\n' "$warning_escaped"
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[habeebs-skill] %s"}}\n' "$warning_escaped"
 exit 0

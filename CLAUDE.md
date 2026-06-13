@@ -73,19 +73,19 @@ When researching:
 
 ## Agent skills
 
-This repo is configured for habeebs-skill v1.8+ (self-dogfood). The methodology files are:
+This repo is self-dogfooded by the habeebs-skill chain. The methodology files are:
 
 - **Domain glossary:** `docs/agents/GLOSSARY.md` — habeebs-skill's own vocabulary (skill, slice, chain, ADR, harness, dispatch group, etc.). Written by `setup-habeebs-skill`; edited as the codebase evolves.
 - **System context:** `docs/agents/SYSTEM_CONTEXT.md` — stack, scale envelope, deployment shape, recent hot files, last reconciliation outcomes. Written exclusively by `prior-art-research` Phase 0 (load-bearing per ADR-0001; single-writer invariant per ADR-0005).
 - **Issue tracker:** `docs/agents/issue-tracker.md` (GitHub for this repo).
 - **Triage labels:** `docs/agents/triage-labels.md` (canonical 5).
-- **ADRs:** `docs/agents/adrs/` (see `README.md` index — 16 ADRs as of 2026-05-19).
+- **ADRs:** `docs/agents/adrs/` (see `README.md` for the authoritative index and current count).
 - **Chain-shared references:** `docs/agents/references/` (cross-cutting helpers per ADR-0009 — e.g. `tier-scale.md`, `system-context-staleness-check.md`).
 - **Specs:** `docs/agents/specs/` (one per release).
 - **Plans:** `docs/agents/plans/` (one per release that warranted phased delivery).
 - **Dispatches:** `docs/agents/dispatches/` (parallel-dev audit records).
 
-**Directory classification:** Two of these surfaces are *runtime writer paths*, not authored methodology directories — `docs/agents/dispatches/` (written by `parallel-dev` Phase 7.5 when a pgroup completes) and `docs/agents/conflicts/` (written by `cross-session-detect/audit.sh` when a session conflict is detected). Their on-disk emptiness in git snapshots reflects runtime-path sparsity, not dormancy. Pattern G's "earn existence by file count" rule applies only to authored directories (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`); runtime writer paths are governed by their writer's ADR (ADR-0004 Part 2, ADR-0018 Part A, ADR-0019) and remain on disk with `.gitkeep` regardless of file count. See [ADR-0021's 2026-05-26 Clarification](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the full distinction.
+**Directory classification:** `docs/agents/dispatches/` and `docs/agents/conflicts/` are *runtime writer paths* (written by `parallel-dev` and `cross-session-detect`), not authored methodology directories — they stay on disk with `.gitkeep` regardless of file count, governed by their writer's ADR (ADR-0004 Part 2, ADR-0018 Part A, ADR-0019). The "earn existence by file count" rule applies only to authored dirs (`adrs/`, `specs/`, `plans/`, `postmortems/`, `research/`, `references/`). See [ADR-0021](./docs/agents/adrs/0021-methodology-folder-cuts.md) for the distinction.
 
 When invoking habeebs-skills in this repo, read these files first. Per ADR-0005, GLOSSARY and SYSTEM_CONTEXT split by writer lifecycle — GLOSSARY is human-authored and domain-stable; SYSTEM_CONTEXT is tool-authored and environment-bound.
 

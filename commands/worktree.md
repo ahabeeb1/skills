@@ -1,10 +1,13 @@
 ---
-name: worktree
 description: Start a new feature in an isolated git worktree on a new branch with a verified test baseline. Delegates to the using-worktrees skill.
 ---
 
-Invoke the `using-worktrees` skill from `skills/using-worktrees/SKILL.md`.
+You are running the `using-worktrees` skill from habeebs-skill.
 
-If the user provided a slug after `/worktree`, use it as the branch suffix. Otherwise, ask for one before creating the worktree.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/using-worktrees/SKILL.md` and follow it exactly.
+
+Branch slug: $ARGUMENTS
+
+If a slug was provided after `/worktree`, use it as the branch suffix. Otherwise, ask for one before creating the worktree.
 
 After the worktree is ready, hand off to whatever skill the user invoked the worktree for (typically `tdd-loop`).

@@ -10,7 +10,7 @@ Pressure-test an LLM/agent product spec against the 13 agent quality factors. Th
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds 6–13 Socratic questions to the grilling agenda. After grilling resolves them, control returns to the main chain.
 
-Why a separate skill instead of folding into `socratic-grill`'s axes? `socratic-grill`'s seven axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic. The agent factors are specific to agent products and don't apply to 80% of specs. Forcing them on every spec is overkill. A separate skill keeps the main chain lean and lets this trigger only when relevant.
+Why a separate skill instead of folding into `socratic-grill`'s axes? `socratic-grill`'s production-readiness axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic. The agent factors are specific to agent products and don't apply to 80% of specs. Forcing them on every spec is overkill. A separate skill keeps the main chain lean and lets this trigger only when relevant.
 
 ## When to use this skill
 

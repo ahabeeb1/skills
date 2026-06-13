@@ -1,31 +1,13 @@
 ---
-name: sync
 description: Reconcile local default-branch with origin after a PR merge — auto-resolves squash-merge ghost-commit divergence and cleans up merged feature branches + worktrees. Delegates to using-worktrees Phase 6.5.
 ---
 
-Invoke the `using-worktrees` skill from `skills/using-worktrees/SKILL.md`, jumping directly to **Phase 6.5 — Post-merge sync**.
+You are running the `using-worktrees` skill from habeebs-skill, jumping directly to **Phase 6.5 — Post-merge sync**.
 
-What this does:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/using-worktrees/SKILL.md` § "Phase 6.5" and follow it exactly — it is the single source for the sync steps, the tree-equivalence ghost-commit detection, and the halt conditions (do not re-derive them here; this command is a thin entry point).
 
-1. `git fetch origin --prune`
-2. Resolve the default branch via `origin/HEAD`
-3. Check local default-branch divergence (`ahead` / `behind` vs origin):
-   - `ahead=0, behind=0` — already in sync, skip to cleanup.
-   - `ahead=0, behind>0` — **simple fast-forward** (most common post-merge state). `git merge --ff-only origin/<default>`, then cleanup.
-   - `ahead>0, behind=0` — real local-only work, **halt**.
-   - `ahead>0, behind>0` — possible ghost commits; run detection (step 4).
-4. **Ghost-commit detection** — for every local-only commit on the default branch, check tree-equivalence against recent origin commits. If every local commit has a tree-match in origin, it's a squash-merge ghost-commit case (safe to reset).
-5. **Safe-reset** (only when step 4 confirms): `git reset --hard origin/<default>`, with a one-line announcement first.
-6. **Cleanup merged feature branches** — for each local non-default branch reported as MERGED by `gh pr list` (or merged via fast-forward / rebase per `git branch --merged`), remove the worktree (if any), `git branch -d`, and `git push origin --delete` the remote.
-7. `git worktree prune`.
+In short: fetch + prune, resolve the default branch, fast-forward or safe-reset only when every local-ahead commit has a tree-match in origin (the squash-merge ghost-commit case), then clean up merged feature branches + worktrees. It **halts** rather than auto-resolving on genuine local-only work, a non-matching local commit, a dirty worktree, a mid-operation rebase/merge, a failed fetch, or detached HEAD.
 
-Halt conditions (never auto-resolves; user must intervene):
+Arguments: $ARGUMENTS
 
-- Local default-branch has `ahead>0, behind=0` — real local-only work.
-- Any local-ahead commit has no tree-equivalent in origin — genuine divergence.
-- A worktree contains uncommitted changes.
-- A rebase / merge / cherry-pick is mid-operation.
-- `git fetch` failed.
-- Detached HEAD on the source checkout.
-
-Optional flag: `/sync --squash-window=N` raises the origin-commit search window from the default 10 to `N`. Use when several PRs merged in quick succession.
+Optional flag: `/sync --squash-window=N` (parsed from `$ARGUMENTS`) raises the origin-commit search window from the default 10 to `N`. Use when several PRs merged in quick succession.

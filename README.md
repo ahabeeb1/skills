@@ -1,7 +1,7 @@
 # habeebs-skill
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://docs.anthropic.com/en/docs/claude-code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://code.claude.com/docs)
 [![Codex](https://img.shields.io/badge/Codex-AGENTS.md-444)](https://github.com/openai/codex)
 
 **Research-grounded engineering methodology for Claude Code. Stop vibe-coding.**
@@ -93,6 +93,8 @@ Each step produces a durable in-repo artifact that the next step consumes. The c
 | **`/security-audit`** | Static security audit — attack-surface census, secrets archaeology, OWASP Top 10, STRIDE per-component |
 | **`/sync`** | Reconcile local default-branch after a PR merge — handles squash-merge ghost-commit divergence |
 
+Four more skills run inside the chain rather than as standalone commands: **`verify-output`** (anti-slop gate invoked by `tdd-loop` before each commit), **`using-habeebs-skill`** (chain orientation / handoff recovery), **`setup-habeebs-skill`** (one-time per-repo bootstrap), and **`cross-session-detect`** (the hook-driven peer-overlap detection library — see Hooks below).
+
 ### Conditional extensions
 
 These auto-extend `/grill` when the spec calls for them — they slot questions into the active grilling agenda rather than running standalone.
@@ -106,12 +108,15 @@ These auto-extend `/grill` when the spec calls for them — they slot questions 
 
 ## Hooks
 
-Two safety hooks ship with the plugin, both governed by ADR-0003 (warn-only or block-only — never auto-mutate state):
+Five hook bindings ship with the plugin (across six scripts), all governed by ADR-0003 (warn-only or block-only — never auto-mutate state). Context surfaces via `hookSpecificOutput.additionalContext` so warnings actually reach the model:
 
-- **`session-start.sh`** — silent `git fetch` + ahead/behind check. Warns once at session start if your local default branch is behind origin (common after squash-merge).
-- **`preventing-commits-to-default.sh`** — blocks `git commit` and `git push` when you're on the default branch. Enforces the never-commit-to-default rule.
+- **`session-start.sh`** (SessionStart) — silent `git fetch` + ahead/behind check. Warns once if your local default branch has diverged from origin (common after squash-merge).
+- **`session-start-peer-scan.sh`** (SessionStart) — warns if another live session is working the same repo (cross-session conflict detection).
+- **`preventing-commits-to-default.sh`** (PreToolUse: Bash) — blocks `git commit`/`git push` on the default branch (tag-only pushes carved out per ADR-0015). Enforces never-commit-to-default.
+- **`pretool-use-peer-scan.sh`** (PreToolUse: Edit\|Write\|NotebookEdit) — annotates (never blocks) when a peer session has overlapping changes on the file you're about to edit. Opt-in via `pretool_use: true` in `.claude/habeebs-policy.json`.
+- **`check-chain-state.sh`** (PostToolUse: Edit\|Write\|NotebookEdit) — warns on chain-state drift (a `Status: Grilled` spec with no grill record; editing load-bearing paths on the default branch).
 
-Both hooks respect `HABEEBS_DISABLE_HOOKS=1` and a per-repo opt-out at `.claude/habeebs-allowed-branches`. After install, run `/hooks` to verify they loaded.
+All hooks respect `HABEEBS_DISABLE_HOOKS=1` (emergency disable) and `HABEEBS_SKIP=<hook>` (per-invocation skip); the commit-block hook also honors a per-repo opt-out at `.claude/habeebs-allowed-branches`. A sixth script, `pre-push.sh`, ships for optional manual install as a git `pre-push` hook (it is not a Claude Code hook event). After install, run `/hooks` to verify they loaded.
 
 **Developing the hooks themselves?** Hooks load from the *installed* plugin copy at session start, so an edit to `hooks/*.sh` in your checkout takes effect only after you reinstall/update the plugin and reload. Expect the previously-installed behavior until then — don't chase it as a bug.
 

@@ -23,13 +23,13 @@ This is convergent research. Generic brainstorming generates novel options; this
 
 - Trivial CRUD endpoints with one obvious approach
 - Single-function utilities
-- Bug fixes with known causes (use `/diagnose` or systematic debugging instead)
+- Bug fixes with known causes (use `/debug` / `systematic-debugging` instead)
 - API surface questions ("how do I call X library?") — Context7 covers this
 - Pure refactoring of existing code — use `deep-modules` instead
 
 ## Core workflow
 
-The skill runs in 8 phases (0 through 7). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
+The skill runs in phases 0 through 7, plus three gates (2.5 coverage critic, 6.4 HITL pivot, 6.5 archive). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
 
 ### Phase 0 — Reconnaissance (look before you ask)
 
@@ -71,7 +71,7 @@ Ask questions plainly. Do not preface them with explanations of why you're askin
 If the user already has hunches about *which design space* to look at — keywords, technique names, architectures they want considered first, or things they explicitly want to avoid — capture that in the same message they answer 3-5. Three slots, all optional, all free-text:
 
 - **Anchor:** terms or techniques to bias queries toward (e.g., "token bucket, sliding-window", "CRDT", "Stripe Idempotency-Key pattern")
-- **Look at:** specific projects/teams/architectures to fetch first (e.g., "see how Linear's sync engine handles this", "the BeanBot retrieval layer")
+- **Look at:** specific projects/teams/architectures to fetch first (e.g., "see how Linear's sync engine handles this", "our internal billing service's retry layer")
 - **Avoid:** out-of-scope terms or anti-patterns (e.g., "no Redis", "skip Kafka", "not interested in serverless")
 
 Steering is **optional anchoring, not prescription**. If the user provides anchors that conflict with strong evidence found in Phase 4-5, the agent must override the anchor and explain why in Phase 6 (see `references/steering-hints.md`). Decomposition still runs autonomously in Phase 2; anchors weight Phase 4 query construction and source ranking, they do not replace the Phase 2 sub-problem split.
@@ -85,7 +85,7 @@ If the user's initial prompt already answers some of these, skip those and only 
 Before going external, grep the open repo for related patterns:
 - Search file names: `grep -ri "<feature_keyword>" --include="*.md" docs/ ADR-* 2>/dev/null`
 - Search for existing ADRs in `docs/agents/adrs/`, `docs/architecture/`, or `docs/decisions/`
-- For Modie specifically: also check sibling repos referenced in CLAUDE.md (BeanBot, salahi.app, AEGIS) if accessible
+- Also check any sibling/adjacent repos the consuming repo's `CLAUDE.md` or `docs/agents/SYSTEM_CONTEXT.md` names as internal precedent, if accessible
 
 If you find internal prior art, surface it FIRST in the case studies section as a Tier 0 source. Don't skip this step even when external research feels easier — your own past decisions are higher-signal than any blog post.
 
@@ -133,7 +133,7 @@ For each proposed addition, the lead does exactly one of:
 
 **When this phase is skipped:**
 
-- Quick tier — the coverage critic adds overhead worth more than the catch rate at trivial scope (Quick is already gated to a single sub-problem and low ambiguity). Note the skip in the report's Phase 2.5 outcome section.
+- Anticipated Quick tier — Phase 2.5 runs before Phase 3 formally picks the tier, so it uses the Phase 1 *anticipated* tier (the same scope read that scales Phase 1's questioning). When the scope is obviously Quick — a single sub-problem with low ambiguity — skip the critic: at trivial scope its overhead exceeds the catch rate. Note the skip in the report's Phase 2.5 outcome section.
 - The user explicitly invokes `/research --skip-coverage-critic` (documented escape valve; intended only when the user has already done their own coverage audit).
 
 **Acceptance bar (dogfood-tested):**
@@ -260,7 +260,7 @@ Then ask the user to choose one of three responses:
 2. **(b) Approve with pivots** — free-text edits applied to the in-conversation Phase 6 report BEFORE Phase 6.5 commits to the archive file. The user describes the pivot in prose; the agent applies the edits to the in-conversation report; then Phase 6.5 writes the (edited) report to disk. Once Phase 6.5 writes the file, the file IS the source of truth — downstream skills read the archive, not the conversation.
 3. **(c) Reject + re-research with new scope** — return to Phase 2 (re-decomposition) with a new scope statement from the user. The Phase 6 report in conversation is discarded; the archive is NOT written; the chain re-enters Phase 2 with the user's new framing.
 
-**Format the user prompt as yes/no + free-text iteration, NOT menu-of-options.** Zero of five surveyed peer methodologies used menus; four of five used yes/no + iteration. Use the `AskUserQuestion` tool with `multiSelect: false` and the three options above as the choices; allow free-text follow-up for option (b) or (c) details.
+**This is a direction-confirmation gate, not an architecture menu.** Present the single opinionated recommendation, then offer the three pivot responses above (approve / approve-with-pivots / reject-and-re-scope) via the `AskUserQuestion` tool (`multiSelect: false`), allowing free-text follow-up for option (b) or (c) details. The "not a menu" rule governs the *recommendation*: zero of five surveyed peer methodologies offered a menu of competing architectures (four of five used approve/iterate), so never dilute the recommendation into a multiple-choice list of designs — the three choices here are only the pivot decision, not a design selection.
 
 **On approve-as-is or approve-with-pivots:** apply any edits to the in-conversation report, then continue to Phase 6.5.
 
@@ -362,10 +362,6 @@ Phase 4-5: Dispatches 4 subagents in parallel. Each fetches 3-5 sources. CRDT su
 Phase 6: Synthesizes. Recommends Yjs (CRDT with strong offline support) + Hocuspocus server + Postgres for snapshots + WebSocket primary transport with SSE fallback. Alternatives: Automerge (different perf profile), server-authoritative OT (Google Docs model — much more code).
 
 Phase 7: Hands off — many open questions for `socratic-grill`.
-
-## Internal sources note
-
-For Modie specifically: BeanBot, salahi.app, and the AEGIS/BOL automation projects are personal-precedent sources. When researching anything that touches NL2SQL, RAG, prayer time aggregation, OCR pipelines, or ECS Fargate patterns, search the local repos for prior solutions BEFORE going external. Your own ADRs are Tier 0.
 
 ## See also
 

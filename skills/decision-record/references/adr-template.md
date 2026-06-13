@@ -14,7 +14,7 @@ Deciders: [Names or roles]
 **Deciders:** [Names or roles]
 **Tier:** Quick | Balanced | Deep (when produced by a chain run; omit for stand-alone ADRs)
 
-> The YAML frontmatter block above is the v1.22.0 Piece 5 telemetry convention (PascalCase keys; deliberate-review semantics on `Last-Reviewed:`). The markdown-emphasis block below mirrors the frontmatter for human readability and is what previous ADRs use. New ADRs ship with both; existing ADRs (0001-0022) carry only the markdown block and back-fill is a v1.23.0+ candidate.
+> The YAML frontmatter block above is the telemetry convention (PascalCase keys; deliberate-review semantics on `Last-Reviewed:`). The markdown-emphasis block below mirrors it for human readability and is what the original integer-named ADRs use. New ADRs ship with both blocks; the frozen integer ADRs carry only the markdown block (they are never back-filled — see the two-era naming scheme in GLOSSARY § ADR).
 
 ## Context
 

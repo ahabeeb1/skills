@@ -128,12 +128,12 @@ HANDOFF: context needed — verify-output NEEDS_CONTEXT.
 
 ## Integration with tdd-loop
 
-`tdd-loop`'s refactor-and-review phase invokes `verify-output` between the two-stage review (spec compliance + code quality) and the commit step. The slot is:
+`verify-output` is the third pass of `tdd-loop`'s Phase 4 review — Pass 4c (anti-slop), run after Pass 4a (spec-compliance) and Pass 4b (code-quality), and before the Phase 5 commit. The slot is:
 
 ```
-[tdd-loop GREEN] → two-stage review → verify-output → commit
-                                       ↑
-                                    this skill
+[tdd-loop GREEN] → Phase 4 review: 4a spec-compliance → 4b code-quality → 4c verify-output → Phase 5 commit
+                                                                            ↑
+                                                                         this skill
 ```
 
 If `verify-output` returns `BLOCKED`, `tdd-loop` halts the commit and surfaces the concerns to the user. The user resolves (typically by editing and re-staging) and `tdd-loop` re-runs `verify-output` until it returns `DONE` or `DONE_WITH_CONCERNS`.
@@ -179,4 +179,3 @@ This skill's return contract matches the parallel-dev dispatch contract:
 - [`deep-modules`](../deep-modules/SKILL.md) — adjacent; fires at the refactor step (earlier in tdd-loop), targets interface shape rather than code shape
 - [`references/slop-heuristics.md`](references/slop-heuristics.md) — the 7 heuristics this skill applies
 - [`docs/agents/postmortems/`](../../docs/agents/postmortems/) — when verify-output keeps missing a failure class, postmortems are the canonical place to document the new category and propose a rule for the next release. Static pre-commit check (this skill) and post-incident error analysis (postmortems) are complementary loops, not peers.
-- `CLAUDE.md` at repo root — canonical source for H1-H4

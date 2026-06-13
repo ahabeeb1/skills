@@ -1,6 +1,6 @@
 # Dogfood 40 — The failure-triage rule
 
-Verifies spec slice #1 of `loop-harness`: every verification failure in tdd-loop (unexpected RED in Phases 2–4, verify-output BLOCKED in Pass 5c) is classified on cheap signals and routed three ways under a bounded retry budget — transient, structural, or spec-implicated.
+Verifies spec slice #1 of `loop-harness`: every verification failure in tdd-loop (unexpected RED in Phases 2–4, verify-output BLOCKED in Pass 4c) is classified on cheap signals and routed three ways under a bounded retry budget — transient, structural, or spec-implicated.
 
 | File | Type | Asserts |
 |---|---|---|

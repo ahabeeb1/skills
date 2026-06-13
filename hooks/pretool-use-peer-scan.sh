@@ -24,8 +24,36 @@ if echo ",$skip," | grep -qF ",pretool-use,"; then
   exit 0
 fi
 
+# ---- read the hook payload from stdin (the harness pipes JSON here) ----
+# Claude Code delivers tool_name / tool_input / session_id as stdin JSON, NOT as
+# env vars. Parse them here; fall back to HABEEBS_* env vars (test convenience).
+# Guard against a TTY/closed stdin so the hook never blocks on `cat`.
+if [ -t 0 ]; then
+  payload=""
+else
+  payload=$(cat 2>/dev/null || true)
+fi
+
+tool_name=""
+session_id=""
+target_file=""
+if [ -n "$payload" ]; then
+  fields=$(printf '%s' "$payload" | node -e '
+    let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{
+      let o={};try{o=JSON.parse(s)||{}}catch{}
+      const ti=o.tool_input||{};
+      const file=ti.file_path||ti.notebook_path||"";
+      process.stdout.write([o.tool_name||"",o.session_id||"",file].join("\t"));
+    });' 2>/dev/null) || fields=""
+  tool_name=$(printf '%s' "$fields" | cut -f1)
+  session_id=$(printf '%s' "$fields" | cut -f2)
+  target_file=$(printf '%s' "$fields" | cut -f3)
+fi
+tool_name="${tool_name:-${HABEEBS_TOOL_NAME:-}}"
+session_id="${session_id:-${HABEEBS_SESSION_ID:-}}"
+target_file="${target_file:-${HABEEBS_TOOL_INPUT_FILE:-}}"
+
 # ---- tool filter: only Edit, Write, NotebookEdit ----
-tool_name="${HABEEBS_TOOL_NAME:-}"
 case "$tool_name" in
   Edit|Write|NotebookEdit) ;;
   *) exit 0 ;;
@@ -58,14 +86,12 @@ if [ "$pretool" != "true" ]; then
   exit 0
 fi
 
-# ---- session ID ----
-session_id="${HABEEBS_SESSION_ID:-}"
+# ---- session ID (resolved from stdin/env above; synthesize if still empty) ----
 if [ -z "$session_id" ]; then
   session_id="session-$(date +%s)-$$"
 fi
 
-# ---- file being edited ----
-target_file="${HABEEBS_TOOL_INPUT_FILE:-}"
+# ---- file being edited (resolved from stdin/env above) ----
 if [ -z "$target_file" ]; then
   exit 0
 fi
@@ -126,13 +152,17 @@ while IFS= read -r peer_id; do
 
     # Check if target file is in the conflicted files
     if echo "$files" | grep -qF "$target_file"; then
-      annotations="${annotations}[habeebs-skill] Warning: peer session $peer_id has overlapping changes on $target_file (files: $files). Edit proceeding (annotate-only).\n"
+      annotations="${annotations}[habeebs-skill] Warning: peer session $peer_id has overlapping changes on $target_file (files: $files). Edit proceeding (annotate-only).\\n"
     fi
   fi
 done <<< "$peers"
 
+# ---- emit annotation as hookSpecificOutput.additionalContext ----
+# Per the hook contract, PreToolUse plain stdout on exit 0 is debug-log-only;
+# context surfaced next to the tool result must use hookSpecificOutput.
 if [ -n "$annotations" ]; then
-  printf '%b' "$annotations"
+  annotations_escaped=$(printf '%s' "$annotations" | sed 's/"/\\"/g')
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "$annotations_escaped"
 fi
 
 exit 0

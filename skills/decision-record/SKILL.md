@@ -133,11 +133,13 @@ If the README is missing entirely (greenfield repo), create the skeleton table w
 ### Phase 7 — Hand off
 
 ```
-HANDOFF: implementation ready — ADR locked.
-  Next: `write-plan` to sequence slices into phases with acceptance gates, OR (if the slice list is trivial and ordering is obvious) skip directly to `tdd-loop`.
+HANDOFF: plan ready — ADR locked.
+  Next: `write-plan` to sequence slices into phases with acceptance gates, OR (if the slice list is trivial and ordering is obvious) skip directly to `tdd-loop` (which emits `implementation ready`).
   Decision rule: invoke `write-plan` when there are 3+ slices, when ordering isn't obvious, or before any `parallel-dev` dispatch.
 HANDOFF: future research — this ADR is now Tier 0 prior art. Future `prior-art-research` invocations on adjacent problems should check it.
 ```
+
+The token is `plan ready` (not `implementation ready`) so the next hop is unambiguous: `plan ready` routes to `write-plan`; `implementation ready` is reserved for the post-plan hop into `tdd-loop`.
 
 ## Anti-patterns this skill guards against
 

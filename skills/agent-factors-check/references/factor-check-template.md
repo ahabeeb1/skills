@@ -2,7 +2,7 @@
 
 Appended to the active grill record by `agent-factors-check`. Lives inline in the grill document or as a sibling `<slug>-factor-check.md` if the grill is long.
 
-Copy from here. Replace bracketed placeholders. Delete factors that are N/A (state why in the table).
+Copy from here. Replace bracketed placeholders. Keep all 13 rows; mark a non-applicable factor `N/A` in the status column and give the design reason in the Skip notes section below — don't delete rows.
 
 ---
 

@@ -2,9 +2,12 @@
 
 Canonical reference for the **tier** that governs how much of the chain
 (`prior-art-research → draft-spec → socratic-grill → decision-record →
-write-plan → tdd-loop`) runs for a given feature. Established by
+write-plan → tdd-loop → release`) runs for a given feature. Established by
 [ADR-0016](../adrs/0016-chain-wide-depth-tier.md). Chain skills link here
-instead of restating the scale.
+instead of restating the scale. The tier scales the *design* depth that
+precedes implementation; `tdd-loop`, `verify-output`, and `release` always
+run in full regardless of tier (they inherit the `Tier:` header only to scale
+their own optional ceremony, never their rigor).
 
 ## The two invariants
 
@@ -40,7 +43,7 @@ invariant 1.
 | research Phase 2.5 critic | skipped (existing valve) | runs | runs |
 | research depth | 1 agent, ~5 sources | 1 agent, ~8-10 sources | subagent/sub-problem, 10-20 sources |
 | draft-spec | terse: slices + acceptance + test seam; no DAG | full template; DAG if 5+ slices | full + DAG + parallelization always |
-| socratic-grill | skipped *only if* spec open-questions empty; else 1 short round | full 7-axis grill | full grill, multi-round; agent-factors-check if applicable |
+| socratic-grill | skipped *only if* spec open-questions empty; else 1 short round | full 8-axis grill | full grill, multi-round; agent-factors-check if applicable |
 | decision-record | no ADR by default; ADR whenever a one-way-door decision exists | ADR, standard template | ADR, full template, ≥3 alternatives |
 | write-plan | skipped (tdd-loop runs spec order) | runs if 3+ slices / non-obvious order | always — phased plan, gates, pgroups |
 | tdd-loop | runs | runs | runs (pgroup auto-dispatch) |

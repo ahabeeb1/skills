@@ -77,18 +77,33 @@ The scenario scans `docs/agents/adrs/*.md` for every record whose Status line na
 
 Exit 0 = the gate passes (and the case where no ADR is Superseded is a clean pass — the scan is near-free when no supersession is present). Exit nonzero = halt the release: add the missing forward link or surviving-half statement to the ADR, then re-run. This gate exists because a supersession recorded without a forward link or a surviving-half statement strands future readers on a stale decision with no path to the live one.
 
-### Phase 3 — Write the CHANGELOG entry
+**Step 2d — Description-policy audit.** For any release that adds a new SKILL.md or modifies an existing one, run both checks and confirm exit 0 BEFORE tagging (record the pass/fail; the PR body in Phase 7 carries only the result, not these instructions):
 
-Open `CHANGELOG.md`. Insert a new `## [X.Y.Z] — YYYY-MM-DD` block above the previous latest release, following the Convention block exactly.
+```bash
+bash tests/dogfood/11-description-budget/check-description-budget.sh
+bash tests/dogfood/11-description-budget/check-disabled-list.sh
+```
 
-Rules:
-- Every sub-item gets a **Why** line. No exceptions. "Why: X" explains the reason the feature exists, not just what it is.
-- Sub-items group under `### Added`, `### Changed`, `### Fixed`, or `### Removed`. Use only the groups that apply.
-- The release headline (the sentence directly under `## [X.Y.Z]`) is a 1–2 sentence summary of the release's single most important outcome.
+They enforce: the ≤1,024 hard / ≤300 avg length budget; the description anatomy `[Capability ≤8 words]. [Imperative directive] when [trigger 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].`; `disable-model-invocation: true` on chain-internal skills; three-keystone anti-trigger thickness (`prior-art-research`, `systematic-debugging`, `deep-modules`); and the block-scalar regression guard (no `|`/`>` on the `description:` line). If either script fails, halt the release — new SKILL.md files must comply at creation time.
+
+### Phase 3 — Enrich the CHANGELOG entry (changesets generate it; you craft it)
+
+> **Ordering.** Phase 3.25 (changeset aggregation) is the mechanism that actually
+> bumps the version files and prepends the CHANGELOG section — and it runs FIRST,
+> at the start of release-PR creation. Phases 3 and 4 do NOT write those files from
+> scratch; they verify and enrich what 3.25 generated. This avoids the double-write
+> that results from manually authoring a block AND running the aggregation script.
+
+**Changeset path (default).** `aggregate-changesets.sh` (Phase 3.25) has already prepended a `## vX.Y.Z` section to `CHANGELOG.md` with one bullet per `why:` line. In this phase you *enrich* that generated section in place — do not write a second block:
+
+- Every sub-item gets a **Why** line (the `why:` from the changeset is the seed — sharpen it to explain the reason the feature exists, not just what it is).
+- Regroup the flat bullet list under `### Added`, `### Changed`, `### Fixed`, or `### Removed`. Use only the groups that apply.
+- Write the release headline (the sentence directly under `## [X.Y.Z]`) — a 1–2 sentence summary of the release's single most important outcome.
 - Bold the changed file/skill path in each sub-item.
 - Cross-reference ADRs with links to `docs/agents/adrs/`.
+- Validate with the sell-test from Phase 2b.
 
-Validate with the sell-test from Phase 2b before writing.
+**No-changesets fallback (rare — doc-only PRs with no `.changeset/*.md`).** When Phase 3.25 found nothing to aggregate, author the `## [X.Y.Z] — YYYY-MM-DD` block by hand here, above the previous latest release, following the Convention block exactly and the same rules above.
 
 ### Phase 3.25 — Changeset aggregation + path audit
 
@@ -124,14 +139,14 @@ Feature branches NEVER directly edit the three aggregated files. Two simultaneou
 
 **Skip this phase** if no changesets are present AND no REQUIRED path was modified (rare; only documentation-only PRs that touch nothing release-worthy). Aggregation script exits 0 with "No changesets to aggregate." in that case.
 
-### Phase 4 — Version bump
+### Phase 4 — Verify the version bump
 
-Edit exactly two files:
+**Changeset path (default).** `aggregate-changesets.sh` (Phase 3.25) already bumped both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` to the new version. Do NOT edit them again — verify:
 
-1. `.claude-plugin/plugin.json` — update the `version` field to the new version string.
-2. `.claude-plugin/marketplace.json` — update the `version` field to the same version string.
+1. Both `version` fields read the expected `X.Y.Z` (matches the aggregated bump from Phase 3.25's dry-run).
+2. Any other version-like fields (e.g., `changelog_url`, `tag`) that must move in tandem are updated — fix those by hand if the script left them.
 
-Check both files for any other version-like fields (e.g., `changelog_url`, `tag`) that must be updated in tandem. Update them if present.
+**No-changesets fallback.** When Phase 3.25 aggregated nothing (doc-only PR), edit the two `version` fields by hand here to the new version string, plus any tandem version-like fields.
 
 ### Phase 5 — Clean commit history review
 
@@ -147,8 +162,9 @@ If history is clean, proceed.
 ### Phase 6 — Stage, commit, and push
 
 ```bash
-git add CHANGELOG.md .claude-plugin/plugin.json .claude-plugin/marketplace.json
-# Also add any doc-sync fixes from Phase 2a if the user addressed them
+git add CHANGELOG.md .claude-plugin/plugin.json .claude-plugin/marketplace.json .changeset/
+# .changeset/ stages the deletions aggregate-changesets.sh made when it consumed them.
+# Also add any doc-sync fixes from Phase 2a if the user addressed them.
 git commit -m "$(cat <<'EOF'
 vX.Y.Z: <release headline in imperative mood>
 
@@ -179,15 +195,7 @@ gh pr create --title "vX.Y.Z: <release headline>" --body "$(cat <<'EOF'
 
 ## Description-policy audit
 
-For any release that adds a new SKILL.md or modifies an existing one, the doc-sync audit MUST run `bash tests/dogfood/11-description-budget/check-description-budget.sh` and confirm exit 0 before tagging. The audit enforces:
-
-- Length budget: ≤1,024 hard cap, ≤300 avg target
-- Description anatomy: `[Capability ≤8 words]. [Imperative directive] when [literal user trigger 1], [phrase 2], or [phrase 3]. [Tight anti-trigger].`
-- Auto-invocation scope: chain-internal skills carry `disable-model-invocation: true`; check `bash tests/dogfood/11-description-budget/check-disabled-list.sh`
-- Three-keystone anti-trigger thickness (`prior-art-research`, `systematic-debugging`, `deep-modules`)
-- Block-scalar regression guard: no `|` or `>` on the `description:` line
-
-If either script fails, halt the release. New SKILL.md files must comply at creation time.
+<Status line: "N/A — no SKILL.md added/changed" OR "PASS — description-budget + disabled-list checks exit 0 (Phase 2d)". The audit itself runs in Phase 2d, not here.>
 
 ## Release checklist
 
@@ -246,7 +254,8 @@ six_months_ago=$(date -d '6 months ago' +%Y-%m-%d 2>/dev/null || date -v-6m +%Y-
 
 # For each ADR + plan with YAML frontmatter, extract Status: and Last-Reviewed:
 for f in docs/agents/adrs/*.md docs/agents/plans/*.md; do
-  # Skip files without YAML frontmatter (existing ADRs 0001-0022 pre-v1.22.0; back-fill is v1.23.0+)
+  # Skip files without YAML frontmatter (the frozen integer ADRs carry only the
+  # markdown block and are never back-filled — see GLOSSARY § ADR two-era scheme)
   head -1 "$f" | grep -q '^---$' || continue
 
   status=$(awk '/^---$/{c++; next} c==1 && /^Status:/{sub(/^Status: */, ""); print; exit}' "$f")
@@ -265,9 +274,11 @@ for f in docs/agents/adrs/*.md docs/agents/plans/*.md; do
 done
 ```
 
-If any warnings print, surface them to the user as a single block. Modie reads the warnings and decides whether to land an update PR (same shape as chore PR #47 today). The release continues regardless — dormancy is signal, not blockage.
+If any warnings print, surface them to the user as a single block. The maintainer reads the warnings and decides whether to land an update PR. The release continues regardless — dormancy is signal, not blockage.
 
-**Why this exists.** ADRs and plans drift across releases. Without a release-time check, decisions land in `Status: Proposed` and stay there silently. Per v1.22.0 Piece 5 — `Last-Reviewed:` carries deliberate-review semantics (NOT auto-bumped on every commit), so a stale `Last-Reviewed:` is meaningful signal.
+**Why this exists.** ADRs and plans drift across releases. Without a release-time check, decisions land in `Status: Proposed` and stay there silently. `Last-Reviewed:` carries deliberate-review semantics (NOT auto-bumped on every commit), so a stale `Last-Reviewed:` is meaningful signal.
+
+**Related cadence.** The trigger-firing eval (`docs/agents/references/trigger-firing-eval.md`) runs on the same release-adjacent cadence — within 7 days of any release — measuring real-session trigger firing-rate. If this release changed any skill `description:`, re-run that eval per its own procedure.
 
 **Why minor+major only.** Patch releases are wording fixes; the scan would re-flag the same items on every patch with no new information. Re-flagging adds noise without signal.
 

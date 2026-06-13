@@ -8,14 +8,14 @@ This GLOSSARY is the human-authored half of habeebs-skill's two-file context lay
 
 ### Skill
 
-A self-contained markdown file under `skills/<name>/SKILL.md` with optional references in `skills/<name>/references/`. The unit of methodology habeebs-skill ships. A skill has a YAML frontmatter (name, description, optional `next-skills`) and a body that describes WHEN to trigger, the workflow phases, anti-patterns, and a "See also" footer.
+A self-contained markdown file under `skills/<name>/SKILL.md` with optional references in `skills/<name>/references/`. The unit of methodology habeebs-skill ships. A skill has a YAML frontmatter (`name` + `description` only — the `next-skills` field was removed per ADR-0006; chain relationships live in the body's HANDOFF lines and "See also" footer) and a body that describes WHEN to trigger, the workflow phases, anti-patterns, and a "See also" footer.
 
 **Examples in code:** `skills/prior-art-research/SKILL.md`, `skills/tdd-loop/SKILL.md`
 **Synonyms to AVOID:** "command" (commands are slash-command shortcuts that invoke skills — not the same thing), "agent" (agents are subagent prompts under `agents/` — different layer)
 
 ### Chain
 
-The ordered sequence of skills that compose into a methodology run: `prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop`. One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
+The ordered sequence of skills that compose into a methodology run: `prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release`. One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
 
 **Sub-concepts:**
 - **Phase 0** — `prior-art-research`'s pre-Phase-1 reconnaissance pass; the single writer of `SYSTEM_CONTEXT.md` per ADR-0001.
@@ -102,7 +102,7 @@ How a confirmation gate behaves inside a loop run: the loop proceeds past the ga
 
 ### ADR
 
-Architectural Decision Record. A numbered immutable markdown file under `docs/agents/adrs/NNNN-<slug>.md` capturing a non-trivial architectural decision (Nygard format). Written by `decision-record`. Read by `prior-art-research` as Tier-0 internal precedent.
+Architectural Decision Record. An immutable markdown file under `docs/agents/adrs/` capturing a non-trivial architectural decision (Nygard format). Two-era naming (per the [dated-naming decision](./adrs/2026-05-28-decouple-decision-identity-from-releases.md)): the 24 original ADRs are frozen integer files (`NNNN-<slug>.md`, never renamed); ADRs created since are dated `YYYY-MM-DD-<slug>.md` at creation (the slug is the collision-uniqueness key). Written by `decision-record`. Read by `prior-art-research` as Tier-0 internal precedent.
 
 **Sub-concepts:**
 - **Load-bearing** — an ADR or artifact that downstream skills MUST honor (they halt if it's missing or contradicted). ADR-0001 is load-bearing for `SYSTEM_CONTEXT.md`.

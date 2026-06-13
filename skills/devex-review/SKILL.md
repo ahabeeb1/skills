@@ -10,7 +10,7 @@ Surface the developer-experience gaps in a spec before grilling resolves it. The
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds one Socratic question per DX gap to the grilling agenda. After grilling resolves them, control returns to the main chain.
 
-Why a separate skill instead of folding into `socratic-grill`'s axes? The standard seven axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic and production-readiness focused. DX gaps are specific to developer-facing products: they cluster around the first-run experience, API surface design, error messages developers read, and docs developers actually encounter — not what the product does in production at scale. A separate skill keeps the main chain lean and fires only when the product is developer-facing.
+Why a separate skill instead of folding into `socratic-grill`'s axes? The standard production-readiness axes (performance, failure modes, scale, concurrency, migration, reversibility, observability) are domain-agnostic and production-readiness focused. DX gaps are specific to developer-facing products: they cluster around the first-run experience, API surface design, error messages developers read, and docs developers actually encounter — not what the product does in production at scale. A separate skill keeps the main chain lean and fires only when the product is developer-facing.
 
 ## When to use this skill
 

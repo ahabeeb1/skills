@@ -84,8 +84,13 @@ liveness_ttl() {
 }
 
 # Liveness probe via Node's process.kill(pid, 0). 0 = alive, 1 = dead.
+# Fails SAFE: if node is unavailable we cannot determine liveness, so return
+# `inconclusive` (TTL-gated, non-destructive) rather than `dead` — returning
+# `dead` would make maybe_prune rm a live peer's sidecar and silently disable
+# conflict detection for everyone.
 probe_pid() {
   local pid="$1"
+  command -v node >/dev/null 2>&1 || { echo inconclusive; return; }
   if node -e "try{process.kill($pid,0);process.exit(0)}catch{process.exit(1)}" 2>/dev/null; then
     echo alive
   else

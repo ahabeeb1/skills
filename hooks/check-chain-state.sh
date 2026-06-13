@@ -60,6 +60,7 @@ current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 # verify the corresponding <slug>-grill.md file exists.
 # ─────────────────────────────────────────────────────────────────────────────
 warned=0
+details=""
 
 specs_dir="$REPO_ROOT/docs/agents/specs"
 if [ -d "$specs_dir" ]; then
@@ -76,12 +77,8 @@ if [ -d "$specs_dir" ]; then
     if head -30 "$spec" 2>/dev/null | grep -qE '^(Status|[*][*]Status[*][*]):.*Grilled'; then
       grill_file="$specs_dir/${base}-grill.md"
       if [ ! -f "$grill_file" ]; then
-        if [ "$warned" -eq 0 ]; then
-          echo "" >&2
-          echo "habeebs-skill chain-state warning:" >&2
-          warned=1
-        fi
-        echo "  - spec ${spec#$REPO_ROOT/} is Status: Grilled but ${grill_file#$REPO_ROOT/} is missing" >&2
+        warned=1
+        details="${details}  - spec ${spec#$REPO_ROOT/} is Status: Grilled but ${grill_file#$REPO_ROOT/} is missing\\n"
       fi
     fi
   done
@@ -98,25 +95,26 @@ fi
 #      the edit landed
 # ─────────────────────────────────────────────────────────────────────────────
 if [ -n "$current_branch" ] && [ "$current_branch" = "$default_branch" ]; then
-  # Check for uncommitted changes in load-bearing paths
-  if git status --porcelain 2>/dev/null | grep -qE '^.M? (skills/|hooks/|\.claude-plugin/)'; then
-    if [ "$warned" -eq 0 ]; then
-      echo "" >&2
-      echo "habeebs-skill chain-state warning:" >&2
-      warned=1
-    fi
-    echo "  - editing skills/, hooks/, or .claude-plugin/ on default branch ($default_branch) with uncommitted changes" >&2
-    echo "    consider: git stash + worktree on a feature branch (see using-worktrees)" >&2
+  # Check for uncommitted changes in load-bearing paths. The pattern matches
+  # both modified-tracked (`^.M? `) and brand-new untracked (`^?? `) files, so a
+  # freshly-Written file in skills/ on the default branch is also caught.
+  if git status --porcelain 2>/dev/null | grep -qE '^(.M?|\?\?) (skills/|hooks/|\.claude-plugin/)'; then
+    warned=1
+    details="${details}  - editing skills/, hooks/, or .claude-plugin/ on default branch ($default_branch) with uncommitted changes\\n    consider: git stash + worktree on a feature branch (see using-worktrees)\\n"
   fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# If we warned, add the disable hint
+# Emit collected warnings as hookSpecificOutput.additionalContext.
+#
+# Per the hook contract, PostToolUse stderr/stdout on exit 0 is debug-log-only;
+# warnings the model should see must travel via hookSpecificOutput. Exit stays 0
+# (warn-only per ADR-0003 — this hook never blocks).
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$warned" -eq 1 ]; then
-  echo "" >&2
-  echo "  (HABEEBS_DISABLE_HOOKS=1 disables this check.)" >&2
-  echo "" >&2
+  msg="habeebs-skill chain-state warning:\\n${details}  (HABEEBS_DISABLE_HOOKS=1 disables this check.)"
+  msg_escaped=$(printf '%s' "$msg" | sed 's/"/\\"/g')
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"[habeebs-skill] %s"}}\n' "$msg_escaped"
 fi
 
 # Exit 0 always — warn-only per ADR-0003

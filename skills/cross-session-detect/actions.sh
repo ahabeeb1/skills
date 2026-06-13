@@ -238,16 +238,25 @@ do_merge() {
     } catch { process.stdout.write(''); }
   " "$CTX_JSON" 2>/dev/null) || peer_sha=""
 
+  # Determine the real outcome instead of assuming markers were inserted.
+  #   conflicts present (git ls-files -u non-empty) -> markers_inserted
+  #   merge returned 0 with no unmerged paths           -> merged_clean
+  #   merge could not run (e.g. dirty tree) / no peer    -> merge_failed
+  local status="merge_failed"
   if [ -n "$peer_sha" ] && git cat-file -t "$peer_sha" >/dev/null 2>&1; then
-    # Use git merge to create conflict markers in the working tree
-    # --no-commit leaves the tree in a conflicted state for manual resolution
-    git merge --no-commit --no-ff "$peer_sha" 2>/dev/null || true
+    # --no-commit leaves the tree conflicted for manual resolution; capture rc.
+    if git merge --no-commit --no-ff "$peer_sha" 2>/dev/null; then
+      status="merged_clean"
+    fi
+    if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+      status="markers_inserted"
+    fi
   fi
 
-  # Open editor on first conflicted file if interactive
+  # Open editor on first conflicted file if interactive AND markers exist
   local first_file
   first_file=$(echo "$files" | head -1)
-  if [ -t 0 ] && [ -n "$first_file" ] && [ -f "$first_file" ]; then
+  if [ "$status" = "markers_inserted" ] && [ -t 0 ] && [ -n "$first_file" ] && [ -f "$first_file" ]; then
     local editor="${EDITOR:-${VISUAL:-}}"
     if [ -n "$editor" ]; then
       $editor "$first_file" >&2 || true
@@ -257,9 +266,12 @@ do_merge() {
     fi
   fi
 
-  write_audit "merge" "Merge markers inserted in: $(echo "$files" | tr '\n' ', ')"
+  local files_csv
+  files_csv=$(echo "$files" | paste -sd ',' - | sed 's/,/, /g')
+  write_audit "merge" "Merge outcome ($status) for: $files_csv"
 
-  printf '{"action":"merge","status":"markers_inserted","files":%s}\n' \
+  printf '{"action":"merge","status":"%s","files":%s}\n' \
+    "$status" \
     "$(node -e "process.stdout.write(JSON.stringify(process.argv[1].split('\\n').filter(Boolean)))" "$files" 2>/dev/null)"
 }
 

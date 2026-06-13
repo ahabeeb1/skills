@@ -1,4 +1,8 @@
-# Dogfood scenario 17 — depth-tier detection eval
+# Dogfood scenario 20 — depth-tier detection eval
+
+> Note: this suite shares the `20-` prefix with `20-semantic-repo-discovery`
+> (a frozen historical collision — see `tests/dogfood/README.md` § Known
+> scenario-number collisions). Refer to it by its full directory name, not "20".
 
 Measures whether `prior-art-research` Phase 3 routes a feature to the **correct
 depth tier** (Quick / Balanced / Deep), and whether the two tier invariants

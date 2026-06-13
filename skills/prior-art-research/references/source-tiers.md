@@ -1,18 +1,16 @@
 # Source Tiers — Curated by Domain
 
-> **Living document.** Source quality drifts — companies pivot, blogs go quiet, new orgs publish good engineering content. When this list feels stale (or you find a great source not on it during research), append it. Quarterly audits recommended. The list below was last reviewed: 2026-05-10.
+> **Living document.** Source quality drifts — companies pivot, blogs go quiet, new orgs publish good engineering content. When this list feels stale (or you find a great source not on it during research), append it. Quarterly audits recommended.
 
 High-signal engineering sources, organized by domain. Search these first before falling back to broad web search.
 
-## Tier 0 — Modie's internal precedent
+## Tier 0 — Your own internal precedent
 
-Always check these first when relevant. Your own ADRs and architecture writeups are the highest-signal source.
+Always check these first when relevant. Your organization's own ADRs, architecture writeups, and adjacent repos are the highest-signal source — they encode decisions already made for your exact constraints. This tier is populated per-consuming-repo, not shipped with the plugin: read the consuming repo's `CLAUDE.md` and `docs/agents/SYSTEM_CONTEXT.md`, which name the org's sibling repos and prior art. When no internal precedent is configured, fall through to Tier 1.
 
-- `BeanBot` repo — NL2SQL, RAG, ECS Fargate, pgvector, LangGraph orchestration, prompt caching, multi-agent NL2SQL
-- `salahi.app` repo — Next.js 15, React 19, Supabase, 4-tier scraping pipeline, provider abstraction, PWA push notifications
-- `AEGIS` / BOL automation — Claude vision OCR, ECS workers, SQS, DynamoDB, document extraction pipelines
-- `Spiff-App` — (add relevant domains)
 - Any ADRs in `docs/agents/adrs/` of the current repo
+- Sibling / adjacent repos named in the consuming repo's `CLAUDE.md`
+- Internal architecture docs and design records your team maintains
 
 ## Tier 1 — Production engineering blogs by domain
 

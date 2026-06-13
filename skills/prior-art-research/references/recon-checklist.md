@@ -73,18 +73,23 @@ If a probe is irrelevant (wrong language ecosystem), skip it — don't run probe
 
 ## How to write the SYSTEM_CONTEXT.md digest
 
-Don't dump raw output. Compress to:
+The recon above (stack, deploy shape, datastores, external services, hot files)
+informs the **conversation** — but most of it is NOT persisted to
+SYSTEM_CONTEXT.md. Per ADR-0010, that file carries only non-re-derivable
+cross-session state; anything Claude can re-derive from manifests / `git log` /
+imports on a fresh read is excluded. Follow `references/system-context-template.md`
+exactly. Persist only:
 
-- **Stack:** one line ("Node 20, Express 4.18, Postgres 16, Prisma 5")
-- **Deploy:** one line ("Single VM on Fly.io, Docker, no orchestrator")
-- **Datastores:** one line ("Postgres only; no Redis; no Mongo")
-- **External services:** one line ("Stripe (payments), SendGrid (email), S3 (assets)")
-- **Scale envelope:** known numbers OR "[unknown, ask user]"
-- **Methodology:** "habeebs-skill configured (docs/agents/, ADRs at 0006)" OR "not configured"
-- **Recent hot files:** 3-7 paths
-- **Notable absences:** things you'd expect but didn't find ("no rate limiter currently"; "no observability stack")
+- **Scale envelope:** known numbers OR "[unknown, ask user]" (not in code)
+- **Methodology / agent setup:** "habeebs-skill configured (docs/agents/, ADRs at NNNN)" OR "not configured"
+- **Active steering:** opt-in anchors that persist across chain runs
+- **Last reconciliation outcome:** dated one-line summary of this run
+- **Notable absences:** things you'd expect but didn't find ("no rate limiter currently"; "no observability stack") — inferential, expensive to reconstruct
+- **Project mode:** brownfield / greenfield / replacement
 
-Each line is asserted; the user can correct any of them in Phase 1.
+Do NOT persist stack, deployment topology, datastores, external services, or
+recent hot files — Claude re-derives those instantly on read (template's ❌ list).
+Each persisted line is asserted; the user can correct any of them in Phase 1.
 
 ## What NOT to do
 

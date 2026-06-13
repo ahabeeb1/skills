@@ -44,3 +44,28 @@ In a Claude Code session with this plugin installed:
 ```
 
 The chain should fire `prior-art-research` automatically (matches the trigger pattern), then hand off through spec → grill → ADR. The artifacts in this directory are the expected shape of each stage.
+
+## Assertion suites
+
+Beyond this end-to-end run, the numbered subdirectories (`09-` … `44-`) are
+per-feature assertion suites. Each is self-contained: a `check-*.sh` (or
+`*_test.sh`) plus fixtures and a README. Run the whole set with
+[`tests/run-all.sh`](../run-all.sh) — it aggregates exit codes across every
+dogfood `check-*.sh` and the standalone hook/sidecar/etc. suites, and is the
+gate the `release` skill should run before tagging.
+
+## Known scenario-number collisions (frozen)
+
+Scenario numbers are assigned at creation and **frozen** — they are referenced
+by dated/integer ADRs, specs, and CHANGELOG entries that the no-migration-
+archaeology rule (scenario 34) forbids rewriting, so a past number is never
+renamed (the same discipline as the frozen integer ADRs). Two prefixes were
+reused before scenario 35 (`fixture-id-late-binding`) began guarding against it:
+
+| Prefix | Suites sharing it | Refer to by |
+|---|---|---|
+| `19-` | `19-cross-session-conflict-detection` (v1.16.0), `19-devex-review` (v1.19.0) | full directory name |
+| `20-` | `20-semantic-repo-discovery` (the one live skills cite), `20-depth-tier` | full directory name |
+
+Always reference these by full directory name, never the bare number. Scenario 35
+prevents new collisions; these two are historical artifacts, left in place.

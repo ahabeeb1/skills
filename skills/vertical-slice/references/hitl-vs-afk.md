@@ -89,7 +89,7 @@ Reasons NOT to mark HITL even if you feel uncertain:
 - "The code style is sensitive." Configure linters / formatters; don't gate every slice.
 - "I want to review the implementation." Review at commit time, not mid-slice.
 - "It's complex." Complexity isn't HITL. HITL is about specific human inputs needed mid-flow.
-- "End-of-slice review." Reviewing the implementation AFTER it's written is **not** HITL. That's the two-stage review in `tdd-loop` Phase 5 (spec-compliance + code-quality). HITL labels gate slices *mid-flow*, before/during implementation, not after.
+- "End-of-slice review." Reviewing the implementation AFTER it's written is **not** HITL. That's the three-stage review in `tdd-loop` Phase 4 (spec-compliance + code-quality + anti-slop). HITL labels gate slices *mid-flow*, before/during implementation, not after.
 
 ## Choosing between `inline` and `approval-gate`
 

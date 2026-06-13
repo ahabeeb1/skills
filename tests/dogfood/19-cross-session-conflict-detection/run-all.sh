@@ -46,13 +46,13 @@ run_suite "Slice 3: SessionStart peer-scan"      "$REPO_ROOT/tests/hooks/session
 run_suite "Slice 4: Overlap probe"               "$REPO_ROOT/tests/overlap/merge_tree_probe_test.sh"
 run_suite "Slice 5: pre-push hook"               "$REPO_ROOT/tests/hooks/pre_push_test.sh"
 run_suite "Slice 6: Audit writer"                "$REPO_ROOT/tests/audit/audit_writer_test.sh"
-run_suite "Slice 7: Halt UX dispatch"            "$REPO_ROOT/tests/halt-ux/halt_dispatch_test.sh"
-run_suite "Slices 8-12: Action handlers"         "$REPO_ROOT/tests/actions/actions_test.sh"
 run_suite "Slice 13: PreToolUse hook"            "$REPO_ROOT/tests/hooks/pretool_use_test.sh"
-run_suite "Slice 14: Trust mode"                 "$REPO_ROOT/tests/trust/signed_signals_test.sh"
+# Slices 7-12 + 14 (halt-UX dispatch, action handlers, trust mode) removed in
+# v1.28.0 — that machinery was unreachable at runtime and structurally
+# incompatible with the non-interactive hook environment. See the removal ADR.
 
 # ---- End-to-end scenario tests ----
-run_suite "Scenario (a-f): E2E"                  "$TEST_DIR/scenarios.sh"
+run_suite "Scenario (a-e): E2E"                  "$TEST_DIR/scenarios.sh"
 
 # ---- Summary ----
 echo

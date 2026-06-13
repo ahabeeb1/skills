@@ -15,7 +15,7 @@ Concurrency model validated against Cursor's 8-cap JSON-sidecar approach
 
 ## Scripts
 
-**Live (wired into hooks, run every session):**
+All four are live: wired into the hooks and run every session.
 
 | Script | Role |
 |---|---|
@@ -24,16 +24,13 @@ Concurrency model validated against Cursor's 8-cap JSON-sidecar approach
 | `policy.sh` | Resolve the effective policy from `.claude/habeebs-policy.json` (e.g. `pretool_use: true` opt-in). |
 | `audit.sh` | Append a conflict record to `docs/agents/conflicts/` when a session conflict is detected (runtime writer path per ADR-0019). |
 
-**Halt-UX (NOT currently wired into any hook — manual/future use):**
+The scripts are cohesive, hook-consumed, and Windows/MSYS path-aware. Detection
+is **advisory** — the hooks warn/annotate; they never block or auto-resolve.
 
-| Script | Role | Status |
-|---|---|---|
-| `actions.sh` | Action handlers for a detected conflict (abort / merge / view / continue / sequence). | Unwired. `do_merge` reports the real merge outcome (`markers_inserted` / `merged_clean` / `merge_failed`), not an assumed success. |
-| `halt-ux.sh` | Interactive 5-option halt menu. | Unwired **and** structurally incompatible with the current hook environment: it reads choices from stdin with `read`, but Claude Code hooks run non-interactively (no TTY). Wiring it would require a non-interactive redesign (emit a choice payload the model renders). |
-| `trust.sh` | Signed-signal trust verification for halt signals. | Unwired; supports the halt-UX path above. |
-
-The live scripts are cohesive, hook-consumed, and Windows/MSYS path-aware. The
-halt-UX trio is retained because it is specced (v1.16.0 spec) and tested
-(`tests/actions`, `tests/halt-ux`, `tests/trust`), but it is dormant at runtime
-— see the audit note in SYSTEM_CONTEXT. Treat "wire or remove the halt-UX" as an
-open decision, not a shipped feature.
+> **Removed in v1.28.0:** an interactive halt-UX trio (`actions.sh`,
+> `halt-ux.sh`, `trust.sh`) was deleted. It was specced in v1.16.0 and tested,
+> but never wired into a hook, and `halt-ux.sh` read choices via interactive
+> `read` — which cannot run in Claude Code's non-interactive hook environment. If
+> in-session conflict *halting* (not just warning) is wanted later, it needs a
+> non-interactive redesign that emits a choice payload the model renders. See the
+> removal ADR.

@@ -73,82 +73,21 @@ The "OR tool calls" branch catches single-turn workflows that *do* use tools (e.
 
 ## Core workflow
 
-### Pre-flight — Environment check
+Follow the shared **[grill-extension protocol](../../docs/agents/references/grill-extension-protocol.md)** — pre-flight environment check, Phase 1 confirm-trigger (the SKIP block + the one-question test in "When to use" above), Phase 2 score each factor (✓/~/✗/N/A, bias to Partial/Missing), Phase 3 one specific single-axis Socratic question per gap, Phase 4 triage, Phase 5 hand back. The protocol also carries the shared anti-patterns (run only on agent specs, generate questions not design, don't fold gaps into mega-questions, don't invent factors beyond the closed 13). Only the factor-specific pieces are below.
 
-This skill is invoked from inside `socratic-grill` and inherits its environment. If invoked standalone (e.g., `/factor-check` directly), apply the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md) before reading SYSTEM_CONTEXT.md. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
+**Phase 4 triage — which factors sit in which tier:**
 
-### Phase 1 — Confirm trigger
+- **Must-grill** (wrong forces a rewrite): F5 (state), F6 (pause/resume), F7 (human-as-tool).
+- **Should-grill** (interface/integration friction): F1, F4, F11, F13.
+- **Nice-to-grill** (resolvable during implementation): F2, F3, F8, F9, F10, F12.
 
-Read the spec (or the active grilling context). Apply the trigger test from above. If the spec is not an agent product, halt with:
+**Phase 3 example questions** (good — specific, single-axis):
 
-```
-SKIP: agent-factors-check does not apply.
-  Reason: <one line — e.g., "spec is a CRUD app with no LLM orchestration".>
-  Returning control to socratic-grill.
-```
-
-If unclear, ask the one-question test. Don't run the check on a non-agent spec — wasted tokens and noise in the grilling record.
-
-### Phase 2 — Score each factor against the spec
-
-For each of the 13 factors, mark one of:
-
-- **✓ Addressed** — spec is explicit. Cite the spec section.
-- **~ Partial** — spec touches it but leaves an ambiguity. Note what's ambiguous.
-- **✗ Missing** — spec is silent. Flag as a gap.
-- **N/A** — factor doesn't apply to this product **by design**. State the design reason in the gap-note column.
-
-Bias toward Partial/Missing on first pass. If you're tempted to mark something Addressed, look for the *specific* sentence in the spec — if you can't quote it, it's Partial.
-
-**N/A is a legitimate score** for products that are intentionally single-surface (F11 N/A by design), intentionally monolithic for one bounded responsibility (F10 N/A for a tightly-scoped single-purpose agent), or intentionally synchronous-end-to-end (F6 N/A if pause/resume is explicitly out of scope). N/A is NOT an escape hatch for "I don't know" — that's ~Partial. N/A means "we chose, with a reason." State the reason.
-
-### Phase 3 — Generate one Socratic question per gap
-
-For each Partial or Missing factor, write ONE concrete question to add to the grilling agenda. The question must be:
-
-- Specific to this product (not "have you thought about tool schemas?" — use the actual tool names from the spec)
-- Single-axis (don't combine factors into one question)
-- Resolvable in one or two grill turns (no questions that are themselves features)
-
-Examples (good):
 - F1: "The spec mentions an `escalate_to_engineer` action. What is its exact tool-call schema — name, args, return type — and does it live in the same registry as `query_logs` and `restart_service`?"
 - F6: "If a user closes the browser mid-conversation, what state must persist? Where is it stored, and how does the next page-load resume the conversation?"
 - F7: "When the agent needs a refund approval, does it call a `request_human_approval` tool with structured output, or does it write a chat message and wait? If the former, who routes the approval and how is the response wired back?"
 
-Examples (bad — reject these):
-- "Have you thought about state management?" (vague)
-- "Tool schemas, prompts, AND error formatting — what's the plan?" (multi-axis)
-- "Should we use LangChain or build our own?" (framework war, not a gap question)
-
-### Phase 4 — Score skip-able vs. must-grill
-
-Not every gap needs grilling. Apply a triage:
-
-- **Must-grill** (high blast radius if wrong): F5 (state), F6 (pause/resume), F7 (human-as-tool). These shape system architecture; getting them wrong forces a rewrite.
-- **Should-grill** (medium blast radius): F1, F4, F11, F13. Affect interfaces and integration; wrong choices cause friction but not rewrites.
-- **Nice-to-grill** (low blast radius): F2, F3, F8, F9, F10, F12. Important but often resolvable during implementation if missed.
-
-Default rule: surface ALL Must-grill questions; surface Should-grill questions only if at least one Partial/Missing exists; surface Nice-to-grill questions only if the user asks for the full sweep.
-
-### Phase 5 — Hand back to socratic-grill
-
-Produce a factor-check record using `references/factor-check-template.md` and append it to the active grill record. Output:
-
-```
-HANDOFF: grilling agenda updated — <N> new questions added from agent-factors-check.
-  Must-grill: <count> questions on factors <list>.
-  Should-grill: <count> questions on factors <list>.
-  Resume socratic-grill with these questions interleaved into the existing agenda.
-```
-
-## Anti-patterns this skill guards against
-
-- **Running on non-agent specs.** Wastes tokens, pollutes the grill record. Honor the trigger test.
-- **Surveying instead of grilling.** The output is concrete questions, not a factor-by-factor essay. If a factor is fine, skip it — don't write a paragraph defending the skip.
-- **Treating the factors as a scoring rubric.** This isn't a grade; it's a gap-finder. A spec with 7 Missings isn't "bad" — it's an early-stage spec with 7 things worth grilling.
-- **Inventing factors not in the list.** The 13 factors above are the closed set. If you find yourself adding F14, that's a new skill or a new ADR — don't smuggle it in.
-- **Doing the grilling here.** This skill *generates questions*. `socratic-grill` *runs* the grilling. Don't try to resolve questions in this skill.
-- **Folding all gaps into one mega-question.** Each gap gets one question. Composability matters — the user might answer F5 in turn 1 and F7 in turn 5.
+**Record:** produce a factor-check record using `references/factor-check-template.md`; the hand-back `HANDOFF: grilling agenda updated` line names the factors per tier. If Missing count > 6, hand back to `draft-spec` before grilling continues (the spec may need re-drafting).
 
 ## Integration with the chain
 

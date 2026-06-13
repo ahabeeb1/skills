@@ -9,7 +9,6 @@ REPO_ROOT=$(cd "$TEST_DIR/../../.." && pwd)
 SIDECAR="$REPO_ROOT/skills/cross-session-detect/sidecar.sh"
 OVERLAP="$REPO_ROOT/skills/cross-session-detect/overlap.sh"
 POLICY="$REPO_ROOT/skills/cross-session-detect/policy.sh"
-ACTIONS="$REPO_ROOT/skills/cross-session-detect/actions.sh"
 SESSION_START_HOOK="$REPO_ROOT/hooks/session-start-peer-scan.sh"
 PREPUSH_HOOK="$REPO_ROOT/hooks/pre-push.sh"
 PRETOOL_HOOK="$REPO_ROOT/hooks/pretool-use-peer-scan.sh"
@@ -205,23 +204,9 @@ assert_empty "$OUT" "(e) silent when opt-out"
 bash "$SIDECAR" end --session-id "$SESS_A" 2>/dev/null || true
 rm "$TMP/.claude/habeebs-policy.json"
 
-# =========================================================================
-# Scenario (f): worktree-out flow end-to-end
-# =========================================================================
-echo "[f] Worktree-out flow"
-CTX='{"conflict_id":"e2e-conflict-001","detected_at_iso":"2026-05-22T20:10:00Z","trigger":"pre-push","session_a":{"session_id":"session-bugfix"},"session_b":{"session_id":"session-refactor"},"overlap":{"files":["app.js"],"conflicted_paths":["app.js"]}}'
-
-git checkout -q "$DEFAULT_BRANCH"
-OUT=$(bash "$ACTIONS" worktree-out --session-id "$SESS_B" --peer-session-id "$SESS_A" --context "$CTX" 2>/dev/null)
-RC=$?
-assert_eq "0" "$RC" "(f) worktree-out exits 0"
-assert_contains "$OUT" "worktree-out" "(f) output has worktree-out"
-
-# Clean up worktree
-WT_PATH=$(node -e "try{process.stdout.write(JSON.parse(process.argv[1]).worktree_path)}catch{}" "$OUT" 2>/dev/null)
-if [ -n "$WT_PATH" ] && [ -d "$WT_PATH" ]; then
-  git worktree remove --force "$WT_PATH" 2>/dev/null || rm -rf "$WT_PATH"
-fi
+# (Scenario (f) "worktree-out flow" removed in v1.28.0 — the action handlers
+#  it exercised (actions.sh / halt-ux.sh / trust.sh) were deleted as unreachable,
+#  non-interactive-incompatible halt-UX. See the removal ADR.)
 
 # =========================================================================
 # Summary

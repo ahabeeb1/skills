@@ -6,8 +6,18 @@
 # registrations. The scripts self-locate their bundle root via
 # hooks/lib/resolve-bundle-root.sh, so no harness-specific env var is needed.
 #
-# Matchers use Codex's regex dialect, anchored (^...$) so they match exactly the
-# same tools as the Claude literal matchers ("Bash", "Edit|Write|NotebookEdit").
+# Matchers use Codex's regex dialect, anchored (^...$), matched against the
+# reported `tool_name`. Codex reports `tool_name: "apply_patch"` for file edits
+# (Edit/Write are accepted matcher aliases), and `tool_name: "Bash"` for shell
+# calls — so the edit matchers list `apply_patch` first (the canonical name);
+# `NotebookEdit` is a Claude-only tool and is intentionally omitted.
+#
+# KNOWN CODEX LIMITATION (openai/codex#16732): as of writing, Codex does NOT emit
+# PreToolUse/PostToolUse events for file writes made through `apply_patch` — those
+# events fire only for Bash/shell tool calls. So the Bash-matched commit-block
+# guardrail below fires reliably on Codex; the Edit/Write-matched peer-scan and
+# chain-state hooks are registered correctly but currently fire on Codex only for
+# Bash-driven edits, until Codex closes #16732. On Claude Code all five fire.
 #
 # Path resolution: these commands assume the bundle is at the git repository root
 # (the canonical layout, and how `.agents/skills/` discovery also works). For a
@@ -42,18 +52,18 @@ command = 'bash "$(git rev-parse --show-toplevel)/hooks/preventing-commits-to-de
 timeout = 5
 statusMessage = "habeebs-skill: guarding default branch"
 
-# ── PreToolUse(Edit|Write|NotebookEdit): peer-overlap annotation (warn-only) ───
+# ── PreToolUse(apply_patch|Edit|Write): peer-overlap annotation (warn-only) ────
 [[hooks.PreToolUse]]
-matcher = "^(Edit|Write|NotebookEdit)$"
+matcher = "^(apply_patch|Edit|Write)$"
 [[hooks.PreToolUse.hooks]]
 type = "command"
 command = 'bash "$(git rev-parse --show-toplevel)/hooks/pretool-use-peer-scan.sh"'
 timeout = 10
 statusMessage = "habeebs-skill: checking peer overlap"
 
-# ── PostToolUse(Edit|Write|NotebookEdit): chain-state validator (warn-only) ────
+# ── PostToolUse(apply_patch|Edit|Write): chain-state validator (warn-only) ─────
 [[hooks.PostToolUse]]
-matcher = "^(Edit|Write|NotebookEdit)$"
+matcher = "^(apply_patch|Edit|Write)$"
 [[hooks.PostToolUse.hooks]]
 type = "command"
 command = 'bash "$(git rev-parse --show-toplevel)/hooks/check-chain-state.sh"'

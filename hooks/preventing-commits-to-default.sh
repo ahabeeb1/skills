@@ -186,8 +186,25 @@ if [ "$current_branch" != "$default_branch" ]; then
 fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# Block: stderr is shown to Claude; exit 2 denies the tool call
+# Block — in BOTH harness dialects so the deny actually takes effect everywhere:
+#   - Codex CLI: a PreToolUse deny is JSON on stdout
+#     (hookSpecificOutput.permissionDecision = "deny"). exit 2 alone is NOT the
+#     documented Codex deny path, so emit the JSON. Claude Code honors this shape too.
+#   - Claude Code: stderr message + exit 2 (its documented deny). Kept as the
+#     belt-and-suspenders fallback; harmless under Codex.
 # ────────────────────────────────────────────────────────────────────────────
+reason="BLOCKED by habeebs-skill: \`${command_text}\` on \`${default_branch}\` violates the never-commit-to-default rule (ADR-0001). Create a feature branch first: git checkout -b <prefix>/<slug>. Per-repo opt-out: add '${current_branch}' to .claude/habeebs-allowed-branches. Emergency disable: HABEEBS_DISABLE_HOOKS=1."
+
+# stdout JSON deny (Codex's documented PreToolUse deny; Claude Code honors it too).
+if command -v jq >/dev/null 2>&1; then
+  jq -cn --arg r "$reason" \
+    '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
+else
+  esc=$(printf '%s' "$reason" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$esc"
+fi
+
+# stderr human-readable message (shown by Claude Code).
 cat >&2 <<EOF
 BLOCKED by habeebs-skill: \`${command_text}\` on \`${default_branch}\` violates ADR-0001's never-commit-to-default rule.
 

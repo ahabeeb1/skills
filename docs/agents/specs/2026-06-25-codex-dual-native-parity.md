@@ -67,10 +67,12 @@ Numbered in dependency order. HITL = human-in-the-loop required; AFK = autonomou
 **Description:** Land the ADR + this spec, and empirically confirm Codex ignores the `disable-model-invocation` frontmatter key against a live Codex CLI (or its published schema validator).
 
 **Acceptance criteria:**
-- [ ] ADR + spec committed on the feature branch; ADR index row appended.
-- [ ] A `SKILL.md` with `disable-model-invocation` loads in Codex without error; result recorded in the spec. If it errors, switch the frontmatter pick to dual-key and update the ADR's frontmatter line.
+- [x] ADR + spec committed on the feature branch; ADR index row appended.
+- [x] A `SKILL.md` with `disable-model-invocation` loads in Codex without error; result recorded in the spec. If it errors, switch the frontmatter pick to dual-key and update the ADR's frontmatter line.
 
-**Test strategy:** Manual smoke (live Codex) + assertion that the recorded result is non-empty.
+**Verification result (2026-06-25):** No live Codex CLI is available in this environment, so the gate's documented fallback path was used — verification against Codex's published Agent Skills schema. The schema requires only `name` + `description`; per the spec, "All other frontmatter fields are optional" and unspecified keys are not validated against an allow-list, so `disable-model-invocation` is carried through as an inert extra key (same lenient-frontmatter behavior as Claude Code's own loader). **Outcome: minimal-frontmatter pick holds; no dual-key fallback needed.** Recorded as evidence per the Slice 1 fallback (published-schema validator as evidence source). Revisit trigger added: re-confirm against a live Codex before the next major if Codex tightens frontmatter validation.
+
+**Test strategy:** Schema-evidence check (live Codex unavailable) — a parity test asserts every `SKILL.md` carries exactly the minimal key set so a future schema tightening is caught. Implemented at `tests/codex/01-frontmatter-parity/`.
 
 **Blocked by:** None
 

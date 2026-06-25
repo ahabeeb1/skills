@@ -1,0 +1,61 @@
+# habeebs-skill — Codex CLI hook registration (dual-native parity, 2026-06-25).
+#
+# Codex's hooks engine uses the same event schema as Claude Code's hooks.json
+# (stable since Codex v0.124.0). This file registers the SAME six scripts under
+# Codex that hooks/hooks.json registers under Claude Code — one script set, two
+# registrations. The scripts self-locate their bundle root via
+# hooks/lib/resolve-bundle-root.sh, so no harness-specific env var is needed.
+#
+# Matchers use Codex's regex dialect, anchored (^...$) so they match exactly the
+# same tools as the Claude literal matchers ("Bash", "Edit|Write|NotebookEdit").
+#
+# Path resolution: these commands assume the bundle is at the git repository root
+# (the canonical layout, and how `.agents/skills/` discovery also works). For a
+# vendored-at-subpath install, set CODEX_PLUGIN_ROOT and replace the
+# `$(git rev-parse --show-toplevel)` prefix with "$CODEX_PLUGIN_ROOT".
+#
+# Honors HABEEBS_DISABLE_HOOKS=1 (emergency disable) and HABEEBS_SKIP=<hook>
+# (per-invocation skip), identical to the Claude path.
+
+# ── SessionStart: ghost-commit divergence warning ──────────────────────────────
+[[hooks.SessionStart]]
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/hooks/session-start.sh"'
+timeout = 10
+statusMessage = "habeebs-skill: checking branch divergence"
+
+# ── SessionStart: cross-session peer scan (warn-only) ──────────────────────────
+[[hooks.SessionStart]]
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/hooks/session-start-peer-scan.sh"'
+timeout = 10
+statusMessage = "habeebs-skill: scanning for peer sessions"
+
+# ── PreToolUse(Bash): block commits/pushes to the default branch ───────────────
+[[hooks.PreToolUse]]
+matcher = "^Bash$"
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/hooks/preventing-commits-to-default.sh"'
+timeout = 5
+statusMessage = "habeebs-skill: guarding default branch"
+
+# ── PreToolUse(Edit|Write|NotebookEdit): peer-overlap annotation (warn-only) ───
+[[hooks.PreToolUse]]
+matcher = "^(Edit|Write|NotebookEdit)$"
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/hooks/pretool-use-peer-scan.sh"'
+timeout = 10
+statusMessage = "habeebs-skill: checking peer overlap"
+
+# ── PostToolUse(Edit|Write|NotebookEdit): chain-state validator (warn-only) ────
+[[hooks.PostToolUse]]
+matcher = "^(Edit|Write|NotebookEdit)$"
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/hooks/check-chain-state.sh"'
+timeout = 10
+statusMessage = "habeebs-skill: validating chain state"

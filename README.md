@@ -21,7 +21,7 @@ _Before you build X, find how the best teams actually shipped X. Then spec it, g
 - **Phased delivery with acceptance gates.** Plans declare binary done conditions, a dependency DAG, parallelization groups, and rollback hooks before slice one ships.
 - **TDD over vertical slices.** Red → green → refactor. One slice at a time. Deep-modules check at every refactor. No half-finished half-shipped commits.
 - **Tier-aware effort.** Trivial work runs Quick (terse, lighter ceremony). Genuinely complex work runs Deep (parallel research subagents, phased plan). Quality gates never get skipped — only the volume of ceremony scales.
-- **Works on Claude Code AND Codex.** Same skill bundle, two surfaces. Plugin install for Claude Code, vendored `AGENTS.md` reference for Codex.
+- **Dual-native on Claude Code AND Codex.** Same skills, hooks, and subagents — first-class on both. Plugin install for Claude Code; native Agent Skills + `.codex` hooks for Codex CLI, generated from one canonical source with a CI drift-check.
 
 ---
 
@@ -139,26 +139,36 @@ cd skills
 claude --plugin-dir .
 ```
 
-### Codex CLI (or any AGENTS.md-aware agent)
+### Codex CLI (native Agent Skills + hooks)
 
-Codex has no plugin manager — vendor the repo:
+Codex CLI runs habeebs-skill **first-class** — native skills, a hooks engine that mirrors Claude's, and native subagents. Vendor the repo and copy the two generated trees into your project root:
 
 ```bash
 git submodule add https://github.com/ahabeeb1/skills.git vendor/habeebs-skill
+cp -R vendor/habeebs-skill/.agents .          # Codex skill discovery tree
+cp -R vendor/habeebs-skill/.codex  .          # Codex hook registration
 ```
 
-Then reference it from your project's root `AGENTS.md`:
+Codex discovers the skills at `.agents/skills/<name>/SKILL.md` and auto-activates them by `description` (same progressive-disclosure contract as Claude). Invoke one explicitly by name:
+
+```
+> $prior-art-research investigate event-sourced order systems
+```
+
+The `.agents/skills/` tree is **generated** from the canonical `skills/` source — never hand-edit it. After updating the submodule, regenerate and re-copy (a CI drift-check enforces sync):
+
+```bash
+bash vendor/habeebs-skill/bin/sync-codex.sh
+```
+
+Reference the bundle from your project's root `AGENTS.md`:
 
 ```markdown
 ## Skills
 This project uses [habeebs-skill](./vendor/habeebs-skill/AGENTS.md).
 ```
 
-Codex reads the vendored `SKILL.md` files on demand. Invoke a skill by name:
-
-```
-> Use the prior-art-research skill to investigate event-sourced order systems.
-```
+> One source of truth, two harnesses — see the [dual-native parity ADR](./docs/agents/adrs/2026-06-25-dual-native-claude-codex-parity.md).
 
 ---
 

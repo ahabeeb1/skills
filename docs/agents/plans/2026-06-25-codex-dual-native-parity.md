@@ -1,5 +1,5 @@
 ---
-Status: Active
+Status: Done
 Date-Created: 2026-06-25
 Last-Reviewed: 2026-06-25
 Superseded-By: null
@@ -18,7 +18,7 @@ habeebs-skill is a Claude Code plugin today. Codex CLI has since grown a native 
 |---|---|
 | ADR | [`adrs/2026-06-25-dual-native-claude-codex-parity`](../adrs/2026-06-25-dual-native-claude-codex-parity.md) |
 | Tier | Deep (inherited from spec) |
-| Status | Active |
+| Status | Done |
 | Owner | maintainer (HITL) + AFK fleet |
 
 ## Goal

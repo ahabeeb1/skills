@@ -1,7 +1,7 @@
 # Implementation Spec: Dual-native Claude Code + Codex parity
 
 **Slug:** `codex-dual-native-parity`
-**Status:** Grilled
+**Status:** Done
 **Version:** v1.29.0
 **Release:** v1.29.0
 **Tier:** Deep

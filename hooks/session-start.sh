@@ -6,7 +6,9 @@
 #
 # Per ADR-0003:
 #   - Rule 1: warn-only, never auto-fix (no git reset, no merge, no destructive ops)
-#   - Rule 2: multi-harness aware (CLAUDE_PLUGIN_ROOT / CURSOR_PLUGIN_ROOT detection)
+#   - Rule 2: multi-harness aware (Claude Code / Cursor / Codex CLI — bundle root
+#             via hooks/lib/resolve-bundle-root.sh; this script self-locates and
+#             needs no harness-specific env var)
 #   - Rule 3: stateless (reads git state and SYSTEM_CONTEXT.md; writes nothing)
 #
 # Emergency disable: HABEEBS_DISABLE_HOOKS=1

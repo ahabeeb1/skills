@@ -7,7 +7,9 @@
 #
 # Per ADR-0003:
 #   - Rule 1: warn-only, never block. Exit 0 always. Warnings to stderr.
-#   - Rule 2: multi-harness aware (CLAUDE_PLUGIN_ROOT / CURSOR_PLUGIN_ROOT detection)
+#   - Rule 2: multi-harness aware (Claude Code / Cursor / Codex CLI — bundle root
+#             via hooks/lib/resolve-bundle-root.sh; this script self-locates and
+#             needs no harness-specific env var)
 #   - Rule 3: stateless — file-existence-as-state per silent-contradiction-3
 #             resolution. Reads frontmatter + git state; writes nothing.
 #

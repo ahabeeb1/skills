@@ -1,6 +1,6 @@
 # habeebs-skill — Agent Instructions (Codex / generic agents)
 
-This repository is a portable agent-skill bundle. It is consumable by **Claude Code** (as an installable plugin) and by **OpenAI Codex CLI** or any other agent that honors `AGENTS.md` plus markdown-based skills.
+This repository is a **dual-native** agent-skill bundle. It is first-class on **Claude Code** (as an installable plugin) and on **OpenAI Codex CLI** (as native Agent Skills + hooks), and consumable by any other agent that honors `AGENTS.md` plus markdown-based skills. Both harnesses run the same canonical skills from one source — see the [dual-native parity decision](./docs/agents/adrs/2026-06-25-dual-native-claude-codex-parity.md).
 
 When you, the agent, are invoked inside a project that has installed or vendored this repo, treat the files under `skills/`, `commands/`, and `agents/` as authoritative procedures.
 
@@ -73,17 +73,24 @@ When researching:
 
 ## Codex-specific notes
 
-Codex CLI does not natively understand the `/plugin` system. To use this repo from Codex:
+Codex CLI has a native **Agent Skills** system, a **hooks engine** that mirrors Claude's `hooks.json` schema, and native **subagents** — so this bundle runs first-class under Codex, not as a prose-only fallback. To set it up:
 
-1. Vendor the repo (clone or submodule) into your project at any path, e.g. `./vendor/habeebs-skill/`.
-2. Reference `vendor/habeebs-skill/AGENTS.md` from your project's root `AGENTS.md` with an `include` line, or copy its content.
-3. Skills are plain markdown — Codex can read them on demand. Invoke a skill by name in your prompt (e.g. "use the `prior-art-research` skill from habeebs-skill").
-4. The slash commands under `commands/` are Claude-Code-specific shortcuts; under Codex, invoke the underlying skill by name instead.
+1. Vendor the repo (clone or submodule) into your project, e.g. `./vendor/habeebs-skill/`, or copy the generated `.agents/skills/` and `.codex/` trees into your project root.
+2. **Skills:** Codex discovers skills at `$REPO_ROOT/.agents/skills/<name>/SKILL.md`. This tree is GENERATED from the canonical `skills/` source by `bin/sync-codex.sh` (single source of truth — never hand-edit `.agents/skills/`; a CI drift-check enforces this). Invoke a skill by name: `$prior-art-research`. Auto-activation is by the skill's `description` (progressive disclosure — only `name`+`description` load at startup), the same contract Claude uses.
+3. **Hooks:** `.codex/config.toml` registers the same five event-hook scripts as the Claude plugin (default-branch commit block, peer scan, chain-state validator). Merge it into your project's `.codex/config.toml`, or set `CODEX_PLUGIN_ROOT` if the bundle is vendored at a subpath. Hooks honor `HABEEBS_DISABLE_HOOKS=1` and `HABEEBS_SKIP=<hook>` identically. Two harness-dialect notes: the commit-block hook emits Codex's JSON deny shape (`hookSpecificOutput.permissionDecision: "deny"`) as well as Claude's `exit 2`; and edit matchers use Codex's canonical `tool_name` (`^(apply_patch|Edit|Write)$`). **Version floor:** edit-triggered hooks require **Codex ≥ 0.123.0** — earlier Codex emitted PreToolUse/PostToolUse only for Bash/shell, not `apply_patch` edits (openai/codex#16732, fixed in 0.123.0 / PR #18391, which also exposes the patch body as `tool_input.command`). The v0.124.0 engine baseline this bundle targets is past that floor, so all five hooks fire on both harnesses. (Residual: on a Codex `apply_patch` event the two edit hooks receive the patch body in `tool_input.command` rather than a `file_path` field, so their file-targeting is best-effort there until a live smoke confirms it.)
+4. **Subagents:** Deep-tier research and `parallel-dev` dispatch the `agents/*.md` prompts via Codex's native subagents under the same 4-status contract (ADR-0004). No degradation versus Claude.
+5. **Commands:** the slash commands under `commands/` are Claude-Code shortcuts. Under Codex, invoke the skill directly with `$<skill-name>` (Codex custom prompts are deprecated in favor of skills).
+
+Path portability: every hook/command body resolves its bundle root via `hooks/lib/resolve-bundle-root.sh` (`CLAUDE_PLUGIN_ROOT` → `CURSOR_PLUGIN_ROOT` → `CODEX_PLUGIN_ROOT` → `git rev-parse --show-toplevel` → self-location), so no harness-specific env var is required.
 
 ## Map of the bundle
 
-- `skills/<name>/SKILL.md` — the skill definition; read this first when invoked
+- `skills/<name>/SKILL.md` — the canonical skill definition; read this first when invoked
 - `skills/<name>/references/` — templates and reference material the skill cites
+- `.agents/skills/` — **generated** Codex discovery tree (mirror of `skills/`; built by `bin/sync-codex.sh`)
+- `.codex/config.toml` — Codex hook registration (mirror of `hooks/hooks.json`)
+- `bin/sync-codex.sh` — regenerates `.agents/skills/`; `--check` is the CI drift gate
+- `hooks/lib/resolve-bundle-root.sh` — harness-agnostic bundle-root resolver
 - `commands/<verb>.md` — Claude Code slash command shortcuts (`/research`, `/spec`, etc.)
-- `agents/<role>.md` — subagent prompts dispatched by `prior-art-research` Deep mode
+- `agents/<role>.md` — subagent prompts dispatched by `prior-art-research` Deep mode (both harnesses)
 - `docs/` — methodology/build documentation

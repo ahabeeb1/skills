@@ -2,6 +2,8 @@
 
 This plugin gives Claude a research-grounded engineering methodology. When the user asks to build something non-trivial, the skills in this plugin trigger in a chain. Don't bypass them.
 
+**Dual-native (Claude Code + Codex CLI).** The bundle is first-class on both harnesses from one canonical source. `skills/` is authoritative; the Codex discovery tree (`.agents/skills/`) and hook registration (`.codex/config.toml`) are GENERATED from it by `bin/sync-codex.sh` and guarded by a CI drift-check. **When you edit a skill, hook, or `hooks.json`, regenerate with `bash bin/sync-codex.sh` before committing** — `tests/codex/02-skill-drift` fails otherwise. Never hand-edit `.agents/skills/`. See the [dual-native parity ADR](./docs/agents/adrs/2026-06-25-dual-native-claude-codex-parity.md).
+
 ## The chain
 
 ```

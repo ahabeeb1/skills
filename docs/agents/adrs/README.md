@@ -45,6 +45,7 @@ The index below is hand-maintained: `decision-record` appends one row when it wr
 | 2026-06-09 | [Add a re-grill edge, slice-shape axis, and mental-model probes to the grill](./2026-06-09-add-regrill-edge-and-grill-alignment-axes.md) | Accepted | 2026-06-09 |
 | 2026-06-10 | [Adopt a fresh-context-per-slice loop harness with classify-then-route triage and tiered fail-closed halts](./2026-06-10-loop-harness-fresh-context-outer-loop.md) | Accepted | 2026-06-10 |
 | 2026-06-13 | [Remove the unwired, non-interactive-incompatible cross-session halt-UX](./2026-06-13-remove-unwired-halt-ux.md) | Accepted | 2026-06-13 |
+| 2026-06-25 | [Achieve dual-native Claude Code + Codex parity from a single canonical skill source](./2026-06-25-dual-native-claude-codex-parity.md) | Accepted | 2026-06-25 |
 
 ## Conventions
 

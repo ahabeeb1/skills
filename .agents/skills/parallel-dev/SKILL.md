@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Orchestration primitive for parallel subagent dispatch. The art is in proving independence BEFORE dispatch — failures of independence become hard-to-debug merge conflicts, race conditions, or duplicated work.
 
+**Harness portability.** This skill is dispatch-mechanism-agnostic — it specifies *what* to dispatch and *how to prove independence*, not which runtime spawns the subagents. It runs identically on Claude Code (subagents via the Task/Agent tool) and Codex CLI (native subagents). The dispatch spec, the 4-status return contract, the `context_preamble` requirement, and per-worktree isolation (plain `git worktree`, harness-neutral) are all expressed against the subagent abstraction both harnesses provide. Where a single-agent harness has no subagent primitive at all, fall back to sequential execution of the same dispatch specs — correctness is preserved, only concurrency is lost.
+
 ## When to use this skill
 
 **Trigger on:**

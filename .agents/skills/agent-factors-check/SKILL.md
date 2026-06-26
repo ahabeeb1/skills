@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Agent Factors Check
 
+**PRESSURE-TEST EVERY AGENT FACTOR THE DESIGN TOUCHES.**
+
 Pressure-test an LLM/agent product spec against the 13 agent quality factors. The job is not to grade — it's to surface the questions habeebs-skill's main chain (research → spec → grill → ADR) otherwise leaves implicit when the product *is* an agent.
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds 6–13 Socratic questions to the grilling agenda. After grilling resolves them, control returns to the main chain.

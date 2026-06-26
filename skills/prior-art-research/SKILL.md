@@ -5,6 +5,8 @@ description: Research-grounded implementation discovery before building anything
 
 # Prior-Art Research
 
+**SURVEY, THEN DECIDE — NEVER SURVEY WITHOUT RECOMMENDING ONE.**
+
 **The premise:** Before you build X, find how the best teams actually shipped X. Then ground your implementation in those proven patterns, not in theoretical best-practices.
 
 This is convergent research. Generic brainstorming generates novel options; this skill finds the patterns that already work in production at the scale you care about, and recommends one.
@@ -305,9 +307,8 @@ Research success is not held hostage to archival failure — same shape as the d
 End the response with explicit handoff lines. The downstream skills look for these. **Note:** these HANDOFF lines are navigation pointers, not state payloads — downstream skills MUST read the full Phase 6 output document (the case studies, recommendations, decisions-to-make-next, open questions, sources) to do their work. When Phase 6.5 fired, the "full Phase 6 output document" IS the archive file at `docs/agents/research/<slug>-research.md` — name the path in the HANDOFF so downstream skills know what to read. See [`using-habeebs-skill` § "HANDOFF lines — navigation, not state transfer"](../using-habeebs-skill/SKILL.md) for the full-doc-read contract that governs every HANDOFF in the chain.
 
 ```
-HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec. Source: docs/agents/research/<slug>-research.md (when Phase 6.5 archived).
-HANDOFF: grill ready — invoke `socratic-grill` to drive ambiguity out of the open questions and decisions above.
-HANDOFF: record ready — once spec + grill complete, invoke `decision-record` to capture the chosen architecture as an ADR.
+HANDOFF: spec ready — invoke `draft-spec` to turn this recommendation into the plain-language Design the user reads. Source: docs/agents/research/<slug>-research.md (when Phase 6.5 archived).
+HANDOFF: grill ready — once the Design is written, invoke `socratic-grill` to walk the user through it, drive ambiguity out of the open questions and decisions above, and earn sign-off.
 ```
 
 **Then flush steering** if `SYSTEM_CONTEXT.md` has an `## Active steering` section with content. Move the block to a `## Last reconciliation outcome` section dated today. This keeps anchors from bleeding across unrelated chain runs. See `references/steering-hints.md` § "Flush at end of chain" for the exact format and the opt-in-persistence rule for multi-chain campaigns.
@@ -365,7 +366,7 @@ Phase 7: Hands off — many open questions for `socratic-grill`.
 
 ## See also
 
-- `draft-spec` — turns the recommendation into an implementation spec
+- `draft-spec` — turns the recommendation into the Design
 - `socratic-grill` — drives ambiguity out of decisions and open questions
 - `decision-record` — captures the chosen architecture as an ADR
 - `parallel-dev` — orchestration primitive used in the Deep tier

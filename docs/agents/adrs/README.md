@@ -46,6 +46,9 @@ The index below is hand-maintained: `decision-record` appends one row when it wr
 | 2026-06-10 | [Adopt a fresh-context-per-slice loop harness with classify-then-route triage and tiered fail-closed halts](./2026-06-10-loop-harness-fresh-context-outer-loop.md) | Accepted | 2026-06-10 |
 | 2026-06-13 | [Remove the unwired, non-interactive-incompatible cross-session halt-UX](./2026-06-13-remove-unwired-halt-ux.md) | Accepted | 2026-06-13 |
 | 2026-06-25 | [Achieve dual-native Claude Code + Codex parity from a single canonical skill source](./2026-06-25-dual-native-claude-codex-parity.md) | Accepted | 2026-06-25 |
+| 2026-06-26 | [Split the chain into a plain-language Human layer and a technical Machine layer, with a single Design artifact](./2026-06-26-split-human-design-and-machine-layers.md) | Accepted | 2026-06-26 |
+| 2026-06-26 | [Demote the ADR to one-way-door decisions only and the plan to multi-phase work only; merge the grill record into the Design](./2026-06-26-demote-adr-and-plan-to-conditional.md) | Accepted | 2026-06-26 |
+| 2026-06-26 | [Adopt a plain-imperative house voice — iron law, Thought→Reality tables, jargon glossed — for every skill](./2026-06-26-adopt-superpowers-house-voice.md) | Accepted | 2026-06-26 |
 
 ## Conventions
 

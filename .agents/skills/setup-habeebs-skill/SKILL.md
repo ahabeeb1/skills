@@ -5,6 +5,8 @@ description: One-time per-repo bootstrap for the habeebs-skill chain. Use when u
 
 # Setup habeebs-skill
 
+**EXPLAIN EVERY TERM. THE USER MAY NOT KNOW WHAT ANY OF THIS MEANS.**
+
 Configures a single repository so the other habeebs-skills know how to behave. Run once per new repo.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you find, confirm with the user, then write.

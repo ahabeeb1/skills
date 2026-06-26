@@ -5,6 +5,8 @@ description: Chain orientation for habeebs-skill. Use when any habeebs-skill tri
 
 # Using habeebs-skill
 
+**RUN THE SKILLS AS A CHAIN. NEVER VIBE-CODE PAST THE GATES.**
+
 A research-grounded engineering methodology. The skills compose into a chain. Don't run them in isolation.
 
 ## The chain at a glance
@@ -12,29 +14,33 @@ A research-grounded engineering methodology. The skills compose into a chain. Do
 ```
 [User says "I want to build X"]
          ↓
+═══ HUMAN LAYER — plain language, the user reads these ═══════════════════════
 prior-art-research    → finds production patterns, recommends an approach
          │   ↳ HITL pivot gate (Phase 6.4) — user reviews recommendation BEFORE archive write
          ↓
-draft-spec            → turns recommendation into an implementation spec
+draft-spec            → writes the DESIGN: one plain-language doc — what we're building,
+         │              why this approach, the key decisions and trade-offs
          ↓
-socratic-grill        → drives ambiguity out of decisions
-         │   ↳ agent-factors-check (conditional — agent / copilot / LLM-workflow / RAG specs)
-         │   ↳ devex-review        (conditional — CLI / SDK / library / plugin / framework specs)
+socratic-grill        → walks the user through the Design, pressure-tests every aspect,
+         │              writes the resolved decisions back into the Design, earns SIGN-OFF
+         │   ↳ agent-factors-check (conditional — agent / copilot / LLM-workflow / RAG Designs)
+         │   ↳ devex-review        (conditional — CLI / SDK / library / plugin / framework Designs)
+         ↓   ════ sign-off gate — only past here does code begin ════
+═══ MACHINE LAYER — technical, for the implementing subagent ════════════════
+vertical-slice        → decomposes the signed-off Design into the slice list
          ↓
-decision-record       → captures the result as an ADR
-         ↓
-write-plan            → phased delivery doc with acceptance gates + rollback hooks (skip if trivial)
-         ↓
-tdd-loop              → implements with red-green-refactor over vertical slices
+tdd-loop              → implements with red-green-refactor over the slices
          │   ↳ deep-modules — runs at the REFACTOR step of each slice (not a separate phase)
          │   ↳ verify-output — anti-slop gate run between GREEN and each commit
-         │   ↳ re-grill edge — implementation-revealed spec ambiguity halts the slice
-         │     into a scoped socratic-grill round (inline patch or ADR escalation), then resumes
-         │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan:
-         │     failure-triage routes fixes, tiered halt policy parks human-judgment scope into
-         │     halt reports + RUN_SUMMARY; parked work resumes via /tdd --resume <run-id>
+         │   ↳ re-grill edge — implementation-revealed Design ambiguity halts the slice
+         │     into a scoped socratic-grill round (patches the Design), then resumes
+         │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan
          ↓
 release               → version bump, CHANGELOG, PR body, tag-push — terminal chain link
+
+CONDITIONAL (don't write by default):
+  decision-record  → an ADR, only when the Design has a one-way-door (irreversible) decision
+  write-plan       → a phased plan, only when the work is genuinely multi-phase
 ```
 
 **HITL gates in the chain** (where the user pivots):
@@ -49,9 +55,9 @@ Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep*
 
 ## HANDOFF lines — navigation, not state transfer
 
-Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the spec file written by `draft-spec`, the grill record written by `socratic-grill`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line.
+Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the Design written by `draft-spec` (and grilled-in-place by `socratic-grill`), the slice list written by `vertical-slice`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line. Always precede a HANDOFF line with a one- or two-sentence plain-English recap of what was produced and what's next — see [`docs/agents/references/skill-voice.md`](../../docs/agents/references/skill-voice.md).
 
-Worked example: `socratic-grill` finishes a session by writing `docs/agents/specs/<slug>-grill.md` (the full record) and emitting `HANDOFF: record ready — invoke decision-record to capture as ADRs`. When `decision-record` runs, it reads the grill record IN FULL — every resolved item, every axes-grilled rationale, every revisit trigger. The HANDOFF line tells you which skill runs next; the grill record tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
+Worked example: `socratic-grill` finishes by writing the resolved decisions into the Design's **Decided** section (there is no separate grill record) and emitting `HANDOFF: record ready` only if the Design holds a one-way-door decision. When `decision-record` runs, it reads the signed-off Design IN FULL — every resolved item, every door classification, every revisit trigger. The HANDOFF line tells you which skill runs next; the Design tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
 
 The full-doc-read contract keeps the chain on the right side of the "don't build multi-agents" line: subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The same invariant applies to `parallel-dev` subagent dispatches — subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
 

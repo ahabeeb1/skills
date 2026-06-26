@@ -146,6 +146,5 @@ Things research didn't resolve. These feed `socratic-grill`:
 
 ---
 
-HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec.
-HANDOFF: grill ready — invoke `socratic-grill` to drive ambiguity out of the open questions and decisions above.
-HANDOFF: record ready — once spec + grill complete, invoke `decision-record` to capture the chosen architecture as an ADR.
+HANDOFF: spec ready — invoke `draft-spec` to turn this recommendation into the plain-language Design the user reads.
+HANDOFF: grill ready — once the Design is written, invoke `socratic-grill` to walk the user through it and earn sign-off.

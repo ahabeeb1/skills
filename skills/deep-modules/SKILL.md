@@ -5,6 +5,8 @@ description: Find and deepen shallow modules using the deletion test. ALWAYS use
 
 # Deep Modules
 
+**DEEP MODULES, SIMPLE INTERFACES. IF THE INTERFACE IS AS COMPLEX AS THE GUTS, IT'S SHALLOW.**
+
 The codebase's architectural conscience. Identifies shallowness and proposes deepening — but only when the deepening is earned by real friction, not by aesthetic preference.
 
 The core principle: **the best modules are deep — they let a lot of functionality be accessed through a simple interface.** Shallow modules — where the interface is nearly as complex as the implementation — pay the cost of an abstraction without delivering the value.

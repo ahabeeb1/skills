@@ -31,11 +31,15 @@ REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "PASS: $1"; }
 
-DRAFT_SPEC="$REPO_ROOT/skills/draft-spec/SKILL.md"
+# Fixture identifiers now live on the Machine-layer surfaces that author test
+# fixtures: vertical-slice (slice list with test seams), write-plan (gates/rollback
+# referencing fixtures), and tdd-loop (Phase 1 RED). draft-spec writes the
+# plain-language Design, which carries no test paths.
+VSLICE="$REPO_ROOT/skills/vertical-slice/SKILL.md"
 WRITE_PLAN="$REPO_ROOT/skills/write-plan/SKILL.md"
 TDD_LOOP="$REPO_ROOT/skills/tdd-loop/SKILL.md"
 
-for f in "$DRAFT_SPEC" "$WRITE_PLAN" "$TDD_LOOP"; do
+for f in "$VSLICE" "$WRITE_PLAN" "$TDD_LOOP"; do
   [ -f "$f" ] || fail "expected skill surface missing: $f"
 done
 
@@ -43,11 +47,11 @@ done
 CANON='confirm against the live tree'
 
 # ---------------------------------------------------------------------------
-# Case (a) — draft-spec carries the canonical phrase
+# Case (a) — vertical-slice carries the canonical phrase
 # ---------------------------------------------------------------------------
-grep -qi "$CANON" "$DRAFT_SPEC" \
-  || fail "(a) draft-spec/SKILL.md missing canonical phrase '$CANON'"
-pass "(a) draft-spec/SKILL.md carries '$CANON'"
+grep -qi "$CANON" "$VSLICE" \
+  || fail "(a) vertical-slice/SKILL.md missing canonical phrase '$CANON'"
+pass "(a) vertical-slice/SKILL.md carries '$CANON'"
 
 # ---------------------------------------------------------------------------
 # Case (b) — write-plan carries the canonical phrase
@@ -66,11 +70,11 @@ pass "(c) tdd-loop/SKILL.md carries '$CANON'"
 # ---------------------------------------------------------------------------
 # Case (d) — spec + plan carry the confirm-at-implementation framing
 # ---------------------------------------------------------------------------
-grep -qi 'confirm-at-implementation' "$DRAFT_SPEC" \
-  || fail "(d) draft-spec/SKILL.md missing 'confirm-at-implementation' framing"
+grep -qi 'confirm-at-implementation' "$VSLICE" \
+  || fail "(d) vertical-slice/SKILL.md missing 'confirm-at-implementation' framing"
 grep -qi 'confirm-at-implementation' "$WRITE_PLAN" \
   || fail "(d) write-plan/SKILL.md missing 'confirm-at-implementation' framing"
-pass "(d) draft-spec + write-plan carry the 'confirm-at-implementation' framing"
+pass "(d) vertical-slice + write-plan carry the 'confirm-at-implementation' framing"
 
 # ---------------------------------------------------------------------------
 # Case (e) — tdd-loop Phase 1 instructs globbing the live tree for the next free id
@@ -87,7 +91,7 @@ pass "(e) tdd-loop/SKILL.md Phase 1 globs the live tree for the next free identi
 #   itself cannot reintroduce the prose shape SP2 bans.
 # ---------------------------------------------------------------------------
 ARCH_PAT='(this skill used to|previously (this|we)|was renamed|replaces the old|formerly|no release step [a-z]+s it|are not renamed|(in|set in) v[0-9]+([.][0-9]+)* this changed)'
-for f in "$DRAFT_SPEC" "$WRITE_PLAN" "$TDD_LOOP"; do
+for f in "$VSLICE" "$WRITE_PLAN" "$TDD_LOOP"; do
   if grep -niE "$ARCH_PAT" "$f" >/dev/null 2>&1; then
     # Only fail if a hit sits on a line that ALSO carries the SP3 phrasing
     # (we own the SP3 lines; pre-existing prose elsewhere is scenario 34's job).

@@ -6,7 +6,7 @@
 
 **Research-grounded engineering methodology for Claude Code. Stop vibe-coding.**
 
-_Before you build X, find how the best teams actually shipped X. Then spec it, grill it, record the decision, plan it, and TDD it._
+_Before you build X, find how the best teams actually shipped X. Understand the Design — what's being built and why, in plain language — then have it pinned down with you, sign off, and let TDD build it._
 
 [Quick Start](#quick-start) • [Why](#why-habeebs-skill) • [The Chain](#the-chain) • [Installation](#installation) • [Hooks](#hooks)
 
@@ -14,11 +14,11 @@ _Before you build X, find how the best teams actually shipped X. Then spec it, g
 
 ## Why habeebs-skill?
 
+- **Readable as it runs.** You live in a plain-language Human layer: research recommends an approach, then you get one **Design** doc — what we're building, why, the key decisions and trade-offs — and the grill walks you through it and pins down every loose end. No wall of methodology jargon. Once you understand and sign off, the implementation is the machine's job.
 - **Research before code.** Every non-trivial feature starts by finding 3–5 production implementations of approximately-X and extracting their patterns. No more "best practices" hand-waving.
 - **Opinionated recommendations.** The research phase commits to one approach with a real tradeoff analysis — not a survey of options dumped on your lap.
-- **Ambiguity gets grilled out.** Specs go through Socratic questioning before any code is written. Hidden assumptions surface as questions, not bugs.
-- **Decisions become durable.** Architecture choices are captured as ADRs. Future-you (or future-Claude) reads the ADR instead of re-litigating the decision.
-- **Phased delivery with acceptance gates.** Plans declare binary done conditions, a dependency DAG, parallelization groups, and rollback hooks before slice one ships.
+- **Ambiguity gets grilled out.** The Design goes through Socratic questioning before any code is written. Hidden assumptions surface as questions, not bugs — and the answers get written back into the Design so it stays the single source of truth.
+- **Durable only where it counts.** A decision gets a standalone ADR only when it's a one-way door; everything reversible lives in the Design. A separate phased plan appears only for genuinely multi-phase work. A typical feature produces three artifacts, not five.
 - **TDD over vertical slices.** Red → green → refactor. One slice at a time. Deep-modules check at every refactor. No half-finished half-shipped commits.
 - **Tier-aware effort.** Trivial work runs Quick (terse, lighter ceremony). Genuinely complex work runs Deep (parallel research subagents, phased plan). Quality gates never get skipped — only the volume of ceremony scales.
 - **Dual-native on Claude Code AND Codex.** Same skills, hooks, and subagents — first-class on both. Plugin install for Claude Code; native Agent Skills + `.codex` hooks for Codex CLI, generated from one canonical source with a CI drift-check.

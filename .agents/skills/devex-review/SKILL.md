@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Devex Review
 
+**WALK THE DESIGN AS A FIRST-TIME DEVELOPER. FRICTION YOU DON'T FEEL, THEY WILL.**
+
 Surface the developer-experience gaps in a spec before grilling resolves it. The job is not to design the DX — it's to generate the Socratic questions that force the spec to confront its own rough edges for developers who will actually use it.
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds one Socratic question per DX gap to the grilling agenda. After grilling resolves them, control returns to the main chain.

@@ -5,6 +5,8 @@ description: Static security audit of a repo or diff — attack-surface census, 
 
 # Security Audit
 
+**NO FINDING WITHOUT CODE-TRACED EVIDENCE. NEVER CRY WOLF.**
+
 A static, substrate-free security audit. Reads source and git history, models the threat surface, and emits a markdown report of **confirmed, code-traced findings** — nothing else. The defining property is precision: a security audit that cries wolf trains its readers to ignore it.
 
 This is a standalone skill, invoked on demand via `/security-audit`. It is not a chain phase. It runs on any repo — it does not require habeebs-skill setup or `docs/agents/SYSTEM_CONTEXT.md`.

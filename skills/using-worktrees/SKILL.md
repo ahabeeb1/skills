@@ -5,6 +5,8 @@ description: Isolate features and AFK slices in their own git worktrees on their
 
 # Using Worktrees
 
+**ONE WORKTREE, ONE BRANCH. NEVER NEST.**
+
 Every non-trivial piece of work gets its own git worktree on its own branch. The point isn't bookkeeping — it's that concurrent subagents in `parallel-dev` would otherwise race on the working tree, and a TDD session in progress shouldn't be polluted by a mid-stream merge from `main`.
 
 This skill is the isolation primitive. It is consumed by `parallel-dev` and `tdd-loop`; it can also be invoked directly when a human (or agent) is starting a multi-commit feature.

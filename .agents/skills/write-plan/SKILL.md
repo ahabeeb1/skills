@@ -1,239 +1,157 @@
 ---
 name: write-plan
-description: Turn a locked ADR + sliced spec into a phased delivery plan with acceptance gates. Use when decision-record emits "HANDOFF: implementation ready", user types "/plan", "give me a plan", "map this out", or before any parallel-dev dispatch of 3+ slices. Do not use for single-slice work or when no ADR exists.
+description: Sequence a signed-off Design into a phased delivery plan with acceptance gates. Use when the work is genuinely multi-phase or the user types "/plan". Do not use for single-phase work (the slice list is the plan) or before a Design is signed off.
 disable-model-invocation: true
 ---
 
-# Write Plan
+# Write Plan — sequence multi-phase work
 
-Convert a locked architectural decision into a sequenced, gated delivery story. The plan is what every downstream skill reads: `tdd-loop` works one slice at a time per the plan's order; `parallel-dev` only dispatches groups the plan marks parallelizable; `systematic-debugging` consults the plan when a bug crosses phase boundaries.
+**NO SEPARATE PLAN FOR SINGLE-PHASE WORK.**
 
-The plan is NOT:
-- A Gantt chart (timing is illustrative, not contractual)
-- A re-statement of the ADR (link to it, don't re-litigate)
-- A list of slices (that's `vertical-slice`'s output — the plan *sequences and gates* slices)
-- An eternal document (it has revisit triggers and decays)
+A plan exists to sequence work across real phase gates — points where one batch must ship and be
+verified before the next starts. If the work is a single phase, the machine slice list and its
+ordering ARE the plan; writing a separate plan doc is pure duplication. Write a plan only when
+there are genuine phase boundaries, a staged rollout, or parallel dispatch of 3+ independent
+slices. This is a Machine-layer artifact: `tdd-loop` and `parallel-dev` read it.
+
+Write in the house voice — see [`docs/agents/references/skill-voice.md`](../../docs/agents/references/skill-voice.md).
 
 ## When to use this skill
 
 **Trigger on:**
 
-- `decision-record` produced `HANDOFF: plan ready`
-- The user says "write the plan", "what's the rollout", "map this out", "phase this", "give me the plan"
-- `vertical-slice` produced 3+ slices and ordering/parallelization isn't obvious
-- Before `parallel-dev` dispatches a batch of 3+ AFK slices (the plan is the parallel-dispatch contract)
-- A feature is "in flight" with no shared artifact tying its commits together
+- Implementation is multi-phase: a batch must ship and pass a gate before the next batch starts
+- 3+ AFK slices with no inter-dependencies need parallel dispatch (the plan is the dispatch contract)
+- A staged rollout with rollback points per phase
+- The user types `/plan` explicitly
 
 **Do NOT trigger on:**
 
-- Single-slice work (plan overhead exceeds value)
-- Spike / throwaway exploration (the design IS the deliverable)
-- Documentation-only changes
-- No ADR exists yet (run `decision-record` first — planning without a locked decision is premature)
+- Single-phase work (the slice list and its order are the plan — go straight to `tdd-loop`)
+- Spike / throwaway exploration
+- A Design that isn't signed off yet (run `socratic-grill` to sign-off first)
 - A plan already exists for this feature (update it; don't write a second)
 
 ## Inputs (required before Phase 1)
 
-- **ADR** from `decision-record` — the locked architecture
-- **Sliced spec** from `vertical-slice` / `draft-spec` — the decomposition
-- **Grill record** from `socratic-grill` — accepted trade-offs and revisit triggers
-- **SYSTEM_CONTEXT.md** from `prior-art-research` Phase 0 — scale envelope, observability, deployment shape
-- **Tier** — the `**Tier:**` field from the ADR / spec header (Quick / Balanced / Deep — see [`docs/agents/references/tier-scale.md`](../../docs/agents/references/tier-scale.md)). Echo it into the plan header's `Tier` row.
+- **Signed-off Design** from `socratic-grill` — the Overview, Key decisions, and Decided section
+  (including the **User mental model** success criteria, which are the strongest acceptance-gate
+  candidates).
+- **Slice list** from `vertical-slice` — the Machine-layer decomposition.
+- **SYSTEM_CONTEXT.md** — scale envelope, observability, deployment shape.
+- **Tier** — the `Tier:` field from the Design header; echo it into the plan header.
 
-If any upstream artifact is missing, halt and surface the gap. Don't fabricate a plan on top of unknowns.
-
-**Where the tier puts this skill.** At the **Quick** tier `write-plan` is normally skipped — `tdd-loop` runs the spec's slice order directly. At **Balanced** it runs when there are 3+ slices or ordering isn't obvious. At **Deep** it always runs. If the user invokes `/plan` explicitly on a Quick chain, honor it — the tier sets the default, the user overrides it.
+If the Design isn't signed off or the slice list is missing, halt and surface the gap.
 
 ## Core workflow
 
 ### Pre-flight — Environment check
 
-Before Phase 1, verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with:
+Verify `docs/agents/SYSTEM_CONTEXT.md` exists. If missing, halt with the `SETUP REQUIRED` banner
+(run `/groundwork` or `/research`). Run the staleness-check per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). This skill only READS SYSTEM_CONTEXT.md.
 
-> **SETUP REQUIRED:** `docs/agents/SYSTEM_CONTEXT.md` missing. Run `/groundwork` (preferred — one-shot bootstrap) or `/research` (writes the file via Phase 0 reconnaissance) first.
+### Phase 1 — Locate inputs and choose the plan home
 
-This skill cannot produce reliable output without the environment-binding cache. Do not proceed to Phase 1.
-
-**Staleness check:** Before reading SYSTEM_CONTEXT.md, run the staleness-check protocol per [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). If stale, emit the banner and proceed with a clear `[stale]` annotation on any inferences drawn from the cache. This skill is a READER — only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md.
-
-**GLOSSARY lookup (on-demand):** If methodology terminology in this spec / grill / plan feels ambiguous (e.g., "slice", "phase", "dispatch group", "pgroup", "HITL", "AFK"), Read `docs/agents/GLOSSARY.md` immediately before proceeding. Don't guess at habeebs-skill vocabulary — the glossary is the canonical reference.
-
-### Phase 1 — Locate inputs and choose plan home
-
-ADRs live in `docs/agents/adrs/`. Plans live in `docs/agents/plans/YYYY-MM-DD-<slug>.md`, where the slug matches the source ADR's slug (e.g., ADR `2026-05-29-use-yjs-for-collaborative-editing` → plan `2026-05-29-use-yjs-for-collaborative-editing.md`). The release version goes in the plan's frontmatter `Version:` / `Release:` field, not the filename.
-
-If `docs/agents/plans/` doesn't exist, create it. Halt loud if the dated filename already exists (demand a more specific slug). If a plan with this slug already exists for the same feature, switch mode: UPDATE that plan in place; do NOT write a second.
+Plans live at `docs/agents/plans/YYYY-MM-DD-<slug>.md`, slug matching the Design's slug. The
+release version goes in the plan's `Version:` / `Release:` frontmatter field, not the filename.
+Halt loud if the dated filename already exists. If a plan with this slug exists, UPDATE it in
+place — don't write a second.
 
 ### Phase 2 — Group slices into phases
 
-A phase is a set of slices that ship behind ONE acceptance gate. The gate is a binary, user-observable criterion — not a tasks-done count.
+A phase is a set of slices that ship behind ONE acceptance gate — a binary, user-observable
+criterion, not a tasks-done count. Read the Design's **User mental model** success criteria first;
+they are the user's own definition of shipped-and-working and the strongest gate candidates.
 
-When the grill record carries a **User mental model** section, read its success criteria first — they are the user's own definition of shipped-and-working and the strongest acceptance-gate candidates.
+Good gates: "User can create and load a doc round-trip in production for 100% of canary cohort";
+"p95 read latency < 80ms for 24h." Bad gates (reject): "all slice checkboxes ticked"; "tests
+pass" (already required per slice); "code reviewed" (process, not outcome).
 
-Good gates:
-- "User can create and load a doc round-trip in production for 100% of canary cohort"
-- "p95 read latency < 80ms on production traffic for 24h"
-- "All foreign-key migrations applied; no reads against the old schema"
-
-Bad gates (reject these):
-- "All slice checkboxes ticked" (tautological)
-- "Tests pass" (already required per slice)
-- "Code reviewed" (process, not outcome)
-
-Rules of thumb for grouping:
-- **3–7 slices per phase**. More → the gate is too coarse; fewer → phases are too granular.
-- **Each phase ships SOMETHING** end-to-end visible. A "scaffolding phase" with no user-visible result is a bad phase boundary — fold it into the next one.
-- **Phase N+1 cannot start until phase N's gate passes.** If you can't enforce that, the gate is decorative.
+Rules of thumb: 3–7 slices per phase; each phase ships something end-to-end visible; phase N+1
+cannot start until phase N's gate passes. If you can't enforce that, the gate is decorative — and
+if there's only one phase, you don't need a plan.
 
 ### Phase 3 — Build the dependency DAG
 
-For every slice, list its prerequisites (other slices, infra changes, external dependencies). Render as a text DAG. The plan supports any of:
-
-- **Mermaid flowchart** (preferred when the repo renders Mermaid)
-- **ASCII-art DAG** (fallback)
-- **Adjacency list** (`Slice 3 ← {Slice 1, Slice 2}`)
-
-The DAG must be acyclic. If you find a cycle, halt — the slicing is wrong, not the plan. Hand back to `vertical-slice`.
+For each slice, list its prerequisites. Render as Mermaid (preferred), ASCII, or adjacency list.
+The DAG must be acyclic — a cycle means the slicing is wrong; hand back to `vertical-slice`.
 
 ### Phase 4 — Mark parallelization groups
 
-A parallelization group is a maximal set of slices in the same phase with no dependencies between them. Compute it from the DAG.
-
-Express as `pgroup-N` labels. Example:
-```
-Phase 1: pgroup-1A = {Slice 1, Slice 2}, pgroup-1B = {Slice 3} (depends on 1, 2)
-Phase 2: pgroup-2A = {Slice 4, Slice 5, Slice 6}, pgroup-2B = {Slice 7}
-```
-
-**Independence sanity-check (mandatory):** before labeling two slices as the same pgroup, apply `parallel-dev`'s Phase 2 independence checklist (file overlap, state dependency, resource contention, ordering, implicit shared state). If any check fails, they're sequential, not parallel.
-
-**The 20% rule:** if more than 80% of slices are tagged parallelizable, something is wrong. Real features have ordering dependencies. Aggressive parallel-tagging usually masks missed dependencies that surface as merge conflicts.
+A parallelization group (`pgroup`) is a maximal set of slices in one phase with no dependencies
+between them. **Independence sanity-check (mandatory):** before co-labeling two slices, apply
+`parallel-dev`'s Phase 2 checklist (file overlap, state dependency, resource contention, ordering,
+implicit shared state). If any check fails, they're sequential. **The 20% rule:** if more than 80%
+of slices are tagged parallelizable, the slicing is hiding dependencies that will surface as merge
+conflicts.
 
 ### Phase 5 — Risk register + rollback hooks per phase
 
-For each phase, write:
-
-- **Top 3 risks** — short, concrete (not "things might go wrong"). Example: "Yjs CRDT may exceed payload budget at 5KB+ docs."
-- **Rollback hook** — the specific operation that reverts the phase. Examples:
-  - Feature flag toggle (`yjs_enabled` → off)
-  - Migration revert script (`prisma migrate resolve --rolled-back`)
-  - Route-level kill switch
-  - "Not rollback-able after gate passes — explicit one-way door"
-
-If a phase has no rollback path, **say so explicitly**. A phase with "no rollback" is fine — it's an honest one-way door — but it must be flagged so the gate can be set higher.
+For each phase: top 3 concrete risks, and the specific rollback operation (feature-flag toggle,
+migration revert, route kill-switch, or an explicit "ONE-WAY DOOR — no rollback after gate
+passes"). A phase with no rollback path MUST say so explicitly so the gate is set higher.
 
 ### Phase 6 — Revisit triggers
 
-Conditions that should re-open the plan. Inherit relevant triggers from the ADR; add plan-specific ones:
-
-- Scale milestones (e.g., "MAU > 50k")
-- Latency regressions beyond stated SLO
-- New capability requirement (e.g., "offline editing requested")
-- External dependency change (e.g., "Yjs major version bumped")
-
-If a trigger fires mid-execution, halt at the current phase gate and re-run `socratic-grill` on the affected sections. Don't push through a triggered plan.
+Conditions that reopen the plan (scale milestones, latency regressions, new capability
+requirements, external dependency changes). If a trigger fires mid-execution, halt at the current
+phase gate and re-grill the affected section. Don't push through a triggered plan.
 
 ### Phase 7 — Write the plan doc
 
-Follow `references/plan-template.md` exactly. The template enforces the **plain-English plan format** — a plan a human can read cold, top-to-bottom, without prior context. Six conventions:
+Follow `references/plan-template.md` exactly. It enforces the plain-English plan format: TL;DR at
+top before any table; per-phase narrative intro before gates/risks; tables limited to the status
+block and the slice list; acceptance gates as numbered prose; risks as prose with embedded
+`Mitigation:` lines; jargon discipline (GLOSSARY-linked terms used freely, plan-specific
+identifiers defined inline). Required sections: frontmatter, TL;DR, status block, goal & success
+measure, phases, slice table, dependency DAG, parallelization map, revisit triggers, change log,
+references.
 
-1. **TL;DR at top** — 3-5 plain-English sentences BEFORE any table. A reader who only reads the TL;DR knows what's happening. The 5-row status block follows the TL;DR.
-2. **Per-phase narrative intro** — every phase opens with 1-3 sentences of "why this phase exists / what we accomplish here" BEFORE acceptance gates, risks, or mechanics. A phase that opens directly with `**Acceptance gate:**` is malformed.
-3. **Tables limited to TWO uses only** — the status block at the top (≤5 rows: Plan ID, ADR, Tier, Status, Owner) and the slice list (once, in dependency order). No other tables anywhere in the plan.
-4. **Acceptance gates are numbered prose**, not stacked AND-clause bullets or nested checklists. Example: "The phase is done when all four of these are simultaneously true: (1) ...; (2) ...; (3) ...; (4) ...".
-5. **Risks are prose paragraphs** with embedded `Mitigation:` lines, NOT 3-level-nested bullet hierarchies. Example: "The biggest risk is X. Mitigation: Y. The second risk is A. Mitigation: B."
-6. **Jargon discipline** — terms with `docs/agents/GLOSSARY.md` entries (`pgroup`, `HITL:approval-gate`, `HITL:per-file`, `HITL:inline`, `AFK:full-auto`, `tracer slice`, `pre-flight verification`) can be used unexplained because the GLOSSARY link is in the plan footer. Plan-specific identifiers (`pre-Slice-2 verification`, `pgroup-2A`) get inline definitions on first use.
-
-Required sections in order:
-
-1. **Frontmatter** — YAML block with `Status:`, `Date-Created:`, `Last-Reviewed:`, `Superseded-By:`, `Tier:` (PascalCase per the v1.22.0 telemetry convention)
-2. **TL;DR** — 3-5 plain-English sentences
-3. **Status block** — 5-row table (Plan ID, ADR, Tier, Status, Owner)
-4. **Goal & success measure** — one sentence each
-5. **Phases** — each opens with narrative prose, then acceptance gate (numbered prose), then top risks (prose paragraph with Mitigation: lines), then rollback hook (one sentence)
-6. **Slice table** — one row per slice: ID, name, label (HITL:inline / HITL:approval-gate / HITL:per-file / AFK:full-auto), phase, pgroup, blocked-by, est, rollback
-
-**Fixture identifiers are confirm-at-implementation, never plan literals.** When a slice's rollback hook, test path, or acceptance gate references a test-fixture identifier — a dogfood scenario number, ADR slug, or file index — record it as a placeholder (`tests/dogfood/<next-free-N>-<slug>/`, `adr-<slug>.md`), not a hard-coded literal. The implementer must confirm against the live tree before creating the fixture, because the next free identifier drifts the moment a sibling slice lands first.
-7. **Dependency DAG** — Mermaid (preferred) or ASCII fallback
-8. **Parallelization map** — `pgroup-N` listing with one-line description per group
-9. **Revisit triggers** — bulleted list (this is the one bulleted list that survives; revisit triggers are inherently a discrete enumeration)
-10. **Change log** — added on first revision
-11. **References** — ADR, spec, grill, research archive (Deep-tier), SYSTEM_CONTEXT.md, GLOSSARY.md
-
-Status field semantics:
-- **Proposed** — written but no slice has started
-- **Active** — at least one slice is in `tdd-loop`
-- **Done** — final phase gate passed; feature is shipped
-- **Superseded by plans/YYYY-MM-DD-<slug>.md** — replaced by a newer plan (link by title + markdown link)
-
-`Last-Reviewed:` semantics: deliberate-review timestamp; updated when a human says "I reviewed this and the Status is still correct," NOT auto-bumped on every commit. The release skill's editorial scan reads this field for dormancy detection.
+**Fixture identifiers are confirm-at-implementation, never plan literals.** Where a phase gate,
+rollback hook, or test path references a test-fixture identifier (a dogfood scenario number, a
+file index), write a placeholder; the implementer must confirm against the live tree before
+creating the fixture.
 
 ### Phase 8 — Hand off
 
-```
-HANDOFF: implementation ready — plan locked at docs/agents/plans/YYYY-MM-DD-<slug>.md.
-  Next: tdd-loop on slice <first-id> (phase 1, pgroup-1A).
-  Parallelizable now: <pgroup-1A members>.
-  Gate to pass before phase 2: <phase 1 gate>.
-```
-
-**Always emit:** if the plan has any pgroup of size ≥ 2, also emit the pgroup-dispatch-ready handoff so the downstream `tdd-loop` Phase 0.5 knows to auto-dispatch (rather than fall through to single-slice sequential):
+Recap in one plain sentence what ships in phase 1 and the gate to pass, then:
 
 ```
-HANDOFF: pgroup-dispatch-ready — when tdd-loop is invoked on this plan, pgroups of size ≥2 will auto-dispatch via parallel-dev.
-  Eligible pgroups: <comma-separated list of pgroup-N labels with size ≥ 2>.
-  Each subagent runs its own red-green-refactor cycle in its own worktree per using-worktrees.
-  Concurrency cap: 5 default, opt-in override via `concurrency: <N>` per pgroup.
+HANDOFF: implementation ready — plan locked at docs/agents/plans/YYYY-MM-DD-<slug>.md. Next: tdd-loop on slice <first-id> (phase 1). Gate before phase 2: <phase 1 gate>.
 ```
 
-If the plan has a particularly large pgroup (≥3 AFK slices), the marketing-level emit is still useful:
+If any pgroup has size ≥ 2, also emit so `tdd-loop` Phase 0.5 auto-dispatches:
 
 ```
-HANDOFF: parallel dispatch ready — pgroup-<N> contains <K> AFK slices with no inter-deps.
-  parallel-dev can dispatch these concurrently. Each gets its own worktree per using-worktrees.
+HANDOFF: pgroup-dispatch-ready — pgroups of size ≥2 auto-dispatch via parallel-dev. Eligible: <pgroup labels>. Each subagent runs its own red-green-refactor in its own worktree.
 ```
-
-Both handoff lines are read by `tdd-loop` Phase 0.5. The `pgroup-dispatch-ready` line is the *machine-readable* dispatch trigger; the `parallel dispatch ready` line is the *human-readable* heads-up.
 
 ## Anti-patterns this skill guards against
 
-- **Plan-as-Gantt-chart.** Dates without acceptance gates are wishes. Every phase must have a binary gate.
-- **Re-litigating the ADR.** If you find yourself re-justifying the architecture in the plan, the ADR is incomplete — fix the ADR, link from the plan.
-- **All slices parallelizable.** Real features have ordering deps. 80%+ parallel-tagged is a smell.
-- **Phases with no user-visible outcome.** A "scaffolding phase" is a horizontal slice in disguise. Fold it forward.
-- **No rollback path AND no explicit one-way-door flag.** Silent one-way doors blow up in production. Either define rollback or flag it.
-- **Plan written for an audience of one.** The plan is read by `tdd-loop`, `parallel-dev`, and the team. Optimize for the slice-executor, not your own legibility.
-- **Plan that never updates.** Plans decay. Update Status field every commit that lands a slice; update revisit-triggers when one fires.
-- **Plan without revisit triggers.** Equivalent to "this is forever." Nothing is forever.
+| Thought | Reality |
+|---|---|
+| "I'll write a plan for this single-phase feature." | The slice list is the plan for single-phase work. A separate doc is duplication — skip it. |
+| "Dates make it look like a real plan." | Dates without acceptance gates are wishes. Every phase needs a binary gate. |
+| "I'll re-justify the architecture in the plan." | That's the Design's job. If the plan re-litigates it, the Design is incomplete — fix the Design. |
+| "Tag everything parallelizable — it's faster." | Real features have ordering deps. 80%+ parallel is a smell that hides merge conflicts. |
+| "A scaffolding phase with no user-visible result is fine." | That's a horizontal slice in disguise. Fold it into the next phase. |
+| "The plan is forever." | Plans decay. Update Status as slices land; add revisit triggers. |
 
 ## Update protocol (when an existing plan needs revision)
 
-When called on an existing plan:
-
-1. Diff intent: the user is reacting to (a) a slice landing, (b) a trigger firing, or (c) a new constraint
-2. Localize: which phase/slice does the change affect? Surgical edit, not rewrite
-3. Bump `Last updated` and add a one-line entry to the plan's `Change log` section (added on first revision)
-4. If the change crosses a phase gate that's already passed, halt — that needs `socratic-grill` first
-
-## Integration with the chain
-
-- **Upstream:** `decision-record` locks the ADR this plan implements; `vertical-slice` / `draft-spec` produces slices; `socratic-grill` provides accepted trade-offs; `prior-art-research` Phase 0 supplies the system context
-- **Downstream:** `tdd-loop` reads the plan slice-by-slice; `parallel-dev` consumes pgroups; `systematic-debugging` consults phase boundaries when a bug crosses them
-- **Standalone:** humans invoke `/plan` to write or update a plan manually
-
-## Compatibility notes
-
-- Mermaid renders natively on GitHub and most markdown viewers. If the repo's markdown viewer doesn't render Mermaid, fall back to ASCII DAG (`references/plan-template.md` shows both).
-- The plan lives in the same repo as the code so it's review-able in the same PR that implements its first slice.
+1. Diff intent: reacting to a slice landing, a trigger firing, or a new constraint.
+2. Localize: which phase/slice — surgical edit, not rewrite.
+3. Add a dated entry to the Change log.
+4. If the change crosses a phase gate that already passed, halt — that needs `socratic-grill` first.
 
 ## See also
 
-- `decision-record` — upstream; locks the ADR
-- `vertical-slice` — upstream; produces slices
-- `socratic-grill` — upstream; accepted trade-offs and revisit triggers
+- `socratic-grill` — upstream; the signed-off Design and its success criteria
+- `vertical-slice` — upstream; the slice list this plan sequences
+- `decision-record` — upstream; locks any one-way-door ADR before planning
 - `tdd-loop` — downstream; executes slice-by-slice per the plan
 - `parallel-dev` — downstream; consumes pgroups
-- `systematic-debugging` — consulted when a bug crosses phase boundaries
+- `systematic-debugging` — consulted when a bug crosses phase boundaries mid-plan
 - `references/plan-template.md` — strict plan format
-- `references/phase-gate-examples.md` — good vs. bad acceptance gates
+- `docs/agents/references/skill-voice.md` — the house voice
 - `docs/agents/references/tier-scale.md` — the tier that decides whether this skill runs

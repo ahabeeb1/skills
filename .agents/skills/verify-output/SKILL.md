@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Verify Output
 
+**NO COMMIT SHIPS SLOP. FLAG IT OR FIX IT.**
+
 <!-- Inspired by oh-my-claudecode's ai-slop-cleaner + ultraqa skills. -->
 
 Post-generation anti-slop pass. Runs between `tdd-loop` GREEN (tests passing) and the commit. Scans the staged diff against the seven heuristics in [`references/slop-heuristics.md`](references/slop-heuristics.md) and returns a 4-status verdict.

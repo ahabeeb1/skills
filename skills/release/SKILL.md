@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Release
 
+**NO RELEASE WITHOUT A CLEAN, VERIFIED HISTORY.**
+
 Terminal link in the habeebs-skill chain. Runs after `tdd-loop` GREEN + `verify-output` DONE/DONE_WITH_CONCERNS. Assembles the release artifact set: version bump, CHANGELOG entry, clean history, PR body, doc-sync audit, and tag-push. Substrate-free — every step is a prompt driving Bash/Read/Edit/git/gh.
 
 This is NOT a deploy step. `release` stops at a merged PR + pushed tag. No canary, no benchmark, no production push.

@@ -5,6 +5,8 @@ description: Disciplined root-cause debugging loop. ALWAYS use when user says "t
 
 # Systematic Debugging
 
+**NO FIX WITHOUT A REPRODUCED ROOT CAUSE FIRST.**
+
 A bug is a hypothesis-mismatch event: the running system disagrees with your model of it. Debugging is the disciplined practice of finding which hypothesis was wrong. Random code edits don't qualify — they sometimes change the symptom without telling you why.
 
 This skill replaces "try things until it stops failing" with a procedure that produces evidence at each step. Every hypothesis is either confirmed or refuted by a probe, not by a guess.

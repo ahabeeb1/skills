@@ -3,15 +3,16 @@
 # Per spec slice #6 + ADR adr-methodology-bundle-v1.22.md § Piece 3.
 #
 # Verifies the validator hook exists, is wired in hooks.json, and warns
-# (NEVER blocks — exit 0 always) on the two scoped conditions from grill OQ-1:
-#   (b) MISSING-GRILL: spec Status: Grilled has no <slug>-grill.md
+# (NEVER blocks — exit 0 always) on the two scoped conditions:
+#   (b) UNGRILLED-SIGNOFF: a *-design.md Design Status: Signed-off with an empty
+#       Decided section (grill resolutions never written back)
 #   (c) EDIT-ON-DEFAULT: editing skills/, hooks/, or .claude-plugin/ on
 #       default branch with uncommitted changes
 #
 # 4 fixture cases (2 warning scopes × positive-trigger + negative-no-trigger):
 #   (a) wire check — hook exists + executable + wired in hooks.json
-#   (b) MISSING-GRILL positive — fixture spec Status: Grilled, no grill file → warn
-#   (c) MISSING-GRILL negative — fixture spec Status: Draft → no warn
+#   (b) UNGRILLED-SIGNOFF positive — signed-off Design, empty Decided → warn
+#   (c) UNGRILLED-SIGNOFF negative — Design Status: Draft → no warn
 #   (d) HABEEBS_DISABLE_HOOKS=1 → no warn regardless
 
 set -euo pipefail
@@ -54,45 +55,53 @@ setup_fixture_repo() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Case (b) — MISSING-GRILL positive: spec Status: Grilled, no grill file → warn
+# Case (b) — UNGRILLED-SIGNOFF positive: signed-off Design, empty Decided → warn
 # ─────────────────────────────────────────────────────────────────────────────
 B_DIR=$(setup_fixture_repo)
 cd "$B_DIR"
-cat > docs/agents/specs/test-feature.md <<'EOF'
+cat > docs/agents/specs/2026-06-26-test-feature-design.md <<'EOF'
 ---
-Status: Grilled
+Status: Signed-off
 ---
 
-# Test Feature
+# Design: Test Feature
+
+## Decided
+
+_(none yet — filled during the grill)_
 EOF
 
-# Run the hook from the fixture repo. Warnings now ride hookSpecificOutput JSON
-# on stdout (PostToolUse stderr is debug-log-only per the hook contract).
+# Run the hook from the fixture repo. Warnings ride hookSpecificOutput JSON on
+# stdout (PostToolUse stderr is debug-log-only per the hook contract).
 OUTPUT=$(bash "$HOOK" 2>/dev/null) || OUTPUT="$OUTPUT (hook exit=$?)"
 RC=$?
 
 # Hook MUST exit 0 (warn-only)
 [ "$RC" -eq 0 ] || fail "(b) hook exited non-zero ($RC); MUST be 0 per ADR-0003"
 
-# Hook MUST have warned about missing grill (inside additionalContext)
-echo "$OUTPUT" | grep -q "test-feature.md is Status: Grilled" || \
-  fail "(b) hook didn't warn about missing grill record. Output: $OUTPUT"
+# Hook MUST have warned about the signed-off Design with an empty Decided section
+echo "$OUTPUT" | grep -q "test-feature-design.md is Status: Signed-off" || \
+  fail "(b) hook didn't warn about ungrilled sign-off. Output: $OUTPUT"
 
 cd /
 rm -rf "$B_DIR"
-pass "(b) MISSING-GRILL positive — warned correctly, exit 0"
+pass "(b) UNGRILLED-SIGNOFF positive — warned correctly, exit 0"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Case (c) — MISSING-GRILL negative: spec Status: Draft → no warn
+# Case (c) — UNGRILLED-SIGNOFF negative: Design Status: Draft → no warn
 # ─────────────────────────────────────────────────────────────────────────────
 C_DIR=$(setup_fixture_repo)
 cd "$C_DIR"
-cat > docs/agents/specs/test-feature-draft.md <<'EOF'
+cat > docs/agents/specs/2026-06-26-test-feature-draft-design.md <<'EOF'
 ---
 Status: Draft
 ---
 
-# Test Feature Draft
+# Design: Test Feature Draft
+
+## Decided
+
+_(none yet — filled during the grill)_
 EOF
 
 OUTPUT=$(bash "$HOOK" 2>/dev/null) || true
@@ -100,25 +109,29 @@ RC=$?
 
 [ "$RC" -eq 0 ] || fail "(c) hook exited non-zero ($RC)"
 
-# Should NOT have warned (no Grilled status)
-echo "$OUTPUT" | grep -q "Status: Grilled" && \
-  fail "(c) hook wrongly warned on Draft spec. Output: $OUTPUT"
+# Should NOT have warned (not signed off)
+echo "$OUTPUT" | grep -q "Status: Signed-off" && \
+  fail "(c) hook wrongly warned on Draft Design. Output: $OUTPUT"
 
 cd /
 rm -rf "$C_DIR"
-pass "(c) MISSING-GRILL negative — no false-positive on Draft spec"
+pass "(c) UNGRILLED-SIGNOFF negative — no false-positive on Draft Design"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Case (d) — HABEEBS_DISABLE_HOOKS=1 disables all warnings
 # ─────────────────────────────────────────────────────────────────────────────
 D_DIR=$(setup_fixture_repo)
 cd "$D_DIR"
-cat > docs/agents/specs/test-feature-grilled.md <<'EOF'
+cat > docs/agents/specs/2026-06-26-would-warn-design.md <<'EOF'
 ---
-Status: Grilled
+Status: Signed-off
 ---
 
-# Would normally warn but disabled
+# Design: Would normally warn but disabled
+
+## Decided
+
+_(none yet — filled during the grill)_
 EOF
 
 OUTPUT=$(HABEEBS_DISABLE_HOOKS=1 bash "$HOOK" 2>/dev/null) || true

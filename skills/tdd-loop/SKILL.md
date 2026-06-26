@@ -6,15 +6,17 @@ disable-model-invocation: true
 
 # TDD Loop
 
-Implement one vertical slice at a time using red-green-refactor. The whole point is that the failing test EXISTS before the implementation code does — anything else is back-filling coverage, which doesn't get the benefits of TDD.
+**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.**
 
-This skill is the implementation engine of the habeebs-skill chain. Once `decision-record` locks the architecture and the spec has slices ready, every slice goes through `tdd-loop`.
+Implement one vertical slice at a time using red-green-refactor. The failing test EXISTS before the implementation code does — if you didn't watch the test fail, you don't know it tests the right thing. Anything else is back-filling coverage, which doesn't get the benefits of TDD.
+
+This skill is the implementation engine and the start of the Machine layer. Once `socratic-grill` signs off the Design and `vertical-slice` produces the slice list, every slice goes through `tdd-loop`.
 
 ## When to use this skill
 
 **Trigger on:**
 
-- A locked spec from `draft-spec` (or post-`socratic-grill`) is queued for implementation
+- A signed-off Design with a slice list from `vertical-slice` is queued for implementation
 - The user says "implement slice N" / "start building" / "code this up"
 - A bug fix where the bug is understood (write the failing test that exhibits the bug, then fix it)
 - Adding new behavior to a tested module
@@ -32,7 +34,7 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 [Phase 0: decide worktree] → [Phase 0.5: plan inspection — pgroup auto-dispatch + idempotent resume] → RED → GREEN → REFACTOR → 3-stage REVIEW → COMMIT → next slice
 ```
 
-Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
+Each cycle is ONE slice from the slice list. Don't combine slices. Don't skip phases. Don't skip ahead.
 
 Phase 0.5 reads the active plan and, when a pgroup of size ≥2 is ready, hands off to `parallel-dev` for concurrent dispatch — each subagent runs its own Phase 1-6 cycle in its own worktree. Single-slice flows pass through Phase 0.5 unchanged.
 

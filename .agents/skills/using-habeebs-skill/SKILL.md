@@ -140,7 +140,7 @@ This is a documented convention, not a separate skill. Invoke it inline when nee
 ### When to abort
 
 - **User says** "abort", "cancel", "stop the chain", "let's drop this", or equivalent
-- **New requirement invalidates the active spec** (scope shift; the current draft-spec or grill record no longer maps to reality)
+- **New requirement invalidates the active Design** (scope shift; the current Design no longer maps to reality)
 - **Research surfaces a blocker** — e.g., the chosen architecture violates the standalone-by-design constraint and the alternatives all violate it too
 - **Work is paused indefinitely** — the user wants to come back to this later; in-flight artifacts shouldn't pollute the next chain run
 - **A critic surfaces a coverage gap so large** that proceeding would ship the very class of bug the chain exists to prevent
@@ -185,11 +185,11 @@ The chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-
 
 **7-section template** (copy from the template file when flushing):
 
-1. **Active artifacts** — file paths for current spec, ADRs being authored, current slice file, current grill record (if any), current postmortem (if any)
+1. **Active artifacts** — file paths for the current Design, ADRs being authored, current slice file, current postmortem (if any)
 2. **Current slice** — slice number + name + acceptance-criteria status (which boxes checked, which open, which the agent was working on at flush time)
 3. **Last successful action** — commit SHA + message, OR "test X passed" with path, OR "file Y written" with path
 4. **What's blocking** — immediate next action + any blocker (missing input, failing test, open grill question)
-5. **Open grill Qs from this session** — Q-IDs from grill records that drove current decisions
+5. **Open grill Qs from this session** — Q-IDs from the Design's Decided section that drove current decisions
 6. **Recent test state** — last dogfood / test run outcome + any red commits since
 7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time
 

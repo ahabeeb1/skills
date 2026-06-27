@@ -54,15 +54,15 @@ OR
 **Blocker:** [one of:]
 - Missing input from user — [what to ask for]
 - Failing test — [test path + error message]
-- Open grill question — [grill-record path + Q-ID]
+- Open grill question — [Design path + Q-ID]
 - Unresolved dependency — [what's missing]
 - No blocker — agent can continue directly
 
 ## 5. Open grill Qs from this session
 
-(Q-IDs from grill records that drove decisions during this session. Lets the next sub-session re-read the rationale for why something is shaped a certain way.)
+(Q-IDs from the Design's Decided section that drove decisions during this session. Lets the next sub-session re-read the rationale for why something is shaped a certain way.)
 
-- [Grill record path] § Item Q<N> — [one-line summary of resolution]
+- [Design path] § Decided item Q<N> — [one-line summary of resolution]
 - ...
 
 (If no grill questions, write `(none — implementation slice, no decisions taken here)`)

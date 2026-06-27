@@ -12,7 +12,7 @@
 #   (b) tier-count rule present: Quick 1 / Balanced 2 / Deep 3
 #   (c) door probe carries the one-follow-up rule (concrete undo cost on every
 #       "two-way" label)
-#   (d) grill-output-template.md has a "User mental model" section covering
+#   (d) design-template.md has a "User mental model" section covering
 #       success criteria, door classifications, and premortem risks
 #   (e) write-plan SKILL.md reads the section's success criteria as
 #       acceptance-gate candidates

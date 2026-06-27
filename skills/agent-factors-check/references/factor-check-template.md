@@ -1,6 +1,6 @@
 # Factor Check Template
 
-Appended to the active grill record by `agent-factors-check`. Lives inline in the grill document or as a sibling `<slug>-factor-check.md` if the grill is long.
+Appended to the Design's **Decided** section by `agent-factors-check`. Lives inline in the Design or as a sibling `<slug>-factor-check.md` if the run is long.
 
 Copy from here. Replace bracketed placeholders. Keep all 13 rows; mark a non-applicable factor `N/A` in the status column and give the design reason in the Skip notes section below — don't delete rows.
 
@@ -9,7 +9,7 @@ Copy from here. Replace bracketed placeholders. Keep all 13 rows; mark a non-app
 # Factor Check — [feature slug]
 
 **Run by:** agent-factors-check, [YYYY-MM-DD]
-**Invoked from:** socratic-grill on [grill record path]
+**Invoked from:** socratic-grill on [Design path]
 
 ## Scope decision
 

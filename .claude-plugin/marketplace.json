@@ -9,7 +9,7 @@
     {
       "name": "habeebs-skill",
       "source": "./",
-      "version": "1.29.0",
+      "version": "2.0.0",
       "description": "A Human layer you read — prior-art-research → draft-spec (writes the Design) → socratic-grill (sign-off) — then a Machine layer for the implementing agent — vertical-slice → tdd-loop → release. decision-record (ADR) fires only for one-way-door decisions, write-plan only for multi-phase work. Supporting primitives: verify-output (anti-slop gate before each tdd-loop commit), parallel-dev, deep-modules, using-worktrees, systematic-debugging, agent-factors-check, devex-review, security-audit, setup-habeebs-skill.",
       "category": "development",
       "keywords": [

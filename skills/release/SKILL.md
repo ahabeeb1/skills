@@ -304,12 +304,16 @@ HANDOFF: release complete with doc-sync concerns — vX.Y.Z tagged.
 
 ## Anti-patterns this skill guards against
 
-- **Shipping without a Why line.** Every CHANGELOG sub-item must explain why the feature exists. Future readers — human and agent — use this to judge whether a feature is still load-bearing.
-- **Pushing `--tags` on the default branch.** `git push --tags` pushes every local tag. Use `git push origin refs/tags/<version>` — the unambiguous form the hook recognizes.
-- **Committing a version bump on the default branch directly.** The bump commit lives on the feature branch and lands on main via PR, same as any other change.
-- **Skipping the doc-sync audit.** Features shipped without docs are invisible to future researchers. Phase 2a is not optional.
-- **Adding deploy or production steps.** This skill ends at PR + tag. Any production operation is out of scope and should be rejected by the caller.
-- **Tagging before the PR is reviewable.** Phase 8 runs after merge (or with explicit user authorization). Don't tag a branch that hasn't been code-reviewed.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "The CHANGELOG entry doesn't need a Why line." | Every sub-item must say why the feature exists; future readers use it to judge if it's still load-bearing. |
+| "I'll `git push --tags` to publish the tag." | That pushes every local tag. Use `git push origin refs/tags/<version>` — the form the hook recognizes. |
+| "I'll commit the version bump on the default branch." | The bump lands on main via PR like any other change. Bump on the feature branch. |
+| "I'll skip the doc-sync audit to save time." | Features shipped without docs are invisible to future researchers. Phase 2a is not optional. |
+| "I'll add the deploy step here too." | This skill ends at PR + tag. Production operations are out of scope — reject them. |
+| "I'll tag now and get the review later." | Tag after merge (or with explicit authorization). Don't tag un-reviewed work. |
 
 ## See also
 

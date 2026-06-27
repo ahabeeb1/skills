@@ -349,15 +349,19 @@ On any halt, print the diagnosis + the local-only commit list + instructions on 
 
 ## Anti-patterns this skill guards against
 
-- **Working in the main checkout while subagents run in parallel.** Race condition guaranteed.
-- **Creating a worktree on a dirty source.** Pollutes the new worktree with carried-over edits.
-- **Skipping Phase 4 (baseline test run).** Any later failure becomes ambiguous.
-- **Removing a worktree before the branch is pushed.** Loses commits.
-- **`git branch -D` on an unmerged branch.** Loses commits silently.
-- **Nesting worktrees inside the source checkout.** Confuses path-relative tooling.
-- **Skipping the rebase before push.** Merge conflicts surface in PR review instead of in your local worktree.
-- **Manually fighting squash-merge ghost commits.** If `git pull origin <default>` conflicts after a PR merge, run Phase 6.5 (or `/sync`) rather than resolving the conflict by hand. The ghost commits' content is already on origin; manual resolution risks introducing real drift.
-- **Auto-resetting on `ahead>0, behind=0`.** That signals genuine local-only work; resetting would lose it. Phase 6.5 halts in that case by design.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "I'll keep working in the main checkout while subagents run." | Race condition guaranteed. One worktree per writer. |
+| "I'll branch a worktree off my current dirty tree." | Carried-over edits pollute the new worktree. Start from a clean source. |
+| "I'll skip the baseline test run (Phase 4)." | Any later failure becomes ambiguous. Run the baseline first. |
+| "I'll remove the worktree now and push later." | Removing before the branch is pushed loses commits. Push first. |
+| "`git branch -D` on this unmerged branch is fine." | It loses commits silently. Don't force-delete unmerged work. |
+| "I'll nest the worktree inside the source checkout." | It confuses path-relative tooling. Never nest. |
+| "I'll push straight without rebasing." | Skipping the rebase surfaces conflicts in PR review instead of locally. Rebase first. |
+| "`git pull` conflicts after the merge — I'll resolve by hand." | Those are squash ghost commits; content is already on origin. Run Phase 6.5 / `/sync`; manual fixing risks real drift. |
+| "ahead>0, behind=0 — I'll just reset to origin." | That's genuine local-only work; reset loses it. Phase 6.5 halts here by design. |
 
 ## Hazards from git itself (not this skill's fault, but this skill is where you find out)
 

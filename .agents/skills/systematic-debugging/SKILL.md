@@ -112,13 +112,17 @@ If the root cause exposes an architectural problem (not just a code bug), the po
 
 ## Anti-patterns this skill guards against
 
-- **Trying fixes without a reproduction.** Each "try" is wasted: you have no way to verify it worked except waiting for the bug to recur.
-- **Stopping at the first hypothesis that seems to work.** Sometimes a fix changes the symptom without addressing the cause. The hypothesis must be confirmed by a directed probe, not by "the test passes now."
-- **Suppressing the symptom.** `try/catch` that swallows the error. Default value that masks `undefined`. Retry that hides the underlying flake. These are not fixes.
-- **Skipping the regression test.** The bug WILL return.
-- **Refactoring during the fix.** Two changes in one commit confuse `git blame` later. Land the fix, then refactor separately.
-- **Calling debugging done when the symptom goes away.** Did you find the assumption that was wrong? If not, you got lucky, not informed.
-- **Burning the entire context on a debugger session that never converges.** If 30+ minutes of probes have produced no narrowing, restart — your hypotheses are likely too broad or the suspect surface too wide.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "Let me just try a fix and see." | Without a reproduction every try is unverifiable. Reproduce first. |
+| "The first fix that works is the fix." | A fix can change the symptom without addressing the cause. Confirm with a directed probe. |
+| "I'll wrap it in try/catch or a default to make it go away." | Suppressing the symptom isn't a fix. Find the wrong assumption. |
+| "Symptom's gone — I'll skip the regression test." | The bug WILL return. Add the regression test. |
+| "I'll refactor while I'm fixing this." | Two changes in one commit confuse `git blame`. Land the fix, refactor separately. |
+| "The symptom went away, so debugging is done." | Did you find the wrong assumption? If not, you got lucky, not informed. |
+| "I'll keep probing until it converges." | 30+ minutes of probes with no narrowing means your surface is too wide. Restart. |
 
 ## Integration with the chain
 

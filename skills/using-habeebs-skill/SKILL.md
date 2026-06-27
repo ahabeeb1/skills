@@ -216,6 +216,19 @@ Plugin commands appear as `/habeebs-skill:<command>` in Claude Code. The auto-tr
 
 Chain skills consume `docs/agents/SYSTEM_CONTEXT.md` as their environment-binding cache. The canonical freshness/staleness protocol is documented once and consumed by every chain skill that reads the file: [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). Only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md; all other skills only read.
 
+## Anti-patterns this skill guards against
+
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "The spec looks clear — I'll skip the grill." | Simple specs hide the worst assumptions. Grill it; that's the gate into code. |
+| "The HANDOFF line tells me what the phase decided." | Read the file it points to. Never infer a phase's decisions from the HANDOFF text alone. |
+| "I'll run these skills in isolation as I see fit." | Run them as a chain. Each consumes the previous one's output; skipping links drops context. |
+| "I'll write an ADR for every decision to be safe." | Only one-way doors get an ADR. Reversible decisions live in the Design. |
+
 ## The implicit promise
 
 When the chain runs, the user should never be surprised by an implementation choice. Every decision should be traceable back to a research case study, a graded trade-off in the spec, or an ADR. If a choice can't be traced, it shouldn't be in the code.
+
+> Terms: see [GLOSSARY](../../docs/agents/GLOSSARY.md).

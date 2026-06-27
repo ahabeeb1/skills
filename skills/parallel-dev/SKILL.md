@@ -241,7 +241,7 @@ The subagent could not complete the task. Required: `blocker` field with a one-l
 
 ### `NEEDS_CONTEXT`
 
-The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches up to 2 times (the dispatch contract's Part 1 bound, amended 2026-06-10 — see `references/dispatch-record-template.md`), each re-dispatch requiring materially changed input — the dispatcher judges "materially changed", because it composed the original input and can diff it against the corrected one. A re-dispatch attempt with unchanged input escalates immediately as `BLOCKED` instead of dispatching; the same escalation fires when the bound is exhausted (the 2nd re-dispatch also returns `NEEDS_CONTEXT`). The bound is a termination guarantee documented as convention, not a tuned optimum.
+The subagent's input was incomplete or ambiguous and it cannot proceed without more information. Required: `context_request` field naming the missing input. The dispatcher re-dispatches up to 2 times (the dispatch contract's Part 1 bound — see `references/dispatch-record-template.md`), each re-dispatch requiring materially changed input — the dispatcher judges "materially changed", because it composed the original input and can diff it against the corrected one. A re-dispatch attempt with unchanged input escalates immediately as `BLOCKED` instead of dispatching; the same escalation fires when the bound is exhausted (the 2nd re-dispatch also returns `NEEDS_CONTEXT`). The bound is a termination guarantee documented as convention, not a tuned optimum.
 
 ### Status handling matrix
 
@@ -308,12 +308,16 @@ Quick decision matrix for the most common cases:
 
 ## Anti-patterns this skill guards against
 
-- **Parallelizing because we can.** Parallelism has overhead — coordination, verification, merge. If the units are small or the coordination is large, parallel is slower than sequential.
-- **Skipping independence verification.** Most failures of `parallel-dev` are failures of Phase 2. Take the time.
-- **Losing partial successes.** If 4 of 5 subagents succeed and 1 fails, don't throw away the 4. Re-dispatch only the failed one.
-- **Letting subagents share mutable state through the filesystem.** Two subagents writing to the same .md file = one of them loses. Two subagents both running `npm install` = race on `package-lock.json`.
-- **Specifying tasks loosely.** "Improve the auth code" is not a subagent spec. "Add a unit test at path/X covering case Y; do not modify anything else" is.
-- **Forgetting to capture timing/tokens.** This is your only signal about whether the parallel dispatch was worth it. Future calibration depends on it.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "We can parallelize this, so we should." | Parallelism has overhead — coordination, verification, merge. Small units or heavy coordination run faster sequentially. |
+| "Independence is obvious — I'll skip Phase 2." | Most parallel-dev failures are Phase 2 failures. Verify independence before dispatch. |
+| "One subagent failed — re-run the whole batch." | Keep the ones that succeeded. Re-dispatch only the failed one. |
+| "They can both write to the filesystem — it's fine." | Two subagents on the same .md file (or both running `npm install`) race. Isolate every writer. |
+| "'Improve the auth code' is enough of a spec." | Specify exactly: "add a test at path/X covering case Y; modify nothing else." |
+| "I don't need to record timing/tokens." | It's your only signal whether the dispatch paid off. Capture it for future calibration. |
 
 ## When to fall back to sequential
 

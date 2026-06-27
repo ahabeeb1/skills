@@ -158,11 +158,15 @@ The override is NOT a way to silence false positives — those should produce a 
 
 ## Anti-patterns this skill guards against
 
-- **Treating ANNOTATE as a rubber stamp.** `DONE_WITH_CONCERNS` is a warning, not a success. Read the concerns; decide deliberately.
-- **Auto-applying suggested resolutions.** Resolutions are suggestions. Some are wrong for the specific context. The user / agent must choose, not blindly apply.
-- **Running verify-output before refactor.** The slop heuristics target post-refactor code. Running pre-refactor produces noise (real refactor needs surface as fake slop).
-- **Using verify-output for security or correctness.** It's a slop detector. A diff can be slop-free and still wrong / insecure.
-- **Hand-tuning heuristics per-diff.** If a heuristic systematically misfires, fix `references/slop-heuristics.md` once. Don't patch around it per-commit.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "DONE_WITH_CONCERNS means I'm clear to commit." | It's a warning, not a pass. Read the concerns and decide deliberately. |
+| "The suggested resolution looks right — I'll auto-apply it." | Resolutions are suggestions; some are wrong for this context. Choose, don't blindly apply. |
+| "I'll run verify-output before the refactor." | The slop heuristics target post-refactor code. Pre-refactor runs produce noise. Run it after. |
+| "Verify-output passed, so the diff is correct and secure." | It's a slop detector. A slop-free diff can still be wrong or insecure. |
+| "This heuristic misfires — I'll patch around it here." | Fix `references/slop-heuristics.md` once. Don't hand-tune per-commit. |
 
 ## 4-status return contract
 

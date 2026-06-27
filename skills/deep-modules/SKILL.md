@@ -169,12 +169,16 @@ See `references/LANGUAGE.md` for the full vocabulary. Key terms used throughout 
 
 ## Anti-patterns this skill guards against
 
-- **Aesthetic refactoring.** "This file is too long." Length isn't shallowness. A 500-line module with one cohesive responsibility is deep, not bad.
-- **Adding abstractions for "future flexibility."** YAGNI's other half. The right time to add an abstraction is when two real callers want different behaviors at the same seam.
-- **Re-litigating ADRs.** If the architecture is decided, don't propose contradictions casually. Surface honestly, but mark clearly when a candidate conflicts.
-- **Renaming without functional benefit.** "I think `Handler` should be called `Processor`." Cosmetic. Skip.
-- **Ignoring real friction.** Sometimes the codebase genuinely needs a refactor and the user is reluctant. State the friction concretely with evidence; if the user still defers, capture it as tech debt.
-- **Boundless refactoring.** If you're rewriting the whole codebase, the slice was wrong. Refactors should be local and reversible.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "This file is too long, so it's shallow." | Length isn't shallowness. A 500-line cohesive module is deep. Apply the deletion test. |
+| "I'll add an abstraction for future flexibility." | YAGNI. Add a seam when two real callers want different behavior there — not before. |
+| "This decided architecture seems wrong — I'll just contradict it." | Don't re-litigate decided architecture casually. Surface honestly; mark clearly when a candidate conflicts. |
+| "`Handler` would read better as `Processor`." | Cosmetic rename, no functional benefit. Skip. |
+| "The user is reluctant, so I'll drop the refactor." | State the friction with concrete evidence; if they still defer, capture it as tech debt. |
+| "I'll refactor the whole codebase while I'm here." | If you're rewriting everything, the slice was wrong. Keep refactors local and reversible. |
 
 ## When the result is "no changes needed"
 

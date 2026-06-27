@@ -10,6 +10,7 @@
 #   (b) every skills/*/SKILL.md opens with one iron law — an all-caps bold imperative
 #       line within the first lines of the body
 #   (c) the Design template carries the plain-language sections + a GLOSSARY footer
+#   (d) every skills/*/SKILL.md carries a Thought->Reality anti-pattern table (device 3)
 
 set -euo pipefail
 
@@ -57,5 +58,20 @@ grep -qi '^## Decided' "$DESIGN_TMPL"             || fail "(c) Design template m
 grep -qiE 'Terms:.*GLOSSARY|GLOSSARY\.md' "$DESIGN_TMPL" || fail "(c) Design template missing GLOSSARY footer"
 pass "(c) Design template carries plain-language sections + GLOSSARY footer"
 
+# ---------------------------------------------------------------------------
+# (d) every SKILL.md carries a Thought->Reality anti-pattern table (device 3)
+#     The standard mandates the anti-pattern list be a 2-column table whose
+#     header row is `| Thought | Reality |`. A bulleted anti-pattern list fails.
+# ---------------------------------------------------------------------------
+no_table=""
+for skill_file in "$REPO_ROOT"/skills/*/SKILL.md; do
+  name=$(basename "$(dirname "$skill_file")")
+  if ! grep -qiE '^\|[[:space:]]*Thought[[:space:]]*\|[[:space:]]*Reality[[:space:]]*\|' "$skill_file"; then
+    no_table="${no_table} ${name}"
+  fi
+done
+[ -z "$no_table" ] || fail "(d) SKILL.md files missing a Thought->Reality table:${no_table}"
+pass "(d) every SKILL.md carries a Thought->Reality table"
+
 echo
-echo "===SCENARIO 45 (skill voice) ALL 3 CASES PASS==="
+echo "===SCENARIO 45 (skill voice) ALL 4 CASES PASS==="

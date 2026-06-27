@@ -31,7 +31,7 @@ This is convergent research. Generic brainstorming generates novel options; this
 
 ## Core workflow
 
-The skill runs in phases 0 through 7, plus three gates (2.5 coverage critic, 6.4 HITL pivot, 6.5 archive). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
+The skill runs in phases 0 through 7, plus three gates (2.5 coverage critic, 6.4 human-in-the-loop (HITL) pivot, 6.5 archive). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
 
 ### Phase 0 — Reconnaissance (look before you ask)
 
@@ -244,7 +244,7 @@ Produce the output using the template in `references/output-template.md`. The st
 
 After composing the Phase 6 report and BEFORE writing the Phase 6.5 archive, HALT for a human review. Surface the recommendation summary + the concrete decisions for `/spec` and wait for an explicit direction.
 
-This gate exists to prevent wasted downstream token spend. By the time `/spec`, `/grill`, `/record`, and `/plan` finish, the chain has paid for four artifacts on top of the research. If the recommendation is in the wrong direction, halting here costs one user message; halting after `/plan` costs the artifacts AND the re-do. Most peer methodologies (Python PEP 1, Kubernetes KEP `provisional` state, Backstage BEP pre-RFC issue, obra/superpowers design sign-off — 4 of 5 surveyed in v1.22.0 research) gate BEFORE the full spec is written.
+This gate exists to prevent wasted downstream token spend. By the time `/spec`, `/grill`, `/record`, and `/plan` finish, the chain has paid for four artifacts on top of the research. If the recommendation is in the wrong direction, halting here costs one user message; halting after `/plan` costs the artifacts AND the re-do. Most peer methodologies (Python PEP 1, Kubernetes KEP `provisional` state, Backstage BEP pre-RFC issue, obra/superpowers design sign-off — 4 of 5 surveyed) gate BEFORE the full spec is written.
 
 **Gate format.** Emit a clearly-labeled halt block at the end of the Phase 6 output:
 
@@ -317,14 +317,16 @@ If the chain terminated without a Phase 6 report (declined / halted), still flus
 
 ## Anti-patterns this skill guards against
 
-These are the failure modes the skill explicitly prevents. If you find yourself doing any of these, STOP and restart.
+If you find yourself thinking the left column, STOP — the right column is the reality.
 
-- **FAANG-scale solutions for non-FAANG-scale problems.** Discord's Elixir-based voice infra is not the right reference for a 50-user internal tool. Filter for relevance to the user's stated scale.
-- **Surveying without recommending.** "Here are five approaches. Pick one!" is not the output. The output is a recommendation with alternatives.
-- **Restating blog conclusions verbatim.** Extract the *pattern*, not the prose. If you can't describe the architecture in your own words, you haven't understood it.
-- **Recency bias.** The newest blog post isn't automatically the best pattern. A 2017 Stripe post about idempotency is more valuable than a 2025 tutorial that doesn't mention failure modes.
-- **Theoretical when real exists.** If a real team has published their actual architecture, prefer it over an "industry best practice" article.
-- **Letting copyright leak in.** Never reproduce more than 15 words from any one source. Paraphrase. The output is your synthesis, not their text.
+| Thought | Reality |
+|---|---|
+| "This Discord-scale pattern looks impressive — I'll recommend it." | Discord's voice infra is wrong for a 50-user internal tool. Filter for the user's stated scale. |
+| "Here are five solid approaches — I'll let them pick." | A survey is not the output. Recommend one, with alternatives named. |
+| "I'll quote the article's conclusion." | Extract the pattern, not the prose. If you can't describe the architecture in your own words, you haven't understood it. |
+| "The newest post must be the best pattern." | A 2017 Stripe idempotency post beats a 2025 tutorial that ignores failure modes. Age isn't quality. |
+| "I'll cite this 'industry best practice' article." | If a real team published their actual architecture, prefer it over a best-practice essay. |
+| "I'll paste their wording — it's well put." | Never reproduce more than 15 words from one source. Paraphrase; the output is your synthesis. |
 
 ## Output format strictness
 

@@ -91,11 +91,15 @@ State this boundary in the report. The audit is not a substitute for a professio
 
 ## Anti-patterns this skill guards against
 
-- **Auditing only the working tree.** Secrets and removed-but-reachable code live in history — Phase 2 is not optional.
-- **Conflating authentication with authorization.** A login wall is not access control. Phase 4 reasons about who can touch which object.
-- **Padding the report.** A clean repo produces a clean report. Inventing findings to look thorough destroys the skill's value (see Phase 5).
-- **Vague remediations.** "Validate user input" is not a fix. Name the parameterized query, the `execFile` argument array, the ownership check.
-- **Reporting code smells as vulnerabilities.** Style and module shape are `deep-modules`' domain, not security.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "Auditing the working tree is enough." | Secrets and removed-but-reachable code live in history. Phase 2 is not optional. |
+| "There's a login wall, so access is controlled." | Authentication isn't authorization. Phase 4 reasons about who can touch which object. |
+| "A short report looks lazy — I'll add findings." | A clean repo produces a clean report. Inventing findings destroys the skill's value. |
+| "'Validate user input' is a fine remediation." | Name the parameterized query, the `execFile` argument array, the ownership check. |
+| "This code smell is a vulnerability." | Style and module shape are `deep-modules`' domain, not security. |
 
 ## See also
 

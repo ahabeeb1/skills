@@ -314,14 +314,18 @@ The morning-after command. It reads the run file and checks the **session-identi
 
 ## Anti-patterns this skill guards against
 
-- **Writing code before tests.** "I'll add tests after I see if this works." This is back-filling, not TDD. The whole point is using tests to drive the design.
-- **Mocking the unit under test.** Mock its collaborators, not the thing you're verifying. If the test passes only because of how the mock is set up, the test is testing the mock.
-- **Premature generalization.** "I'll need this to handle batch input later." No. Handle the case the current test demands. Add cases as future tests demand them.
-- **Skipping the watch-it-fail step.** A test that's never failed could be silently passing for the wrong reason (typo in the assertion, never ran the failing case). Always observe failure.
-- **Refactoring before green.** If the test is failing, you can't tell whether your refactor broke something. Get to green, then refactor.
-- **Combining slices into one big commit.** If slice #1 ships some scaffolding and slice #2 uses it, those are still two commits.
-- **Backfilling tests after implementation.** This is the most common TDD-failure mode. The discipline is: NO production code until a test demands it.
-- **Treating REFACTOR as optional.** Skipping refactor consistently is how shallow modules accumulate. Run the deep-modules check even if you decide not to change anything — the decision should be explicit.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "I'll add tests after I see if this works." | That's back-filling, not TDD. Tests drive the design — write them first. |
+| "I'll mock the unit so the test is simple." | Mock collaborators, not the unit under test. A test that passes on mock setup is testing the mock. |
+| "I'll build this to handle batch input later." | Handle only the case the current test demands. Add cases as future tests demand them. |
+| "The test obviously passes — I'll skip the failing run." | A test never seen failing can pass for the wrong reason. Always watch it fail first. |
+| "I'll refactor now while I'm in here." | If the test is red you can't tell what your refactor broke. Get to green, then refactor. |
+| "Slice #1 scaffolding and slice #2 can share one commit." | Two slices are two commits, even when one builds on the other. |
+| "I'll backfill the tests once the code works." | The most common TDD-failure mode. No production code until a test demands it. |
+| "REFACTOR is optional when the code looks fine." | Skipping refactor is how shallow modules accumulate. Run the deep-modules check and make the decision explicit. |
 
 ## When the loop breaks down
 

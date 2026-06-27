@@ -77,7 +77,16 @@ Follow the shared **[grill-extension protocol](../../docs/agents/references/gril
 - D3: "The `client.query()` method accepts an `options` object. Which fields are required vs. optional with defaults? If a developer calls `client.query(sql)` without options, does it work or throw?"
 - D4: "When `client.connect()` fails because the database isn't running, what does the error message say? Does it say 'connection refused' with the host:port, or just 'connection error'?"
 
-**DX-specific anti-pattern (beyond the shared set):** don't conflate production observability with DX — error messages a developer reads in their terminal are DX; error messages in production logs are observability (`socratic-grill`'s observability axis). Don't double-count.
+## Anti-patterns this skill guards against
+
+If you find yourself thinking the left column, STOP — the right column is the reality. (Shared set: the [grill-extension protocol](../../docs/agents/references/grill-extension-protocol.md).)
+
+| Thought | Reality |
+|---|---|
+| "Not really developer-facing, but I'll review DX anyway." | Run only on developer-facing specs. Off-target DX questions waste the grill. |
+| "A terminal error and a production-log error are the same gap." | The error a developer reads is DX; the production log is observability. Don't double-count. |
+| "I'll suggest the API redesign now." | Generate the question, not the design. The fix is decided after the question is asked. |
+| "Most dimensions are Missing — this spec is bad." | It's a gap-finder, not a grade. Many Missings means early-stage; hand back to draft-spec if needed. |
 
 **Record:** produce a DX review record using [`references/devex-review-template.md`](references/devex-review-template.md); the hand-back names the dimensions per tier. If most dimensions are Missing, hand back to `draft-spec` before grilling continues.
 

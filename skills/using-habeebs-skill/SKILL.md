@@ -1,6 +1,6 @@
 ---
 name: using-habeebs-skill
-description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the research → spec → grill → record → plan → tdd → release flow. Do not use for tasks unrelated to the chain.
+description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the Human layer (research → the Design → grill + sign-off) and the Machine layer (slice → tdd → release), with record and plan conditional. Do not use for tasks unrelated to the chain.
 ---
 
 # Using habeebs-skill

@@ -4,18 +4,23 @@ This plugin gives Claude a research-grounded engineering methodology. When the u
 
 **Dual-native (Claude Code + Codex CLI).** The bundle is first-class on both harnesses from one canonical source. `skills/` is authoritative; the Codex discovery tree (`.agents/skills/`) and hook registration (`.codex/config.toml`) are GENERATED from it by `bin/sync-codex.sh` and guarded by a CI drift-check. **When you edit a skill, hook, or `hooks.json`, regenerate with `bash bin/sync-codex.sh` before committing** — `tests/codex/02-skill-drift` fails otherwise. Never hand-edit `.agents/skills/`. See the [dual-native parity ADR](./docs/agents/adrs/2026-06-25-dual-native-claude-codex-parity.md).
 
-## The chain
+## The chain — a Human layer and a Machine layer
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release
-                                       ↓
-                             agent-factors-check (only if the spec is an agent product)
-                             devex-review (only if the spec is a developer-facing product)
+HUMAN LAYER — plain language, the user reads these:
+  prior-art-research → draft-spec (writes the Design) → socratic-grill (walks + grills + sign-off)
+
+MACHINE LAYER — technical, written for the implementing subagent:
+  vertical-slice (slice list) → tdd-loop → release
+
+CONDITIONAL: decision-record — only a one-way-door decision  ·  write-plan — only multi-phase work
 ```
 
-Each skill produces output that the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
+The user lives in the Human layer: research recommends an approach, `draft-spec` turns it into the **Design** (one plain-language doc — what we're building, why, the key decisions and trade-offs), and `socratic-grill` walks the user through it, pressure-tests every aspect, writes the resolved decisions back into the Design, and earns sign-off. Only after sign-off does the Machine layer begin: `vertical-slice` decomposes the signed-off Design into slices, `tdd-loop` implements them, `release` ships. The user does not read the Machine-layer artifacts.
 
-`write-plan` is skip-able when the slice list is trivial and ordering is obvious; otherwise it runs after `decision-record` to produce the phased delivery doc that `tdd-loop` and `parallel-dev` consume. `agent-factors-check` and `devex-review` are conditional extensions of `socratic-grill` — the first fires when the spec is for an agent / copilot / LLM workflow / RAG / function-calling product, the second when the spec is for a developer-facing product (CLI / SDK / library / plugin / framework); both can fire on the same spec. `release` is the terminal link after `tdd-loop` goes GREEN — `verify-output` gates each tdd-loop commit along the way.
+The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next. `agent-factors-check` and `devex-review` are conditional extensions of `socratic-grill` — the first fires when the Design is for an agent / copilot / LLM workflow / RAG product, the second for a developer-facing product (CLI / SDK / library / plugin / framework); both can fire on one Design. `verify-output` gates each `tdd-loop` commit; `release` is terminal after `tdd-loop` goes GREEN.
+
+**Two artifacts became conditional (don't write them by default):** `decision-record` writes an ADR **only** when the Design has a one-way-door (irreversible) decision — reversible decisions live in the Design's Decided section. `write-plan` runs **only** for genuinely multi-phase / staged-rollout work — for single-phase work the slice list is the plan. A typical feature produces three artifacts: research, the Design, the grilled-and-signed-off Design. Every skill is written in the house voice — see [`docs/agents/references/skill-voice.md`](./docs/agents/references/skill-voice.md).
 
 **Every chain run executes at a depth tier — Quick, Balanced, or Deep** (ADR-0016; canonical reference `docs/agents/references/tier-scale.md`). `prior-art-research` Phase 3 picks the tier (auto-detected from residual ambiguity, sub-problem count, and constraint complexity — or a `--quick`/`--balanced`/`--deep` override), writes it into the research report's `Tier:` header, and every downstream skill inherits it. The tier scales how much of each step runs: Quick is terse and skips optional ceremony, Deep runs the full chain with parallel research and a phased plan. Two invariants are non-negotiable — the tier scales *effort*, never *decision quality* (a real open question always reaches `socratic-grill`; a one-way-door decision always gets an ADR, even under a `--quick` override), and tier-related user-facing output stays task-focused (state the tier with a task-based reason — sub-problems, ambiguity, constraints — never a token/cost/time justification).
 
@@ -30,9 +35,9 @@ When the user's request matches the LEFT column, invoke the RIGHT skill BEFORE a
 | "refactor this", "this code feels off", "too many small files", "clean this up"      | `/deepen`              |
 | "audit this", "security review", "check for vulnerabilities", "threat model"         | `/security-audit`      |
 | "do these N things in parallel", "run these batches concurrently"                    | `/parallel`            |
-| After `/research` emits `HANDOFF: spec ready`                                         | `/spec` then `/grill`  |
-| After `/grill` resolves OQs, before implementation                                    | `/record` then `/plan` |
-| "spec is locked", "start building slice N", "let's implement"                        | `/tdd`                 |
+| After `/research` emits `HANDOFF: spec ready`                                         | `/spec` (writes the Design) then `/grill` |
+| After `/grill` signs off the Design; one-way-door decision present                    | `/record` (ADR — skip if all reversible) |
+| "design is signed off", "break this down", "start building slice N", "let's implement" | `/slice` then `/tdd` (`/plan` first only if multi-phase) |
 | "ready to ship", "cut a release", "bump the version", "tag this"                     | `/release`             |
 
 If the request is ambiguous, ASK before picking a path. Do not skip the chain to vibe-code.
@@ -40,6 +45,7 @@ If the request is ambiguous, ASK before picking a path. Do not skip the chain to
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** The user almost never says "research." They say "I want to build X." Read between the lines.
+- **Keep the Human layer plain; keep the Machine layer technical.** The user reads research → Design → grill, so write those in plain English, gloss any non-GLOSSARY jargon on first use, and recap before each HANDOFF. The slice list, plan, and tdd-loop are for the implementing subagent — keep them technical. Every skill opens with one iron law and turns its anti-patterns into a Thought→Reality table (canonical voice reference: `docs/agents/references/skill-voice.md`).
 - **Don't skip phases for speed — pick a lighter tier instead.** If you're tempted to jump straight to writing code, you're missing the point of this plugin. The whole methodology is about NOT vibe-coding. On genuinely simple work the Quick tier already trims the ceremony; the tier scale, not impatience, decides depth.
 - **Internal precedent first.** For Modie's repos (BeanBot, salahi.app, BOL automation), check local repos before going external. The user's own prior art is Tier 0.
 - **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain. `parallel-dev` is used by `prior-art-research` in the Deep tier AND consumes `write-plan`'s parallelization groups. `tdd-loop` is invoked during implementation. `deep-modules` is invoked during refactor passes. `using-worktrees` isolates non-trivial slices. `systematic-debugging` handles bugs that surface during or after a slice.
@@ -47,7 +53,7 @@ If the request is ambiguous, ASK before picking a path. Do not skip the chain to
 
 ## What this plugin is NOT
 
-- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on any external substrate — no shared memory store, vector store, MCP server, or session-state directory. The chain is one-time-use per feature: it runs once (`research → spec → grill → record → plan → tdd`), produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, ADRs, plans, code + tests), then ends.
+- **Standalone by design (ADR-0002).** habeebs-skill has no runtime dependency on any external substrate — no shared memory store, vector store, MCP server, or session-state directory. The chain is one-time-use per feature: it runs once (`research → Design → grill → slice → tdd`, with `record`/`plan` only when warranted), produces durable in-repo artifacts (`docs/agents/SYSTEM_CONTEXT.md`, the Design, slices, code + tests, and an ADR for any one-way door), then ends.
 - Not a replacement for Context7 — it uses Context7 as a documentation source during `prior-art-research`
 - Not an automatic code writer — implementation still happens through TDD
 - Not a survey tool — the research phase makes opinionated recommendations

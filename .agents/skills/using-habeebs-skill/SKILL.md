@@ -1,9 +1,11 @@
 ---
 name: using-habeebs-skill
-description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the research → spec → grill → record → plan → tdd → release flow. Do not use for tasks unrelated to the chain.
+description: Chain orientation for habeebs-skill. Use when any habeebs-skill triggers, when user says "what's the chain", "how does this work", or when chain handoffs need recovery. Explains the Human layer (research → the Design → grill + sign-off) and the Machine layer (slice → tdd → release), with record and plan conditional. Do not use for tasks unrelated to the chain.
 ---
 
 # Using habeebs-skill
+
+**RUN THE SKILLS AS A CHAIN. NEVER VIBE-CODE PAST THE GATES.**
 
 A research-grounded engineering methodology. The skills compose into a chain. Don't run them in isolation.
 
@@ -12,29 +14,33 @@ A research-grounded engineering methodology. The skills compose into a chain. Do
 ```
 [User says "I want to build X"]
          ↓
+═══ HUMAN LAYER — plain language, the user reads these ═══════════════════════
 prior-art-research    → finds production patterns, recommends an approach
          │   ↳ HITL pivot gate (Phase 6.4) — user reviews recommendation BEFORE archive write
          ↓
-draft-spec            → turns recommendation into an implementation spec
+draft-spec            → writes the DESIGN: one plain-language doc — what we're building,
+         │              why this approach, the key decisions and trade-offs
          ↓
-socratic-grill        → drives ambiguity out of decisions
-         │   ↳ agent-factors-check (conditional — agent / copilot / LLM-workflow / RAG specs)
-         │   ↳ devex-review        (conditional — CLI / SDK / library / plugin / framework specs)
+socratic-grill        → walks the user through the Design, pressure-tests every aspect,
+         │              writes the resolved decisions back into the Design, earns SIGN-OFF
+         │   ↳ agent-factors-check (conditional — agent / copilot / LLM-workflow / RAG Designs)
+         │   ↳ devex-review        (conditional — CLI / SDK / library / plugin / framework Designs)
+         ↓   ════ sign-off gate — only past here does code begin ════
+═══ MACHINE LAYER — technical, for the implementing subagent ════════════════
+vertical-slice        → decomposes the signed-off Design into the slice list
          ↓
-decision-record       → captures the result as an ADR
-         ↓
-write-plan            → phased delivery doc with acceptance gates + rollback hooks (skip if trivial)
-         ↓
-tdd-loop              → implements with red-green-refactor over vertical slices
+tdd-loop              → implements with red-green-refactor over the slices
          │   ↳ deep-modules — runs at the REFACTOR step of each slice (not a separate phase)
          │   ↳ verify-output — anti-slop gate run between GREEN and each commit
-         │   ↳ re-grill edge — implementation-revealed spec ambiguity halts the slice
-         │     into a scoped socratic-grill round (inline patch or ADR escalation), then resumes
-         │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan:
-         │     failure-triage routes fixes, tiered halt policy parks human-judgment scope into
-         │     halt reports + RUN_SUMMARY; parked work resumes via /tdd --resume <run-id>
+         │   ↳ re-grill edge — implementation-revealed Design ambiguity halts the slice
+         │     into a scoped socratic-grill round (patches the Design), then resumes
+         │   ↳ loop mode (/tdd --loop) — fresh-context-per-slice driver runs the whole plan
          ↓
 release               → version bump, CHANGELOG, PR body, tag-push — terminal chain link
+
+CONDITIONAL (don't write by default):
+  decision-record  → an ADR, only when the Design has a one-way-door (irreversible) decision
+  write-plan       → a phased plan, only when the work is genuinely multi-phase
 ```
 
 **HITL gates in the chain** (where the user pivots):
@@ -49,9 +55,9 @@ Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep*
 
 ## HANDOFF lines — navigation, not state transfer
 
-Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the spec file written by `draft-spec`, the grill record written by `socratic-grill`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line.
+Each chain skill ends its output with one or more `HANDOFF: <name> ready` lines pointing at the next skill to invoke. **These lines are navigation pointers, not state payloads.** State transfer between phases happens via the previous phase's **full output document** — the Design written by `draft-spec` (and grilled-in-place by `socratic-grill`), the slice list written by `vertical-slice`, the ADR written by `decision-record`, the plan written by `write-plan`. When a downstream skill runs, it MUST read the full upstream document, not just the HANDOFF line. Always precede a HANDOFF line with a one- or two-sentence plain-English recap of what was produced and what's next — see [`docs/agents/references/skill-voice.md`](../../docs/agents/references/skill-voice.md).
 
-Worked example: `socratic-grill` finishes a session by writing `docs/agents/specs/<slug>-grill.md` (the full record) and emitting `HANDOFF: record ready — invoke decision-record to capture as ADRs`. When `decision-record` runs, it reads the grill record IN FULL — every resolved item, every axes-grilled rationale, every revisit trigger. The HANDOFF line tells you which skill runs next; the grill record tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
+Worked example: `socratic-grill` finishes by writing the resolved decisions into the Design's **Decided** section (there is no separate grill record) and emitting `HANDOFF: record ready` only if the Design holds a one-way-door decision. When `decision-record` runs, it reads the signed-off Design IN FULL — every resolved item, every door classification, every revisit trigger. The HANDOFF line tells you which skill runs next; the Design tells you *what to put in the ADR*. If `decision-record` ever proceeded from the HANDOFF line alone, it would lose the context it needs.
 
 The full-doc-read contract keeps the chain on the right side of the "don't build multi-agents" line: subagents on degraded context (handoff strings without the parent's full trace) silently encode conflicting interpretations of the parent task. The same invariant applies to `parallel-dev` subagent dispatches — subagents receive the parent's full context (Phase 1 context, decomposition, steering, SYSTEM_CONTEXT preamble) as one coherent payload, not a thin task summary.
 
@@ -134,7 +140,7 @@ This is a documented convention, not a separate skill. Invoke it inline when nee
 ### When to abort
 
 - **User says** "abort", "cancel", "stop the chain", "let's drop this", or equivalent
-- **New requirement invalidates the active spec** (scope shift; the current draft-spec or grill record no longer maps to reality)
+- **New requirement invalidates the active Design** (scope shift; the current Design no longer maps to reality)
 - **Research surfaces a blocker** — e.g., the chosen architecture violates the standalone-by-design constraint and the alternatives all violate it too
 - **Work is paused indefinitely** — the user wants to come back to this later; in-flight artifacts shouldn't pollute the next chain run
 - **A critic surfaces a coverage gap so large** that proceeding would ship the very class of bug the chain exists to prevent
@@ -179,11 +185,11 @@ The chain's 4th context-engineering move ("Compress-at-overflow") is a markdown-
 
 **7-section template** (copy from the template file when flushing):
 
-1. **Active artifacts** — file paths for current spec, ADRs being authored, current slice file, current grill record (if any), current postmortem (if any)
+1. **Active artifacts** — file paths for the current Design, ADRs being authored, current slice file, current postmortem (if any)
 2. **Current slice** — slice number + name + acceptance-criteria status (which boxes checked, which open, which the agent was working on at flush time)
 3. **Last successful action** — commit SHA + message, OR "test X passed" with path, OR "file Y written" with path
 4. **What's blocking** — immediate next action + any blocker (missing input, failing test, open grill question)
-5. **Open grill Qs from this session** — Q-IDs from grill records that drove current decisions
+5. **Open grill Qs from this session** — Q-IDs from the Design's Decided section that drove current decisions
 6. **Recent test state** — last dogfood / test run outcome + any red commits since
 7. **Branch / worktree pointer** — current branch name, worktree path (if relevant), commit SHA at flush time
 
@@ -210,6 +216,19 @@ Plugin commands appear as `/habeebs-skill:<command>` in Claude Code. The auto-tr
 
 Chain skills consume `docs/agents/SYSTEM_CONTEXT.md` as their environment-binding cache. The canonical freshness/staleness protocol is documented once and consumed by every chain skill that reads the file: [`docs/agents/references/system-context-staleness-check.md`](../../docs/agents/references/system-context-staleness-check.md). Only `prior-art-research` Phase 0 writes SYSTEM_CONTEXT.md; all other skills only read.
 
+## Anti-patterns this skill guards against
+
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "The spec looks clear — I'll skip the grill." | Simple specs hide the worst assumptions. Grill it; that's the gate into code. |
+| "The HANDOFF line tells me what the phase decided." | Read the file it points to. Never infer a phase's decisions from the HANDOFF text alone. |
+| "I'll run these skills in isolation as I see fit." | Run them as a chain. Each consumes the previous one's output; skipping links drops context. |
+| "I'll write an ADR for every decision to be safe." | Only one-way doors get an ADR. Reversible decisions live in the Design. |
+
 ## The implicit promise
 
 When the chain runs, the user should never be surprised by an implementation choice. Every decision should be traceable back to a research case study, a graded trade-off in the spec, or an ADR. If a choice can't be traced, it shouldn't be in the code.
+
+> Terms: see [GLOSSARY](../../docs/agents/GLOSSARY.md).

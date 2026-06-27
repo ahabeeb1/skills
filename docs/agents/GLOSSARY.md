@@ -15,7 +15,7 @@ A self-contained markdown file under `skills/<name>/SKILL.md` with optional refe
 
 ### Chain
 
-The ordered sequence of skills that compose into a methodology run: `prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release`. One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
+The ordered sequence of skills that compose into a methodology run, split into a **Human layer** the user reads (`prior-art-research → draft-spec` writes the Design `→ socratic-grill` signs it off) and a **Machine layer** for the implementing subagent (`vertical-slice → tdd-loop → release`). `decision-record` (ADR) fires only for a one-way-door decision and `write-plan` only for multi-phase work (per the [human-machine-layer split](./adrs/2026-06-26-split-human-design-and-machine-layers.md) and the [demote-ADR-and-plan decision](./adrs/2026-06-26-demote-adr-and-plan-to-conditional.md)). One-time-use per feature (per [ADR-0002](./adrs/0002-habeebs-skill-standalone.md)). Each skill's HANDOFF lines tell the agent what skill to invoke next.
 
 **Sub-concepts:**
 - **Phase 0** — `prior-art-research`'s pre-Phase-1 reconnaissance pass; the single writer of `SYSTEM_CONTEXT.md` per ADR-0001.
@@ -27,9 +27,15 @@ Every chain run executes at one **tier** (see below), decided once in Phase 3.
 
 **Synonyms to AVOID:** "pipeline" (implies orchestration; the chain is sequential by handoff, not by daemon), "workflow" (vague — be specific about which chain).
 
+### Design
+
+The single Human-layer artifact that says what we're building, why this approach, the key decisions, and the trade-offs — written by `draft-spec` (`/spec`) at `docs/agents/specs/YYYY-MM-DD-<slug>-design.md`. It is read by the user to understand the feature, pressure-tested by `socratic-grill`, and signed off before any code. `socratic-grill` writes resolved decisions back into its **Decided** section, so the Design is also the decision record on the common path — there is no separate grill-record file (per the [demote-ADR-and-plan decision](./adrs/2026-06-26-demote-adr-and-plan-to-conditional.md)). "spec" is the historical name for this artifact; `/spec` still produces it (per the [human-machine-layer split](./adrs/2026-06-26-split-human-design-and-machine-layers.md)).
+
+**Synonyms to AVOID:** "spec" in the old sense of a sliced implementation doc (slices are the Machine layer now), "PRD" (a Design is opinionated and decided, not a requirements wishlist), "ADR" (an ADR is post-decision and records only one-way doors; the Design is the broader pre-/at-decision artifact).
+
 ### Slice
 
-A vertical work item that cuts through ALL integration layers end-to-end (tracer-bullet style), produced by `vertical-slice` from a spec or `write-plan` output. Tagged HITL or AFK.
+A vertical work item that cuts through ALL integration layers end-to-end (tracer-bullet style), produced by `vertical-slice` from the signed-off Design (the Machine layer). Tagged HITL or AFK.
 
 **Sub-concepts:**
 - **HITL slice** — human-in-the-loop required mid-slice; agent must pause and surface a decision.

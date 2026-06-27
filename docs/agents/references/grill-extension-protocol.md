@@ -84,8 +84,12 @@ HANDOFF: grilling agenda updated — <N> new questions added from <skill-name>.
 
 ## Shared anti-patterns
 
-- **Running on specs the trigger excludes.** Wastes tokens, pollutes the grill record.
-- **Generating design instead of questions.** The output is Socratic questions; proposing solutions is `socratic-grill`'s job after the question is asked.
-- **Treating the checklist as a scorecard.** It's a gap-finder, not a grade. A spec with many Missings isn't "bad" — it's early-stage.
-- **Folding all gaps into one mega-question.** Each gap gets its own question; the user may answer them across different turns.
-- **Inventing items not in the skill's closed list.** A new item is a new skill or a new ADR — don't smuggle it in.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "I'll run the checklist even though the trigger excludes this spec." | Wastes tokens and pollutes the grill. Run only when the trigger fires. |
+| "I'll propose a solution along with the question." | The output is Socratic questions. Proposing solutions is `socratic-grill`'s job after the question is asked. |
+| "Many Missings — this spec scores badly." | It's a gap-finder, not a scorecard. Many Missings means early-stage, not bad. |
+| "I'll fold all the gaps into one mega-question." | Each gap gets its own question; the user may answer them across different turns. |
+| "This new item would be useful to add." | A new item is a new skill or a new ADR. Don't smuggle it into the closed list. |

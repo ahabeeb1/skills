@@ -12,7 +12,7 @@
 #   (b) tier-count rule present: Quick 1 / Balanced 2 / Deep 3
 #   (c) door probe carries the one-follow-up rule (concrete undo cost on every
 #       "two-way" label)
-#   (d) grill-output-template.md has a "User mental model" section covering
+#   (d) design-template.md has a "User mental model" section covering
 #       success criteria, door classifications, and premortem risks
 #   (e) write-plan SKILL.md reads the section's success criteria as
 #       acceptance-gate candidates
@@ -21,8 +21,11 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+# The grill now writes the mental-model answers into the Design's Decided section
+# (there is no separate grill-record template). The Design template defines that
+# section's shape.
 GRILL="$REPO_ROOT/skills/socratic-grill/SKILL.md"
-TEMPLATE="$REPO_ROOT/skills/socratic-grill/references/grill-output-template.md"
+TEMPLATE="$REPO_ROOT/skills/draft-spec/references/design-template.md"
 PLAN="$REPO_ROOT/skills/write-plan/SKILL.md"
 RECORD="$REPO_ROOT/skills/decision-record/SKILL.md"
 
@@ -58,8 +61,8 @@ pass "(c) one-follow-up undo-cost rule present"
 # ---------------------------------------------------------------------------
 # Case (d) — template section
 # ---------------------------------------------------------------------------
-MM=$(awk '/^## User mental model/{flag=1; print; next} /^## /{flag=0} flag' "$TEMPLATE")
-[ -n "$MM" ] || fail "(d) grill-output-template.md has no '## User mental model' section"
+MM=$(awk '/^#+ User mental model/{flag=1; print; next} /^#{1,2} [A-Z]/{flag=0} flag' "$TEMPLATE")
+[ -n "$MM" ] || fail "(d) design-template.md has no 'User mental model' section in Decided"
 echo "$MM" | grep -qi 'success criteria' || fail "(d) section missing success criteria"
 echo "$MM" | grep -qiE 'door|one-way|two-way' || fail "(d) section missing door classifications"
 echo "$MM" | grep -qi 'premortem' || fail "(d) section missing premortem risks"

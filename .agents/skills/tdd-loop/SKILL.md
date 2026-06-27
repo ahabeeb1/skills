@@ -6,15 +6,17 @@ disable-model-invocation: true
 
 # TDD Loop
 
-Implement one vertical slice at a time using red-green-refactor. The whole point is that the failing test EXISTS before the implementation code does — anything else is back-filling coverage, which doesn't get the benefits of TDD.
+**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.**
 
-This skill is the implementation engine of the habeebs-skill chain. Once `decision-record` locks the architecture and the spec has slices ready, every slice goes through `tdd-loop`.
+Implement one vertical slice at a time using red-green-refactor. The failing test EXISTS before the implementation code does — if you didn't watch the test fail, you don't know it tests the right thing. Anything else is back-filling coverage, which doesn't get the benefits of TDD.
+
+This skill is the implementation engine and the start of the Machine layer. Once `socratic-grill` signs off the Design and `vertical-slice` produces the slice list, every slice goes through `tdd-loop`.
 
 ## When to use this skill
 
 **Trigger on:**
 
-- A locked spec from `draft-spec` (or post-`socratic-grill`) is queued for implementation
+- A signed-off Design with a slice list from `vertical-slice` is queued for implementation
 - The user says "implement slice N" / "start building" / "code this up"
 - A bug fix where the bug is understood (write the failing test that exhibits the bug, then fix it)
 - Adding new behavior to a tested module
@@ -32,7 +34,7 @@ This skill is the implementation engine of the habeebs-skill chain. Once `decisi
 [Phase 0: decide worktree] → [Phase 0.5: plan inspection — pgroup auto-dispatch + idempotent resume] → RED → GREEN → REFACTOR → 3-stage REVIEW → COMMIT → next slice
 ```
 
-Each cycle is ONE slice from the spec. Don't combine slices. Don't skip phases. Don't skip ahead.
+Each cycle is ONE slice from the slice list. Don't combine slices. Don't skip phases. Don't skip ahead.
 
 Phase 0.5 reads the active plan and, when a pgroup of size ≥2 is ready, hands off to `parallel-dev` for concurrent dispatch — each subagent runs its own Phase 1-6 cycle in its own worktree. Single-slice flows pass through Phase 0.5 unchanged.
 
@@ -312,14 +314,18 @@ The morning-after command. It reads the run file and checks the **session-identi
 
 ## Anti-patterns this skill guards against
 
-- **Writing code before tests.** "I'll add tests after I see if this works." This is back-filling, not TDD. The whole point is using tests to drive the design.
-- **Mocking the unit under test.** Mock its collaborators, not the thing you're verifying. If the test passes only because of how the mock is set up, the test is testing the mock.
-- **Premature generalization.** "I'll need this to handle batch input later." No. Handle the case the current test demands. Add cases as future tests demand them.
-- **Skipping the watch-it-fail step.** A test that's never failed could be silently passing for the wrong reason (typo in the assertion, never ran the failing case). Always observe failure.
-- **Refactoring before green.** If the test is failing, you can't tell whether your refactor broke something. Get to green, then refactor.
-- **Combining slices into one big commit.** If slice #1 ships some scaffolding and slice #2 uses it, those are still two commits.
-- **Backfilling tests after implementation.** This is the most common TDD-failure mode. The discipline is: NO production code until a test demands it.
-- **Treating REFACTOR as optional.** Skipping refactor consistently is how shallow modules accumulate. Run the deep-modules check even if you decide not to change anything — the decision should be explicit.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "I'll add tests after I see if this works." | That's back-filling, not TDD. Tests drive the design — write them first. |
+| "I'll mock the unit so the test is simple." | Mock collaborators, not the unit under test. A test that passes on mock setup is testing the mock. |
+| "I'll build this to handle batch input later." | Handle only the case the current test demands. Add cases as future tests demand them. |
+| "The test obviously passes — I'll skip the failing run." | A test never seen failing can pass for the wrong reason. Always watch it fail first. |
+| "I'll refactor now while I'm in here." | If the test is red you can't tell what your refactor broke. Get to green, then refactor. |
+| "Slice #1 scaffolding and slice #2 can share one commit." | Two slices are two commits, even when one builds on the other. |
+| "I'll backfill the tests once the code works." | The most common TDD-failure mode. No production code until a test demands it. |
+| "REFACTOR is optional when the code looks fine." | Skipping refactor is how shallow modules accumulate. Run the deep-modules check and make the decision explicit. |
 
 ## When the loop breaks down
 

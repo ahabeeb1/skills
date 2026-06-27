@@ -79,17 +79,20 @@ pass "(e) scoped round defined with fresh-context framing"
 grep -qiE "other slice'?s acceptance criteria|acceptance criteria of any other slice" "$GRILL" \
   || fail "(f) boundary missing: no other slice's acceptance criteria change"
 grep -qiE 'adds? no (new )?slice' "$GRILL" || fail "(f) boundary missing: adds no slice"
-grep -qiE 'architecture.*concrete picks|concrete picks.*architecture' "$GRILL" \
-  || fail "(f) boundary missing: Architecture / Concrete picks untouched"
+grep -qiE 'overview.*key decisions|key decisions.*overview' "$GRILL" \
+  || fail "(f) boundary missing: Design Overview / Key decisions untouched"
 pass "(f) blast-radius boundary states all three minor-conditions"
 
 # ---------------------------------------------------------------------------
-# Case (g) — dated -regrill record back-linked to the original
+# Case (g) — resolution is written into the Design's Decided section (no separate
+# record), with a dated note that links back to the original Decided entry
 # ---------------------------------------------------------------------------
-grep -qE 'regrill\.md|-regrill' "$GRILL" || fail "(g) no -regrill record naming convention"
+grep -qiE "Design'?s Decided section|into the Design" "$GRILL" \
+  || fail "(g) re-grill resolution is not written into the Design's Decided section"
+grep -qiE 'dated note' "$GRILL" || fail "(g) re-grill resolution lacks a dated note"
 grep -qiE 'back-link|links? back to the original' "$GRILL" \
-  || fail "(g) record is not back-linked to the original grill record"
-pass "(g) dated back-linked -regrill record convention present"
+  || fail "(g) dated note is not back-linked to the original Decided entry"
+pass "(g) re-grill resolution patches the Design's Decided section with a dated back-linked note"
 
 # ---------------------------------------------------------------------------
 # Case (h) — domain-touch rule for extension re-fire

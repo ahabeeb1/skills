@@ -9,10 +9,10 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/using-habeebs-skill/SKILL.md` first to unders
 Then execute in order, handing off between phases per the HANDOFF lines:
 
 1. `prior-art-research` (find production patterns, recommend approach)
-2. `draft-spec` (turn recommendation into implementation spec)
-3. `socratic-grill` (drive ambiguity out of decisions)
-4. `decision-record` (capture as ADR)
+2. `draft-spec` (write the Design — what we're building and why)
+3. `socratic-grill` (walk the user through the Design, grill it, earn sign-off)
+4. `decision-record` (only if the Design has a one-way-door decision)
 
-After the chain completes, the spec is ready for implementation via `tdd-loop`.
+After sign-off, decompose with `vertical-slice` and implement via `tdd-loop`.
 
 Feature: $ARGUMENTS

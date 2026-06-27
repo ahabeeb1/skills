@@ -6,7 +6,7 @@
 
 **Research-grounded engineering methodology for Claude Code. Stop vibe-coding.**
 
-_Before you build X, find how the best teams actually shipped X. Then spec it, grill it, record the decision, plan it, and TDD it._
+_Before you build X, find how the best teams actually shipped X. Understand the Design — what's being built and why, in plain language — then have it pinned down with you, sign off, and let TDD build it._
 
 [Quick Start](#quick-start) • [Why](#why-habeebs-skill) • [The Chain](#the-chain) • [Installation](#installation) • [Hooks](#hooks)
 
@@ -14,11 +14,11 @@ _Before you build X, find how the best teams actually shipped X. Then spec it, g
 
 ## Why habeebs-skill?
 
+- **Readable as it runs.** You live in a plain-language Human layer: research recommends an approach, then you get one **Design** doc — what we're building, why, the key decisions and trade-offs — and the grill walks you through it and pins down every loose end. No wall of methodology jargon. Once you understand and sign off, the implementation is the machine's job.
 - **Research before code.** Every non-trivial feature starts by finding 3–5 production implementations of approximately-X and extracting their patterns. No more "best practices" hand-waving.
 - **Opinionated recommendations.** The research phase commits to one approach with a real tradeoff analysis — not a survey of options dumped on your lap.
-- **Ambiguity gets grilled out.** Specs go through Socratic questioning before any code is written. Hidden assumptions surface as questions, not bugs.
-- **Decisions become durable.** Architecture choices are captured as ADRs. Future-you (or future-Claude) reads the ADR instead of re-litigating the decision.
-- **Phased delivery with acceptance gates.** Plans declare binary done conditions, a dependency DAG, parallelization groups, and rollback hooks before slice one ships.
+- **Ambiguity gets grilled out.** The Design goes through Socratic questioning before any code is written. Hidden assumptions surface as questions, not bugs — and the answers get written back into the Design so it stays the single source of truth.
+- **Durable only where it counts.** A decision gets a standalone ADR only when it's a one-way door; everything reversible lives in the Design. A separate phased plan appears only for genuinely multi-phase work. A typical feature produces three artifacts, not five.
 - **TDD over vertical slices.** Red → green → refactor. One slice at a time. Deep-modules check at every refactor. No half-finished half-shipped commits.
 - **Tier-aware effort.** Trivial work runs Quick (terse, lighter ceremony). Genuinely complex work runs Deep (parallel research subagents, phased plan). Quality gates never get skipped — only the volume of ceremony scales.
 - **Dual-native on Claude Code AND Codex.** Same skills, hooks, and subagents — first-class on both. Plugin install for Claude Code; native Agent Skills + `.codex` hooks for Codex CLI, generated from one canonical source with a CI drift-check.
@@ -58,28 +58,42 @@ That triggers `prior-art-research`, which hands off to `draft-spec`, which hands
 
 ---
 
-## The Chain
+## The Chain — a Human layer and a Machine layer
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release
-                                       ↓
-                             agent-factors-check (agent products only)
-                             devex-review        (developer-facing products only)
+HUMAN LAYER — plain language, you read these:
+  /research → /spec (writes the Design) → /grill (walks it, pins it down, earns sign-off)
+
+MACHINE LAYER — technical, for the implementing subagent:
+  /slice → /tdd → /release
+
+CONDITIONAL: /record — only a one-way-door decision  ·  /plan — only multi-phase work
 ```
 
-Each step produces a durable in-repo artifact that the next step consumes. The chain is one-time-use per feature — runs once, leaves specs + ADRs + plans + code + tests behind, ends.
+You live in the Human layer: research recommends an approach, `/spec` turns it into one plain-language **Design** (what we're building, why, the key decisions and trade-offs), and `/grill` walks you through it, pressure-tests every aspect, writes the resolved decisions back into the Design, and earns your sign-off. Only then does the Machine layer run. A typical feature leaves three durable artifacts — research, the Design, the signed-off Design — plus code + tests; an ADR appears only when a decision is irreversible, a phased plan only when the work is genuinely multi-phase. The chain is one-time-use per feature: runs once, ends.
 
-### Core chain — `/research → /spec → /grill → /record → /plan → /tdd → /release`
+### Human layer — `/research → /spec → /grill` (read these)
 
 | Step | What it does | When it fires |
 |---|---|---|
 | **`/research`** | Finds 3–5 production implementations of approximately-X, extracts patterns, recommends one approach. Picks the depth tier (Quick / Balanced / Deep) based on ambiguity and sub-problem count. | "I want to build X", "how should I implement Y", "design this" |
-| **`/spec`** | Turns the research recommendation into a sliced implementation spec | After `/research` |
-| **`/grill`** | Socratic questioning until every open question is resolved | When the spec has implicit assumptions or unresolved decisions |
-| **`/record`** | Captures the chosen architecture as an ADR (Nygard format) | After `/grill`, before implementation |
-| **`/plan`** | Phased delivery doc with binary acceptance gates, dependency DAG, parallelization map, rollback hooks | When ≥3 slices or ordering isn't obvious |
-| **`/tdd`** | Red-green-refactor TDD per slice, with two-stage review (spec compliance + code quality). `--loop` flag runs all slices continuously with fresh context per slice, failure-triage on RED, and tiered halt policy | When the spec is locked |
+| **`/spec`** | Turns the research recommendation into the **Design** — one plain-language doc: what we're building, why this approach, the key decisions and trade-offs, what we're explicitly not doing | After `/research` |
+| **`/grill`** | Walks you through the Design, Socratically pressure-tests every aspect, writes resolutions back into it, earns your sign-off | After `/spec`, before any code |
+
+### Machine layer — `/slice → /tdd → /release` (you don't read these)
+
+| Step | What it does | When it fires |
+|---|---|---|
+| **`/slice`** | Decomposes the signed-off Design into tracer-bullet vertical slices with test seams and ordering, labeled `AFK:full-auto` / `HITL:inline` / `HITL:approval-gate` | After sign-off |
+| **`/tdd`** | Red-green-refactor TDD per slice, with two-stage review (Design compliance + code quality). `--loop` flag runs all slices continuously with fresh context per slice, failure-triage on RED, and tiered halt policy | When the Design is signed off |
 | **`/release`** | Version bump + CHANGELOG entry + doc-sync audit + PR body + tag-push | After all slices land |
+
+### Conditional — fire only when warranted
+
+| Step | What it does | When it fires |
+|---|---|---|
+| **`/record`** | Captures a decision as an ADR (Nygard format) | Only when the Design holds a one-way-door (irreversible) decision |
+| **`/plan`** | Phased delivery doc with binary acceptance gates, dependency DAG, parallelization map, rollback hooks | Only for genuinely multi-phase / staged-rollout work |
 
 ### Supporting primitives
 
@@ -88,7 +102,6 @@ Each step produces a durable in-repo artifact that the next step consumes. The c
 | **`/debug`** | Reproduce → minimize → hypothesis-driven probe → fix → regression test → postmortem |
 | **`/deepen`** | Find shallow modules using the deletion test, propose deepenings (Ousterhout) |
 | **`/parallel`** | Dispatch parallel subagents into isolated worktrees with per-subagent commit discipline |
-| **`/slice`** | Decompose work into tracer-bullet vertical slices labeled `AFK:full-auto` / `HITL:inline` / `HITL:approval-gate` |
 | **`/worktree`** | Isolate every feature or AFK slice in its own git worktree with verified-clean baseline |
 | **`/security-audit`** | Static security audit — attack-surface census, secrets archaeology, OWASP Top 10, STRIDE per-component |
 | **`/sync`** | Reconcile local default-branch after a PR merge — handles squash-merge ghost-commit divergence |

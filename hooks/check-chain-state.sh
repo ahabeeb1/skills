@@ -13,10 +13,11 @@
 #   - Rule 3: stateless — file-existence-as-state per silent-contradiction-3
 #             resolution. Reads frontmatter + git state; writes nothing.
 #
-# Scope (locked by v1.22.0 grill OQ-1):
-#   (b) MISSING-GRILL — warn when a spec marked `Status: Grilled` has no
-#       corresponding <slug>-grill.md file. Catches: spec advanced through the
-#       chain without the grill record being committed.
+# Scope:
+#   (b) UNGRILLED-SIGNOFF — warn when a Design (`*-design.md`) marked
+#       `Status: Signed-off` still has an empty Decided section (the
+#       `_(none yet` placeholder). Catches: a Design signed off without the
+#       grill writing the resolved decisions back into it.
 #   (c) EDIT-ON-DEFAULT — warn when editing skills/, hooks/, or .claude-plugin/
 #       on the default branch with uncommitted changes. Catches: starting a
 #       new feature without creating a worktree.
@@ -56,31 +57,28 @@ default_branch="${default_branch:-main}"
 current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Scope (b): MISSING-GRILL drift detection
+# Scope (b): UNGRILLED-SIGNOFF drift detection
 #
-# Scan docs/agents/specs/*.md for files with `Status: Grilled` frontmatter and
-# verify the corresponding <slug>-grill.md file exists.
+# Scan docs/agents/specs/*-design.md for Designs marked `Status: Signed-off`
+# whose Decided section is still the empty placeholder (`_(none yet`). A signed-off
+# Design with no recorded decisions means the grill never wrote its resolutions
+# back into the Design — the chain advanced past the sign-off gate empty.
 # ─────────────────────────────────────────────────────────────────────────────
 warned=0
 details=""
 
 specs_dir="$REPO_ROOT/docs/agents/specs"
 if [ -d "$specs_dir" ]; then
-  for spec in "$specs_dir"/*.md; do
-    [ -f "$spec" ] || continue
-    base=$(basename "$spec" .md)
-    # Skip grill records themselves
-    case "$base" in
-      *-grill) continue ;;
-    esac
+  for design in "$specs_dir"/*-design.md; do
+    [ -f "$design" ] || continue
 
-    # Look for `Status: Grilled` (PascalCase, YAML or markdown-emphasis form)
-    # Only check the first 30 lines (frontmatter region)
-    if head -30 "$spec" 2>/dev/null | grep -qE '^(Status|[*][*]Status[*][*]):.*Grilled'; then
-      grill_file="$specs_dir/${base}-grill.md"
-      if [ ! -f "$grill_file" ]; then
+    # Look for `Status: Signed-off` (PascalCase, YAML or markdown-emphasis form)
+    # in the frontmatter region (first 30 lines).
+    if head -30 "$design" 2>/dev/null | grep -qE '^(Status|[*][*]Status[*][*]):.*Signed-off'; then
+      # Decided section still carries the empty placeholder?
+      if grep -qE '_\(none yet' "$design" 2>/dev/null; then
         warned=1
-        details="${details}  - spec ${spec#$REPO_ROOT/} is Status: Grilled but ${grill_file#$REPO_ROOT/} is missing\\n"
+        details="${details}  - Design ${design#$REPO_ROOT/} is Status: Signed-off but its Decided section is still empty (grill resolutions not written back)\\n"
       fi
     fi
   done

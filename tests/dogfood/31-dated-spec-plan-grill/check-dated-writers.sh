@@ -23,7 +23,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 SPEC_SKILL="$REPO_ROOT/skills/draft-spec/SKILL.md"
 PLAN_SKILL="$REPO_ROOT/skills/write-plan/SKILL.md"
 GRILL_SKILL="$REPO_ROOT/skills/socratic-grill/SKILL.md"
-SPEC_TMPL="$REPO_ROOT/skills/draft-spec/references/spec-template.md"
+SPEC_TMPL="$REPO_ROOT/skills/draft-spec/references/design-template.md"
 PLAN_TMPL="$REPO_ROOT/skills/write-plan/references/plan-template.md"
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
@@ -34,11 +34,12 @@ for f in "$SPEC_SKILL" "$PLAN_SKILL" "$GRILL_SKILL" "$SPEC_TMPL" "$PLAN_TMPL"; d
 done
 
 # ---------------------------------------------------------------------------
-# (a) draft-spec instructs the dated spec write target
+# (a) draft-spec instructs the dated Design write target (the spec is now the
+#     plain-language Design, written to YYYY-MM-DD-<slug>-design.md)
 # ---------------------------------------------------------------------------
-grep -Eq 'YYYY-MM-DD-<(feature-)?slug>\.md' "$SPEC_SKILL" \
-  || fail "(a) draft-spec/SKILL.md does not instruct a dated 'YYYY-MM-DD-<slug>.md' spec write target"
-pass "(a) draft-spec instructs dated spec write target"
+grep -Eq 'YYYY-MM-DD-<(feature-)?slug>-design\.md' "$SPEC_SKILL" \
+  || fail "(a) draft-spec/SKILL.md does not instruct a dated 'YYYY-MM-DD-<slug>-design.md' Design write target"
+pass "(a) draft-spec instructs dated Design write target"
 
 # ---------------------------------------------------------------------------
 # (b) write-plan instructs the dated plan write target
@@ -48,18 +49,21 @@ grep -Eq 'YYYY-MM-DD-<slug>\.md' "$PLAN_SKILL" \
 pass "(b) write-plan instructs dated plan write target"
 
 # ---------------------------------------------------------------------------
-# (c) socratic-grill instructs a dated grill-record write target
+# (c) socratic-grill writes resolutions into the dated Design (no separate
+#     grill record on the common path — the grill record folds into the Design)
 # ---------------------------------------------------------------------------
-grep -Eq 'YYYY-MM-DD-<[a-z-]*slug>?-grill\.md|YYYY-MM-DD-<slug>-grill\.md|dated .* grill-record|grill-record .* dated' "$GRILL_SKILL" \
-  || fail "(c) socratic-grill/SKILL.md does not instruct a dated grill-record write target"
-pass "(c) socratic-grill instructs dated grill-record write target"
+grep -Eq 'YYYY-MM-DD-<slug>-design\.md' "$GRILL_SKILL" \
+  || fail "(c) socratic-grill/SKILL.md does not reference the dated Design write target"
+grep -Eqi 'no separate grill record|do not write a separate grill record' "$GRILL_SKILL" \
+  || fail "(c) socratic-grill/SKILL.md does not state the grill record folds into the Design"
+pass "(c) socratic-grill writes into the dated Design (no separate grill record)"
 
 # ---------------------------------------------------------------------------
-# (d) spec template carries a Version:/Release: header field
+# (d) Design template carries a Version:/Release: header field (traceability)
 # ---------------------------------------------------------------------------
 grep -Eq '(\*\*Version:\*\*|\*\*Release:\*\*|^Version:|^Release:)' "$SPEC_TMPL" \
-  || fail "(d) spec-template.md does not carry a Version:/Release: field"
-pass "(d) spec template carries a Version:/Release: field"
+  || fail "(d) design-template.md does not carry a Version:/Release: field"
+pass "(d) Design template carries a Version:/Release: field"
 
 # ---------------------------------------------------------------------------
 # (e) plan template carries a Version:/Release: frontmatter field

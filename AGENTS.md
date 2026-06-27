@@ -4,24 +4,30 @@ This repository is a **dual-native** agent-skill bundle. It is first-class on **
 
 When you, the agent, are invoked inside a project that has installed or vendored this repo, treat the files under `skills/`, `commands/`, and `agents/` as authoritative procedures.
 
-## The chain
+## The chain — a Human layer and a Machine layer
 
 ```
-prior-art-research → draft-spec → socratic-grill → decision-record → write-plan → tdd-loop → release
-                                       ↓
-                             agent-factors-check (only if the spec is an agent product)
-                             devex-review        (only if the spec is a developer-facing product)
+HUMAN LAYER — plain language, the user reads these:
+  prior-art-research → draft-spec (writes the Design) → socratic-grill (walks + grills + sign-off)
+
+MACHINE LAYER — technical, written for the implementing subagent:
+  vertical-slice (slice list) → tdd-loop → release
+
+CONDITIONAL: decision-record — only a one-way-door decision  ·  write-plan — only multi-phase work
 ```
 
-`write-plan` is skip-able when the slice list is trivial and ordering is obvious. `verify-output` gates each `tdd-loop` commit, and `deep-modules` runs at `tdd-loop`'s refactor step — neither is a separate sequential phase. `release` is the terminal link after `tdd-loop` goes GREEN.
+The user lives in the Human layer: research recommends an approach, `draft-spec` turns it into the **Design** (one plain-language doc — what we're building, why, the key decisions and trade-offs), and `socratic-grill` walks the user through it, pressure-tests every aspect, writes the resolved decisions back into the Design, and earns sign-off. Only after sign-off does the Machine layer begin: `vertical-slice` decomposes the signed-off Design into slices, `tdd-loop` implements them, `release` ships. The user does not read the Machine-layer artifacts.
 
-Each skill produces output the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: spec ready`) tell you what to do next.
+**Two artifacts are conditional (don't write them by default):** `decision-record` writes an ADR **only** when the Design has a one-way-door (irreversible) decision — reversible decisions live in the Design's Decided section. `write-plan` runs **only** for genuinely multi-phase / staged-rollout work. A typical feature produces three artifacts: research, the Design, the grilled-and-signed-off Design. `verify-output` gates each `tdd-loop` commit, and `deep-modules` runs at `tdd-loop`'s refactor step — neither is a separate sequential phase. `agent-factors-check` (agent products) and `devex-review` (developer-facing products) are conditional extensions of `socratic-grill`. `release` is terminal after `tdd-loop` goes GREEN.
+
+Each skill produces output the next skill consumes. The handoff lines at the bottom of each skill's output (e.g. `HANDOFF: grill ready`) tell you what to do next. Every skill is written in the house voice — see [`docs/agents/references/skill-voice.md`](./docs/agents/references/skill-voice.md).
 
 Every chain run executes at a depth tier — **Quick**, **Balanced**, or **Deep** (ADR-0016; see `docs/agents/references/tier-scale.md`). `prior-art-research` picks it and every downstream skill inherits it; the tier scales effort, never decision quality.
 
 ## Triggering principles
 
 - **Trigger `prior-art-research` aggressively.** Users almost never say "research." They say "I want to build X." Read between the lines.
+- **Keep the Human layer plain; keep the Machine layer technical.** The user reads research → Design → grill, so write those in plain English and gloss any non-GLOSSARY jargon on first use. The slice list, plan, and tdd-loop are for the implementing subagent — keep them technical. Every skill opens with one iron law and turns its anti-patterns into a Thought→Reality table (canonical voice reference: `docs/agents/references/skill-voice.md`).
 - **Don't skip phases for speed — pick a lighter tier instead.** If you are tempted to jump straight to writing code, you are missing the point of this methodology.
 - **Internal precedent first.** Check local repos before going external. The user's own prior art is Tier 0.
 - **Engineering primitives compose.** `parallel-dev`, `deep-modules`, `tdd-loop`, `vertical-slice`, `using-worktrees`, `systematic-debugging` are not standalone — they support the chain.
@@ -60,7 +66,7 @@ If you find yourself doing any of these, stop and re-read the relevant skill:
 - Skipping the context-capture questions to "save time"
 - Researching after deciding (research is upstream of decisions, not downstream)
 - Recommending FAANG-scale solutions to non-FAANG-scale problems
-- Letting the chain stall in research without producing a spec
+- Letting the chain stall in research without producing a Design
 - Letting a lighter tier skip a triggered quality gate (open questions still grill; one-way doors still get an ADR)
 
 ## Quote and copyright discipline

@@ -5,6 +5,8 @@ description: One-time per-repo bootstrap for the habeebs-skill chain. Use when u
 
 # Setup habeebs-skill
 
+**EXPLAIN EVERY TERM. THE USER MAY NOT KNOW WHAT ANY OF THIS MEANS.**
+
 Configures a single repository so the other habeebs-skills know how to behave. Run once per new repo.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you find, confirm with the user, then write.
@@ -186,12 +188,16 @@ Skills that will now read from these files:
 
 ## Anti-patterns this skill guards against
 
-- **Dumping all 3 questions at once.** Walk one at a time. Each starts with a short explainer.
-- **Assuming the user knows the terms.** Don't assume. Each section explains "what is an issue tracker / triage label / domain glossary."
-- **Overwriting existing config silently.** If `## Agent skills` already exists, ask before changing.
-- **Skipping the look-around phase.** Always check what's there first; don't write blindly.
-- **Forcing the defaults.** Defaults are reasonable but customizable. The user might already have an issue tracker convention; respect it.
-- **Bootstrapping in a partially-configured repo.** If some files exist, only fill the gaps; don't rewrite working config.
+If you find yourself thinking the left column, STOP — the right column is the reality.
+
+| Thought | Reality |
+|---|---|
+| "I'll ask all 3 questions at once." | Walk one at a time, each with a short explainer. |
+| "The user knows what these terms mean." | Don't assume. Explain issue tracker / triage label / domain glossary in each section. |
+| "I'll overwrite the existing config." | If `## Agent skills` already exists, ask before changing it. |
+| "I'll just write the config blind." | Always check what's there first. Skipping the look-around writes over working setup. |
+| "The defaults are best — I'll force them." | Defaults are customizable. Respect an existing convention the user already has. |
+| "Some files exist — I'll rewrite them all to be safe." | Only fill the gaps. Don't rewrite working config in a partially-configured repo. |
 
 ## See also
 

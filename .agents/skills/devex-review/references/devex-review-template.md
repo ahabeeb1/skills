@@ -1,6 +1,6 @@
 # Devex Review Template
 
-Appended to the active grill record by `devex-review`. Lives inline in the grill document or as a sibling `<slug>-devex-review.md` if the grill is long.
+Appended to the Design's **Decided** section by `devex-review`. Lives inline in the Design or as a sibling `<slug>-devex-review.md` if the run is long.
 
 Copy from here. Replace bracketed placeholders. Keep all rows; mark a non-applicable dimension `N/A` in the status column and give the design reason in the Skip notes section below — don't delete rows.
 
@@ -10,7 +10,7 @@ Copy from here. Replace bracketed placeholders. Keep all rows; mark a non-applic
 
 **Dimensions:** `skills/devex-review/references/dx-gap-catalog.md`
 **Run by:** devex-review, [YYYY-MM-DD]
-**Invoked from:** socratic-grill on [grill record path]
+**Invoked from:** socratic-grill on [Design path]
 
 ## Scope decision
 

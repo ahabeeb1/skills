@@ -5,6 +5,8 @@ description: Research-grounded implementation discovery before building anything
 
 # Prior-Art Research
 
+**SURVEY, THEN DECIDE — NEVER SURVEY WITHOUT RECOMMENDING ONE.**
+
 **The premise:** Before you build X, find how the best teams actually shipped X. Then ground your implementation in those proven patterns, not in theoretical best-practices.
 
 This is convergent research. Generic brainstorming generates novel options; this skill finds the patterns that already work in production at the scale you care about, and recommends one.
@@ -29,7 +31,7 @@ This is convergent research. Generic brainstorming generates novel options; this
 
 ## Core workflow
 
-The skill runs in phases 0 through 7, plus three gates (2.5 coverage critic, 6.4 HITL pivot, 6.5 archive). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
+The skill runs in phases 0 through 7, plus three gates (2.5 coverage critic, 6.4 human-in-the-loop (HITL) pivot, 6.5 archive). Phase 0 always runs when a repo is open. Phases 1-2 always run. Phase 3 chooses the **tier** (Quick / Balanced / Deep) that the whole chain run inherits; Phases 4-5 scale with it. Phases 6-7 always run.
 
 ### Phase 0 — Reconnaissance (look before you ask)
 
@@ -242,7 +244,7 @@ Produce the output using the template in `references/output-template.md`. The st
 
 After composing the Phase 6 report and BEFORE writing the Phase 6.5 archive, HALT for a human review. Surface the recommendation summary + the concrete decisions for `/spec` and wait for an explicit direction.
 
-This gate exists to prevent wasted downstream token spend. By the time `/spec`, `/grill`, `/record`, and `/plan` finish, the chain has paid for four artifacts on top of the research. If the recommendation is in the wrong direction, halting here costs one user message; halting after `/plan` costs the artifacts AND the re-do. Most peer methodologies (Python PEP 1, Kubernetes KEP `provisional` state, Backstage BEP pre-RFC issue, obra/superpowers design sign-off — 4 of 5 surveyed in v1.22.0 research) gate BEFORE the full spec is written.
+This gate exists to prevent wasted downstream token spend. By the time `/spec`, `/grill`, `/record`, and `/plan` finish, the chain has paid for four artifacts on top of the research. If the recommendation is in the wrong direction, halting here costs one user message; halting after `/plan` costs the artifacts AND the re-do. Most peer methodologies (Python PEP 1, Kubernetes KEP `provisional` state, Backstage BEP pre-RFC issue, obra/superpowers design sign-off — 4 of 5 surveyed) gate BEFORE the full spec is written.
 
 **Gate format.** Emit a clearly-labeled halt block at the end of the Phase 6 output:
 
@@ -305,9 +307,8 @@ Research success is not held hostage to archival failure — same shape as the d
 End the response with explicit handoff lines. The downstream skills look for these. **Note:** these HANDOFF lines are navigation pointers, not state payloads — downstream skills MUST read the full Phase 6 output document (the case studies, recommendations, decisions-to-make-next, open questions, sources) to do their work. When Phase 6.5 fired, the "full Phase 6 output document" IS the archive file at `docs/agents/research/<slug>-research.md` — name the path in the HANDOFF so downstream skills know what to read. See [`using-habeebs-skill` § "HANDOFF lines — navigation, not state transfer"](../using-habeebs-skill/SKILL.md) for the full-doc-read contract that governs every HANDOFF in the chain.
 
 ```
-HANDOFF: spec ready — invoke `draft-spec` to turn this into an implementation spec. Source: docs/agents/research/<slug>-research.md (when Phase 6.5 archived).
-HANDOFF: grill ready — invoke `socratic-grill` to drive ambiguity out of the open questions and decisions above.
-HANDOFF: record ready — once spec + grill complete, invoke `decision-record` to capture the chosen architecture as an ADR.
+HANDOFF: spec ready — invoke `draft-spec` to turn this recommendation into the plain-language Design the user reads. Source: docs/agents/research/<slug>-research.md (when Phase 6.5 archived).
+HANDOFF: grill ready — once the Design is written, invoke `socratic-grill` to walk the user through it, drive ambiguity out of the open questions and decisions above, and earn sign-off.
 ```
 
 **Then flush steering** if `SYSTEM_CONTEXT.md` has an `## Active steering` section with content. Move the block to a `## Last reconciliation outcome` section dated today. This keeps anchors from bleeding across unrelated chain runs. See `references/steering-hints.md` § "Flush at end of chain" for the exact format and the opt-in-persistence rule for multi-chain campaigns.
@@ -316,14 +317,16 @@ If the chain terminated without a Phase 6 report (declined / halted), still flus
 
 ## Anti-patterns this skill guards against
 
-These are the failure modes the skill explicitly prevents. If you find yourself doing any of these, STOP and restart.
+If you find yourself thinking the left column, STOP — the right column is the reality.
 
-- **FAANG-scale solutions for non-FAANG-scale problems.** Discord's Elixir-based voice infra is not the right reference for a 50-user internal tool. Filter for relevance to the user's stated scale.
-- **Surveying without recommending.** "Here are five approaches. Pick one!" is not the output. The output is a recommendation with alternatives.
-- **Restating blog conclusions verbatim.** Extract the *pattern*, not the prose. If you can't describe the architecture in your own words, you haven't understood it.
-- **Recency bias.** The newest blog post isn't automatically the best pattern. A 2017 Stripe post about idempotency is more valuable than a 2025 tutorial that doesn't mention failure modes.
-- **Theoretical when real exists.** If a real team has published their actual architecture, prefer it over an "industry best practice" article.
-- **Letting copyright leak in.** Never reproduce more than 15 words from any one source. Paraphrase. The output is your synthesis, not their text.
+| Thought | Reality |
+|---|---|
+| "This Discord-scale pattern looks impressive — I'll recommend it." | Discord's voice infra is wrong for a 50-user internal tool. Filter for the user's stated scale. |
+| "Here are five solid approaches — I'll let them pick." | A survey is not the output. Recommend one, with alternatives named. |
+| "I'll quote the article's conclusion." | Extract the pattern, not the prose. If you can't describe the architecture in your own words, you haven't understood it. |
+| "The newest post must be the best pattern." | A 2017 Stripe idempotency post beats a 2025 tutorial that ignores failure modes. Age isn't quality. |
+| "I'll cite this 'industry best practice' article." | If a real team published their actual architecture, prefer it over a best-practice essay. |
+| "I'll paste their wording — it's well put." | Never reproduce more than 15 words from one source. Paraphrase; the output is your synthesis. |
 
 ## Output format strictness
 
@@ -365,7 +368,7 @@ Phase 7: Hands off — many open questions for `socratic-grill`.
 
 ## See also
 
-- `draft-spec` — turns the recommendation into an implementation spec
+- `draft-spec` — turns the recommendation into the Design
 - `socratic-grill` — drives ambiguity out of decisions and open questions
 - `decision-record` — captures the chosen architecture as an ADR
 - `parallel-dev` — orchestration primitive used in the Deep tier

@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Agent Factors Check
 
+**PRESSURE-TEST EVERY AGENT FACTOR THE DESIGN TOUCHES.**
+
 Pressure-test an LLM/agent product spec against the 13 agent quality factors. The job is not to grade — it's to surface the questions habeebs-skill's main chain (research → spec → grill → ADR) otherwise leaves implicit when the product *is* an agent.
 
 This skill is invoked **from** `socratic-grill`, not a standalone phase. It adds 6–13 Socratic questions to the grilling agenda. After grilling resolves them, control returns to the main chain.
@@ -66,7 +68,7 @@ The "OR tool calls" branch catches single-turn workflows that *do* use tools (e.
 | F1 NL → Tool calls | No skill mandates tool-call schema design |
 | F4 Tools = structured outputs | No skill mandates JSON Schema for tool I/O |
 | F5 Unify state | No skill addresses agent-state ↔ business-state coupling |
-| F6 Pause/resume API | HITL labels exist but no API design for the suspend mechanic |
+| F6 Pause/resume API | human-in-the-loop (HITL) labels exist but no API design for the suspend mechanic |
 | F7 Human as tool call | HITL semantics exist but not as a tool-call surface |
 | F11 Trigger from anywhere | No skill addresses invocation surfaces (Slack, email, web, cron) |
 | F13 Pre-fetch context | Partially in `prior-art-research`, not a primitive |
@@ -88,6 +90,17 @@ Follow the shared **[grill-extension protocol](../../docs/agents/references/gril
 - F7: "When the agent needs a refund approval, does it call a `request_human_approval` tool with structured output, or does it write a chat message and wait? If the former, who routes the approval and how is the response wired back?"
 
 **Record:** produce a factor-check record using `references/factor-check-template.md`; the hand-back `HANDOFF: grilling agenda updated` line names the factors per tier. If Missing count > 6, hand back to `draft-spec` before grilling continues (the spec may need re-drafting).
+
+## Anti-patterns this skill guards against
+
+If you find yourself thinking the left column, STOP — the right column is the reality. (Shared set: the [grill-extension protocol](../../docs/agents/references/grill-extension-protocol.md).)
+
+| Thought | Reality |
+|---|---|
+| "Not really an agent product, but I'll run the factors anyway." | Run only on agent specs. Off-target factor questions waste the grill. |
+| "I'll propose the tool-call schema myself." | Generate the question, not the design. The schema is decided after the question is asked. |
+| "I'll fold the state, pause, and trigger gaps into one big question." | Each gap gets its own single-axis question; the user may answer them across turns. |
+| "A 14th factor would be useful here." | The 13 factors are a closed list. A new factor is a new skill or an ADR — don't smuggle it in. |
 
 ## Integration with the chain
 
